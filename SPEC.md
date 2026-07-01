@@ -13,7 +13,7 @@
 - [x] Redux Toolkit 2 store with RTK Query + typed hooks
 - [x] TanStack Query 5 setup with QueryClient + Devtools + global error handler
 - [x] Zustand slice pattern (lightweight local state alternative)
-- [ ] React Hook Form 8 + Zod 4 validation with reusable `<FormField>`
+- [x] React Hook Form 8 + Zod 4 validation with reusable `<FormField>`
 
 ## Phase 3 — Routing & Layout
 - [ ] React Router 7 with typed routes, lazy loading, and ScrollRestoration
