@@ -16,7 +16,7 @@
 - [x] React Hook Form 8 + Zod 4 validation with reusable `<FormField>`
 
 ## Phase 3 — Routing & Layout
-- [ ] React Router 7 with typed routes, lazy loading, and ScrollRestoration
+- [x] React Router 7 with typed routes, lazy loading, and ScrollRestoration
 - [ ] Root layout with Navbar, Sidebar, and `<Outlet>`
 - [ ] Protected route wrapper (auth guard) + redirect logic
 - [ ] 404 / error boundary pages with retry
