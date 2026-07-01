@@ -11,7 +11,7 @@
 
 ## Phase 2 — State & Data
 - [x] Redux Toolkit 2 store with RTK Query + typed hooks
-- [ ] TanStack Query 5 setup with QueryClient + Devtools + global error handler
+- [x] TanStack Query 5 setup with QueryClient + Devtools + global error handler
 - [ ] Zustand slice pattern (lightweight local state alternative)
 - [ ] React Hook Form 8 + Zod 4 validation with reusable `<FormField>`
 
