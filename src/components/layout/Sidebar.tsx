@@ -1,0 +1,67 @@
+import { NavLink } from "react-router";
+import { cn } from "@/lib/cn";
+import { useUi } from "@/store/zustand";
+import { ROUTES } from "@/router/paths";
+
+interface SidebarItem {
+  label: string;
+  to: string;
+}
+
+const SIDEBAR_ITEMS: SidebarItem[] = [
+  { label: "Home", to: ROUTES.HOME },
+  { label: "Dashboard", to: ROUTES.DASHBOARD },
+  { label: "About", to: ROUTES.ABOUT },
+];
+
+export function Sidebar() {
+  const { sidebarOpen, closeSidebar } = useUi();
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/50 md:hidden"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={cn(
+          // Base: fixed overlay on mobile
+          "fixed inset-y-0 left-0 z-30 flex w-64 flex-col overflow-y-auto",
+          "border-r bg-[var(--color-bg)] pb-6 pt-14",
+          "transition-transform duration-200 ease-in-out",
+          // Desktop: normal flow (overrides fixed positioning)
+          "md:static md:inset-auto md:z-auto md:w-64 md:translate-x-0 md:pt-6",
+          // Mobile: slide in/out based on Zustand state
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+        aria-label="Sidebar navigation"
+      >
+        <nav className="flex flex-col gap-1 px-3">
+          {SIDEBAR_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === ROUTES.HOME}
+              onClick={closeSidebar}
+              className={({ isActive }) =>
+                cn(
+                  "rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-[var(--color-primary)] text-[var(--color-primary-fg)]"
+                    : "text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)]",
+                )
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}

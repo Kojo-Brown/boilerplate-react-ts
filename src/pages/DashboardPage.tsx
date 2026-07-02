@@ -6,7 +6,7 @@ export function DashboardPage() {
   const navigate = useNavigate();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
+    <main className="flex flex-col items-center justify-center gap-6 p-8 py-16">
       <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
       <p className="max-w-md text-center text-[var(--color-muted-fg)]">
         This page is lazy-loaded via React Router 7.
