@@ -6,6 +6,7 @@ describe("ROUTES", () => {
     expect(ROUTES.HOME).toBe("/");
     expect(ROUTES.DASHBOARD).toBe("/dashboard");
     expect(ROUTES.ABOUT).toBe("/about");
+    expect(ROUTES.LOGIN).toBe("/login");
   });
 });
 
@@ -14,5 +15,6 @@ describe("typedRoute", () => {
     expect(typedRoute("/")).toBe("/");
     expect(typedRoute("/dashboard")).toBe("/dashboard");
     expect(typedRoute("/about")).toBe("/about");
+    expect(typedRoute("/login")).toBe("/login");
   });
 });

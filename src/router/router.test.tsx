@@ -1,27 +1,48 @@
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { render, screen, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { describe, it, expect } from "vitest";
 import { routes } from "@/router";
+import { makeStore } from "@/test/renderWithProviders";
+import { setCredentials } from "@/store/authSlice";
 
-function renderRoute(initialPath: string) {
+function renderRoute(initialPath: string, authed = false) {
+  const store = makeStore();
+  if (authed) {
+    store.dispatch(
+      setCredentials({
+        token: "tok-test",
+        user: { id: "1", email: "test@example.com", role: "user" },
+      }),
+    );
+  }
   const memoryRouter = createMemoryRouter(routes, {
     initialEntries: [initialPath],
   });
-  return render(<RouterProvider router={memoryRouter} />);
+  return render(
+    <Provider store={store}>
+      <RouterProvider router={memoryRouter} />
+    </Provider>,
+  );
 }
 
 describe("router", () => {
   it("renders HomePage at /", async () => {
     renderRoute("/");
     await waitFor(() => {
-      expect(
-        screen.getByText("React TS Boilerplate"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("React TS Boilerplate")).toBeInTheDocument();
     });
   });
 
-  it("renders DashboardPage at /dashboard", async () => {
+  it("redirects /dashboard to /login when unauthenticated", async () => {
     renderRoute("/dashboard");
+    await waitFor(() => {
+      expect(screen.getByText(/Sign In/)).toBeInTheDocument();
+    });
+  });
+
+  it("renders DashboardPage at /dashboard when authenticated", async () => {
+    renderRoute("/dashboard", true);
     await waitFor(() => {
       expect(screen.getByText("Dashboard")).toBeInTheDocument();
     });
@@ -31,6 +52,13 @@ describe("router", () => {
     renderRoute("/about");
     await waitFor(() => {
       expect(screen.getByText("About")).toBeInTheDocument();
+    });
+  });
+
+  it("renders LoginPage at /login", async () => {
+    renderRoute("/login");
+    await waitFor(() => {
+      expect(screen.getByText("Sign In")).toBeInTheDocument();
     });
   });
 
