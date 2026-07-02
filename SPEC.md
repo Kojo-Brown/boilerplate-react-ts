@@ -18,7 +18,7 @@
 ## Phase 3 — Routing & Layout
 - [x] React Router 7 with typed routes, lazy loading, and ScrollRestoration
 - [x] Root layout with Navbar, Sidebar, and `<Outlet>`
-- [ ] Protected route wrapper (auth guard) + redirect logic
+- [x] Protected route wrapper (auth guard) + redirect logic
 - [ ] 404 / error boundary pages with retry
 
 ## Phase 4 — Auth
