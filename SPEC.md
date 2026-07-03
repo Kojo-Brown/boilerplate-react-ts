@@ -19,7 +19,7 @@
 - [x] React Router 7 with typed routes, lazy loading, and ScrollRestoration
 - [x] Root layout with Navbar, Sidebar, and `<Outlet>`
 - [x] Protected route wrapper (auth guard) + redirect logic
-- [ ] 404 / error boundary pages with retry
+- [x] 404 / error boundary pages with retry
 
 ## Phase 4 — Auth
 - [ ] JWT auth flow: login, logout, token refresh, silent refresh
