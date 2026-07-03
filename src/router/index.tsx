@@ -4,6 +4,7 @@ import { RootLayout } from "@/layouts/RootLayout";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import ErrorPage from "@/pages/ErrorPage";
 
 const LazyHomePage = lazy(() =>
   import("@/pages/HomePage").then((m) => ({ default: m.HomePage })),
@@ -37,6 +38,7 @@ export const routes: RouteObject[] = [
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
