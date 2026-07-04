@@ -22,7 +22,7 @@
 - [x] 404 / error boundary pages with retry
 
 ## Phase 4 — Auth
-- [ ] JWT auth flow: login, logout, token refresh, silent refresh
+- [x] JWT auth flow: login, logout, token refresh, silent refresh
 - [ ] OAuth 2.0 PKCE flow (Google provider example)
 - [ ] Auth context + `useAuth` hook with role-based access
 - [ ] Persistent session via `localStorage` with expiry check
