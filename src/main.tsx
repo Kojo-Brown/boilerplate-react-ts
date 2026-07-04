@@ -5,8 +5,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { store } from "@/store";
 import { queryClient } from "@/api/queryClient";
+import { startSilentRefresh } from "@/features/auth/silentRefresh";
 import { App } from "@/App";
 import "@/styles/globals.css";
+
+startSilentRefresh(store);
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");

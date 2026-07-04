@@ -53,6 +53,8 @@ describe("ProtectedRoute", () => {
     store.dispatch(
       setCredentials({
         token: "tok-abc",
+        refreshToken: "ref-tok",
+        expiresIn: 900,
         user: { id: "1", email: "user@example.com", role: "user" },
       }),
     );
