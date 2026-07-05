@@ -22,6 +22,10 @@ const LazyLoginPage = lazy(() =>
   import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
 
+const LazyOAuthCallbackPage = lazy(() =>
+  import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
+);
+
 function SuspensePage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
@@ -32,6 +36,14 @@ export const routes: RouteObject[] = [
     element: (
       <SuspensePage>
         <LazyLoginPage />
+      </SuspensePage>
+    ),
+  },
+  {
+    path: "/auth/callback",
+    element: (
+      <SuspensePage>
+        <LazyOAuthCallbackPage />
       </SuspensePage>
     ),
   },

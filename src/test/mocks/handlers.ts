@@ -18,4 +18,12 @@ export const handlers = [
   http.get(`${API}/auth/me`, () =>
     HttpResponse.json({ id: "1", email: "test@example.com", role: "user" }),
   ),
+  http.post(`${API}/auth/google/callback`, () =>
+    HttpResponse.json({
+      token: "google-access-token",
+      refreshToken: "google-refresh-token",
+      expiresIn: 3600,
+      user: { id: "2", email: "google@example.com", role: "user" },
+    }),
+  ),
 ];

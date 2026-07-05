@@ -23,6 +23,12 @@ export interface RefreshResponse {
   expiresIn: number;
 }
 
+export interface GoogleExchangeRequest {
+  code: string;
+  codeVerifier: string;
+  redirectUri: string;
+}
+
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
@@ -62,8 +68,25 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
     }),
+
+    googleExchange: builder.mutation<LoginResponse, GoogleExchangeRequest>({
+      query: (body) => ({
+        url: "/auth/google/callback",
+        method: "POST",
+        body,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        dispatch(setCredentials(data));
+      },
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useLoginMutation, useRefreshMutation, useLogoutUserMutation } = authApi;
+export const {
+  useLoginMutation,
+  useRefreshMutation,
+  useLogoutUserMutation,
+  useGoogleExchangeMutation,
+} = authApi;
