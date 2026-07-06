@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { store } from "@/store";
 import { queryClient } from "@/api/queryClient";
 import { startSilentRefresh } from "@/features/auth/silentRefresh";
+import { AuthProvider } from "@/context/AuthContext";
 import { App } from "@/App";
 import "@/styles/globals.css";
 
@@ -18,7 +19,9 @@ createRoot(root).render(
   <StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </Provider>
