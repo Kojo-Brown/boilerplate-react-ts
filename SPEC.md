@@ -25,7 +25,7 @@
 - [x] JWT auth flow: login, logout, token refresh, silent refresh
 - [x] OAuth 2.0 PKCE flow (Google provider example)
 - [x] Auth context + `useAuth` hook with role-based access
-- [ ] Persistent session via `localStorage` with expiry check
+- [x] Persistent session via `localStorage` with expiry check
 
 ## Phase 5 — UI System
 - [ ] Design token CSS variables (colors, spacing, radius, shadows)

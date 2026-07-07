@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useAppSelector, useAppDispatch } from "@/store";
 import { logout, type AuthUser, type UserRole } from "@/store/authSlice";
+import { usePersistedSession } from "@/hooks/usePersistedSession";
 
 export interface AuthContextValue {
   user: AuthUser | null;
@@ -17,6 +18,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const token = useAppSelector((state) => state.auth.token);
+
+  usePersistedSession();
 
   const value = useMemo<AuthContextValue>(
     () => ({
