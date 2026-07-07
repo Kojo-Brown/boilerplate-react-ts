@@ -28,7 +28,7 @@
 - [x] Persistent session via `localStorage` with expiry check
 
 ## Phase 5 — UI System
-- [ ] Design token CSS variables (colors, spacing, radius, shadows)
+- [x] Design token CSS variables (colors, spacing, radius, shadows)
 - [ ] Component library: Button, Input, Modal, Toast, Spinner, Badge
 - [ ] Dark mode toggle with `prefers-color-scheme` default
 - [ ] Responsive layout primitives: Container, Grid, Stack, Divider
