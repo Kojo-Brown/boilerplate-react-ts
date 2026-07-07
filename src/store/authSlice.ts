@@ -22,21 +22,33 @@ export const AUTH_STORAGE_KEYS = {
   USER: "auth.user",
 } as const;
 
-function readJson<T>(key: string): T | null {
+function loadInitialState(): AuthState {
   try {
-    const raw = localStorage.getItem(key);
-    return raw !== null ? (JSON.parse(raw) as T) : null;
+    const token = localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN);
+    const refreshToken = localStorage.getItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN);
+    const expiresAtRaw = localStorage.getItem(AUTH_STORAGE_KEYS.EXPIRES_AT);
+    const userRaw = localStorage.getItem(AUTH_STORAGE_KEYS.USER);
+
+    if (!token || !refreshToken || !expiresAtRaw || !userRaw) {
+      return { token: null, refreshToken: null, expiresAt: null, user: null };
+    }
+
+    const expiresAt = JSON.parse(expiresAtRaw) as unknown;
+    if (typeof expiresAt !== "number" || Date.now() >= expiresAt) {
+      (Object.values(AUTH_STORAGE_KEYS) as string[]).forEach((k) =>
+        localStorage.removeItem(k),
+      );
+      return { token: null, refreshToken: null, expiresAt: null, user: null };
+    }
+
+    const user = JSON.parse(userRaw) as AuthUser;
+    return { token, refreshToken, expiresAt, user };
   } catch {
-    return null;
+    return { token: null, refreshToken: null, expiresAt: null, user: null };
   }
 }
 
-const initialState: AuthState = {
-  token: localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN),
-  refreshToken: localStorage.getItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN),
-  expiresAt: readJson<number>(AUTH_STORAGE_KEYS.EXPIRES_AT),
-  user: readJson<AuthUser>(AUTH_STORAGE_KEYS.USER),
-};
+const initialState: AuthState = loadInitialState();
 
 export interface SetCredentialsPayload {
   token: string;

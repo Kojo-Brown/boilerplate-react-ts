@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
+    "composite": true,
+    "outDir": ".tsbuildinfo/node",
     "target": "ES2022",
     "lib": ["ES2022"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
-    "noEmit": true,
     "strict": true
   },
   "include": ["vite.config.ts", "vitest.config.ts"]
