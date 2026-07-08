@@ -29,7 +29,7 @@
 
 ## Phase 5 — UI System
 - [x] Design token CSS variables (colors, spacing, radius, shadows)
-- [ ] Component library: Button, Input, Modal, Toast, Spinner, Badge
+- [x] Component library: Button, Input, Modal, Toast, Spinner, Badge
 - [ ] Dark mode toggle with `prefers-color-scheme` default
 - [ ] Responsive layout primitives: Container, Grid, Stack, Divider
 
