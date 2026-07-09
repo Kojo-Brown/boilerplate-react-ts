@@ -34,7 +34,7 @@
 - [x] Responsive layout primitives: Container, Grid, Stack, Divider
 
 ## Phase 6 — Performance
-- [ ] Code splitting per route + `React.lazy` + `<Suspense>` skeletons
+- [x] Code splitting per route + `React.lazy` + `<Suspense>` skeletons
 - [ ] Image optimization wrapper with lazy loading + blur placeholder
 - [ ] Memoization patterns: `useMemo`, `useCallback`, `memo` examples
 - [ ] Virtual list example with TanStack Virtual
