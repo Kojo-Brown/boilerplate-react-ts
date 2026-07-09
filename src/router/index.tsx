@@ -1,10 +1,16 @@
-import { type ReactNode, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { RootLayout } from "@/layouts/RootLayout";
 import { NotFoundPage } from "@/pages/NotFoundPage";
-import { PageLoader } from "@/components/ui/PageLoader";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import ErrorPage from "@/pages/ErrorPage";
+import {
+  HomePageSkeleton,
+  DashboardPageSkeleton,
+  AboutPageSkeleton,
+  LoginPageSkeleton,
+} from "@/components/skeletons";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 const LazyHomePage = lazy(() =>
   import("@/pages/HomePage").then((m) => ({ default: m.HomePage })),
@@ -26,25 +32,21 @@ const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
 
-function SuspensePage({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
-}
-
 export const routes: RouteObject[] = [
   {
     path: "/login",
     element: (
-      <SuspensePage>
+      <Suspense fallback={<LoginPageSkeleton />}>
         <LazyLoginPage />
-      </SuspensePage>
+      </Suspense>
     ),
   },
   {
     path: "/auth/callback",
     element: (
-      <SuspensePage>
+      <Suspense fallback={<PageLoader />}>
         <LazyOAuthCallbackPage />
-      </SuspensePage>
+      </Suspense>
     ),
   },
   {
@@ -55,9 +57,9 @@ export const routes: RouteObject[] = [
       {
         index: true,
         element: (
-          <SuspensePage>
+          <Suspense fallback={<HomePageSkeleton />}>
             <LazyHomePage />
-          </SuspensePage>
+          </Suspense>
         ),
       },
       {
@@ -66,9 +68,9 @@ export const routes: RouteObject[] = [
           {
             path: "dashboard",
             element: (
-              <SuspensePage>
+              <Suspense fallback={<DashboardPageSkeleton />}>
                 <LazyDashboardPage />
-              </SuspensePage>
+              </Suspense>
             ),
           },
         ],
@@ -76,9 +78,9 @@ export const routes: RouteObject[] = [
       {
         path: "about",
         element: (
-          <SuspensePage>
+          <Suspense fallback={<AboutPageSkeleton />}>
             <LazyAboutPage />
-          </SuspensePage>
+          </Suspense>
         ),
       },
       {
