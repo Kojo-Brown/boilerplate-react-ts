@@ -35,7 +35,7 @@
 
 ## Phase 6 — Performance
 - [x] Code splitting per route + `React.lazy` + `<Suspense>` skeletons
-- [ ] Image optimization wrapper with lazy loading + blur placeholder
+- [x] Image optimization wrapper with lazy loading + blur placeholder
 - [ ] Memoization patterns: `useMemo`, `useCallback`, `memo` examples
 - [ ] Virtual list example with TanStack Virtual
 
