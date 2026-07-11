@@ -11,22 +11,30 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { App } from "@/App";
 import "@/styles/globals.css";
 
+async function enableMocking(): Promise<void> {
+  if (!import.meta.env.DEV) return;
+  const { worker } = await import("@/test/mocks/browser");
+  await worker.start({ onUnhandledRequest: "bypass" });
+}
+
 startSilentRefresh(store);
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
 
-createRoot(root).render(
-  <StrictMode>
-    <ThemeProvider>
-      <Provider store={store}>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-      </Provider>
-    </ThemeProvider>
-  </StrictMode>,
-);
+void enableMocking().then(() => {
+  createRoot(root).render(
+    <StrictMode>
+      <ThemeProvider>
+        <Provider store={store}>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </QueryClientProvider>
+        </Provider>
+      </ThemeProvider>
+    </StrictMode>,
+  );
+});

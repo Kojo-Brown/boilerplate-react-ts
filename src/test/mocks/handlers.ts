@@ -2,7 +2,7 @@ import { http, HttpResponse } from "msw";
 
 const API = "http://localhost:4000";
 
-export const handlers = [
+export const authHandlers = [
   http.post(`${API}/auth/login`, () =>
     HttpResponse.json({
       token: "mock-access-token",
@@ -27,3 +27,31 @@ export const handlers = [
     }),
   ),
 ];
+
+export const postHandlers = [
+  http.get(`${API}/posts`, () =>
+    HttpResponse.json([
+      { id: 1, title: "First Post", body: "Content one", userId: 1 },
+      { id: 2, title: "Second Post", body: "Content two", userId: 1 },
+    ]),
+  ),
+  http.get(`${API}/posts/:id`, ({ params }) =>
+    HttpResponse.json({
+      id: Number(params["id"]),
+      title: `Post ${params["id"]}`,
+      body: "Post body content",
+      userId: 1,
+    }),
+  ),
+  http.post(`${API}/posts`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ id: 100, ...body }, { status: 201 });
+  }),
+  http.put(`${API}/posts/:id`, async ({ params, request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ id: Number(params["id"]), ...body });
+  }),
+  http.delete(`${API}/posts/:id`, () => new HttpResponse(null, { status: 204 })),
+];
+
+export const handlers = [...authHandlers, ...postHandlers];

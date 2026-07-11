@@ -40,7 +40,7 @@
 - [x] Virtual list example with TanStack Virtual
 
 ## Phase 7 — Testing
-- [ ] Vitest + Testing Library setup with `setup.ts` and MSW mocks
+- [x] Vitest + Testing Library setup with `setup.ts` and MSW mocks
 - [ ] Playwright E2E: login flow, protected route, API mock
 - [ ] Component snapshot tests for UI system
 - [ ] Coverage thresholds in `vitest.config.ts`
