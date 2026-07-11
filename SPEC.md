@@ -37,7 +37,7 @@
 - [x] Code splitting per route + `React.lazy` + `<Suspense>` skeletons
 - [x] Image optimization wrapper with lazy loading + blur placeholder
 - [x] Memoization patterns: `useMemo`, `useCallback`, `memo` examples
-- [ ] Virtual list example with TanStack Virtual
+- [x] Virtual list example with TanStack Virtual
 
 ## Phase 7 — Testing
 - [ ] Vitest + Testing Library setup with `setup.ts` and MSW mocks
