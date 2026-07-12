@@ -42,7 +42,7 @@
 ## Phase 7 — Testing
 - [x] Vitest + Testing Library setup with `setup.ts` and MSW mocks
 - [x] Playwright E2E: login flow, protected route, API mock
-- [ ] Component snapshot tests for UI system
+- [x] Component snapshot tests for UI system
 - [ ] Coverage thresholds in `vitest.config.ts`
 
 ## Phase 8 — DevOps
