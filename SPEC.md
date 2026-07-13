@@ -46,7 +46,7 @@
 - [x] Coverage thresholds in `vitest.config.ts`
 
 ## Phase 8 — DevOps
-- [ ] GitHub Actions: lint → test → build → preview deploy
+- [x] GitHub Actions: lint → test → build → preview deploy
 - [ ] Dockerfile (multi-stage, nginx, non-root user)
 - [ ] `.env.example` with all required vars documented
 - [ ] Bundle analysis script (`rollup-plugin-visualizer`)
