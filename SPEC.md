@@ -47,6 +47,6 @@
 
 ## Phase 8 — DevOps
 - [x] GitHub Actions: lint → test → build → preview deploy
-- [ ] Dockerfile (multi-stage, nginx, non-root user)
+- [x] Dockerfile (multi-stage, nginx, non-root user)
 - [ ] `.env.example` with all required vars documented
 - [ ] Bundle analysis script (`rollup-plugin-visualizer`)
