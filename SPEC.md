@@ -49,4 +49,4 @@
 - [x] GitHub Actions: lint → test → build → preview deploy
 - [x] Dockerfile (multi-stage, nginx, non-root user)
 - [x] `.env.example` with all required vars documented
-- [ ] Bundle analysis script (`rollup-plugin-visualizer`)
+- [x] Bundle analysis script (`rollup-plugin-visualizer`)

@@ -9,7 +9,13 @@ export default defineConfig(({ mode }) => ({
     react(),
     tailwindcss(),
     mode === "analyze" &&
-      visualizer({ open: true, gzipSize: true, brotliSize: true }),
+      visualizer({
+        filename: "stats.html",
+        template: "treemap",
+        gzipSize: true,
+        brotliSize: true,
+        open: !process.env.CI,
+      }),
   ],
   resolve: {
     alias: {
