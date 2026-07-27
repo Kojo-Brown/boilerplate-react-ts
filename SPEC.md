@@ -1,6 +1,12 @@
 # Spec: boilerplate-react-ts
 
-> Spec-driven. Each item is implemented in one 6-hour push. Do not skip items. Mark `[x]` after pushing.
+> Spec-driven. One item per run, PR-driven. Do not skip items. Mark `[x]` only after the PR merges.
+
+## Phase 0 — Green Baseline (blocks all feature work)
+- [ ] Fix the 10 remaining test failures: Toast auto-dismiss timeouts (needs fake timers), duplicate-text queries in Sidebar/RootLayout, ThemeContext localStorage persistence, NotFoundPage copy drift, router `/about` + `/dashboard` assertions
+- [ ] Restore `.github/workflows/ci.yml` from `workflow-templates/` now that the token has `workflow` scope, and confirm it runs green on a PR
+- [ ] Add `pnpm build` to CI and fix any production-build-only failures
+- [ ] Verify Playwright E2E actually runs (`pnpm test:e2e`) and wire it into CI
 
 ## Phase 1 — Foundation
 - [x] Vite 7 + React 19 + TypeScript 6 scaffold with strict tsconfig
