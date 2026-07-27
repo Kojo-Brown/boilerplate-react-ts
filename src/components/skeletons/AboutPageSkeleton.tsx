@@ -12,7 +12,11 @@ export function AboutPageSkeleton() {
       {/* Body text */}
       <div className="flex max-w-md flex-col gap-2">
         <Skeleton variant="text" className="h-5 w-full" aria-label="Loading description line 1" />
-        <Skeleton variant="text" className="h-5 w-4/5 self-center" aria-label="Loading description line 2" />
+        <Skeleton
+          variant="text"
+          className="h-5 w-4/5 self-center"
+          aria-label="Loading description line 2"
+        />
       </div>
       {/* Buttons */}
       <div className="flex gap-3">

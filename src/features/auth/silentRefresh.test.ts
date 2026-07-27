@@ -26,7 +26,12 @@ describe("silentRefresh", () => {
   it("does not schedule a refresh timer when there is no stored token", async () => {
     const store = makeStore();
     const refreshCalled = vi.fn();
-    server.use(http.post(`${API}/auth/refresh`, () => { refreshCalled(); return HttpResponse.json({ token: "t", expiresIn: 900 }); }));
+    server.use(
+      http.post(`${API}/auth/refresh`, () => {
+        refreshCalled();
+        return HttpResponse.json({ token: "t", expiresIn: 900 });
+      }),
+    );
 
     startSilentRefresh(store);
     await vi.advanceTimersByTimeAsync(600_000);
@@ -147,7 +152,12 @@ describe("silentRefresh", () => {
     );
 
     const refreshCalled = vi.fn();
-    server.use(http.post(`${API}/auth/refresh`, () => { refreshCalled(); return HttpResponse.json({ token: "new", expiresIn: 900 }); }));
+    server.use(
+      http.post(`${API}/auth/refresh`, () => {
+        refreshCalled();
+        return HttpResponse.json({ token: "new", expiresIn: 900 });
+      }),
+    );
 
     startSilentRefresh(store);
     stopSilentRefresh();

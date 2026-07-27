@@ -6,18 +6,18 @@ Production-grade SPA starter. Clone, configure `.env`, and ship.
 
 ## Stack
 
-| Layer | Tech | Version |
-|-------|------|---------|
-| UI | React + TypeScript | 19.2 / 6.0 |
-| Build | Vite | 7 |
-| Styles | TailwindCSS | 4.3 |
-| Global state | Redux Toolkit | 2.12 |
-| Server state | TanStack Query | 5.101 |
-| Routing | React Router | 7 |
-| Forms | React Hook Form + Zod | 8 / 4 |
-| Testing | Vitest + Testing Library + Playwright | 3 / 16 / 1.52 |
-| Mocking | MSW | 2 |
-| Linting | ESLint 9 + Prettier 3 | |
+| Layer        | Tech                                  | Version       |
+| ------------ | ------------------------------------- | ------------- |
+| UI           | React + TypeScript                    | 19.2 / 6.0    |
+| Build        | Vite                                  | 7             |
+| Styles       | TailwindCSS                           | 4.3           |
+| Global state | Redux Toolkit                         | 2.12          |
+| Server state | TanStack Query                        | 5.101         |
+| Routing      | React Router                          | 7             |
+| Forms        | React Hook Form + Zod                 | 8 / 4         |
+| Testing      | Vitest + Testing Library + Playwright | 3 / 16 / 1.52 |
+| Mocking      | MSW                                   | 2             |
+| Linting      | ESLint 9 + Prettier 3                 |               |
 
 ## Quick Start
 

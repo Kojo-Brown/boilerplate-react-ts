@@ -86,7 +86,10 @@ describe("authSlice", () => {
         user: mockUser,
       }),
     );
-    const refreshed = reducer(base, refreshAccessToken({ token: "new-access-token", expiresIn: 900 }));
+    const refreshed = reducer(
+      base,
+      refreshAccessToken({ token: "new-access-token", expiresIn: 900 }),
+    );
     expect(refreshed.token).toBe("new-access-token");
     expect(refreshed.refreshToken).toBe(mockRefreshToken);
     expect(refreshed.user).toEqual(mockUser);

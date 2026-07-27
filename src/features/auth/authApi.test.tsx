@@ -66,7 +66,9 @@ describe("authApi — useLoginMutation", () => {
     const { store } = renderWithProviders(<LoginButton />);
     await user.click(screen.getByRole("button", { name: "Login" }));
 
-    await waitFor(() => { expect(screen.getByText("Logged in!")).toBeInTheDocument(); });
+    await waitFor(() => {
+      expect(screen.getByText("Logged in!")).toBeInTheDocument();
+    });
 
     const authState = store.getState().auth;
     expect(authState.token).toBe("access-tok");
@@ -108,7 +110,9 @@ describe("authApi — useLoginMutation", () => {
     renderWithProviders(<LoginButton />);
     await user.click(screen.getByRole("button", { name: "Login" }));
 
-    await waitFor(() => { expect(screen.getByText("Error!")).toBeInTheDocument(); });
+    await waitFor(() => {
+      expect(screen.getByText("Error!")).toBeInTheDocument();
+    });
   });
 });
 
@@ -128,7 +132,9 @@ describe("authApi — useRefreshMutation", () => {
     const { store } = renderWithProviders(<RefreshButton />);
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
-    await waitFor(() => { expect(screen.getByText("Refreshed!")).toBeInTheDocument(); });
+    await waitFor(() => {
+      expect(screen.getByText("Refreshed!")).toBeInTheDocument();
+    });
 
     expect(store.getState().auth.token).toBe("new-access-tok");
     expect(store.getState().auth.expiresAt).toBeGreaterThan(Date.now());
@@ -158,9 +164,7 @@ describe("authApi — useLogoutUserMutation", () => {
 
   it("clears auth state in Redux after logout", async () => {
     const user = userEvent.setup();
-    server.use(
-      http.post(`${API}/auth/logout`, () => new HttpResponse(null, { status: 200 })),
-    );
+    server.use(http.post(`${API}/auth/logout`, () => new HttpResponse(null, { status: 200 })));
 
     const { store } = renderWithProviders(<LogoutButton />);
     store.dispatch(
@@ -174,7 +178,9 @@ describe("authApi — useLogoutUserMutation", () => {
 
     await user.click(screen.getByRole("button", { name: "Logout" }));
 
-    await waitFor(() => { expect(screen.getByText("Logged out!")).toBeInTheDocument(); });
+    await waitFor(() => {
+      expect(screen.getByText("Logged out!")).toBeInTheDocument();
+    });
 
     const authState = store.getState().auth;
     expect(authState.token).toBeNull();

@@ -13,7 +13,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "json-summary", "html", "lcov"],
       reportsDirectory: "./coverage",
-      all: true,
+      // `all` was removed in Vitest 4; `include` alone now covers untested files.
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "src/test/**",

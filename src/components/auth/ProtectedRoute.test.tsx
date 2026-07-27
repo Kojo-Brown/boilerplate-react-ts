@@ -22,9 +22,7 @@ function buildTestRouter(
   const routes = [
     {
       path: "/",
-      element: (
-        <ProtectedRoute redirectTo={redirectTo} requiredRoles={requiredRoles} />
-      ),
+      element: <ProtectedRoute redirectTo={redirectTo} requiredRoles={requiredRoles} />,
       children: [{ index: true, element: <div>Protected Content</div> }],
     },
     {
@@ -32,7 +30,14 @@ function buildTestRouter(
       element: <ProtectedRoute />,
       children: [{ index: true, element: <div>Dashboard Content</div> }],
     },
-    { path: "/login", element: <div>Login Page <LocationStateDisplay /></div> },
+    {
+      path: "/login",
+      element: (
+        <div>
+          Login Page <LocationStateDisplay />
+        </div>
+      ),
+    },
     { path: "/custom-login", element: <div>Custom Login</div> },
   ];
 

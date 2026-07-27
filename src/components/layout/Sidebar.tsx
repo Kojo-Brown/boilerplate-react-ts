@@ -32,7 +32,7 @@ export function Sidebar() {
         className={cn(
           // Base: fixed overlay on mobile
           "fixed inset-y-0 left-0 z-30 flex w-64 flex-col overflow-y-auto",
-          "border-r bg-[var(--color-bg)] pb-6 pt-14",
+          "border-r bg-[var(--color-bg)] pt-14 pb-6",
           "transition-transform duration-200 ease-in-out",
           // Desktop: normal flow (overrides fixed positioning)
           "md:static md:inset-auto md:z-auto md:w-64 md:translate-x-0 md:pt-6",

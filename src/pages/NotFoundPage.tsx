@@ -10,10 +10,7 @@ export function NotFoundPage() {
 
   return (
     <main className="flex flex-col items-center justify-center gap-4 p-8 py-16 text-center">
-      <p
-        className="text-8xl font-bold text-[var(--color-muted-fg)]"
-        aria-hidden="true"
-      >
+      <p className="text-8xl font-bold text-[var(--color-muted-fg)]" aria-hidden="true">
         404
       </p>
       <h1 className="text-2xl font-semibold">Page not found</h1>

@@ -20,9 +20,7 @@ export function useFilteredSortedItems<T extends object>(
   return useMemo(() => {
     const lower = query.trim().toLowerCase();
     const filtered = lower
-      ? items.filter((item) =>
-          String(item[searchKey]).toLowerCase().includes(lower),
-        )
+      ? items.filter((item) => String(item[searchKey]).toLowerCase().includes(lower))
       : [...items];
 
     return filtered.sort((a, b) => {

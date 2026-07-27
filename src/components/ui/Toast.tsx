@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
 
@@ -43,18 +37,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const toast = useCallback(
-    ({ variant = "default", duration = 4000, ...input }: ToastInput) => {
-      const id = crypto.randomUUID();
-      setToasts((prev) => [...prev, { id, variant, duration, ...input }]);
-      if (duration > 0) {
-        setTimeout(() => {
-          setToasts((prev) => prev.filter((t) => t.id !== id));
-        }, duration);
-      }
-    },
-    [],
-  );
+  const toast = useCallback(({ variant = "default", duration = 4000, ...input }: ToastInput) => {
+    const id = crypto.randomUUID();
+    setToasts((prev) => [...prev, { id, variant, duration, ...input }]);
+    if (duration > 0) {
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, duration);
+    }
+  }, []);
 
   return (
     <ToastContext.Provider value={{ toast, dismiss }}>
@@ -64,7 +55,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           role="region"
           aria-label="Notifications"
           aria-live="polite"
-          className="fixed bottom-4 right-4 z-[1500] flex flex-col gap-2"
+          className="fixed right-4 bottom-4 z-[1500] flex flex-col gap-2"
         >
           {toasts.map((t) => (
             <ToastCard key={t.id} item={t} onDismiss={dismiss} />
@@ -152,7 +143,9 @@ function ToastCard({ item, onDismiss }: ToastCardProps) {
         )}
       </div>
       <button
-        onClick={() => { onDismiss(item.id); }}
+        onClick={() => {
+          onDismiss(item.id);
+        }}
         className="shrink-0 text-[var(--color-muted-fg)] transition-colors hover:text-[var(--color-fg)]"
         aria-label="Dismiss notification"
       >

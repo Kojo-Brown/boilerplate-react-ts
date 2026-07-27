@@ -23,6 +23,8 @@ export function usePersistedSession(): void {
       }
     }, EXPIRY_CHECK_INTERVAL_MS);
 
-    return () => { clearInterval(interval); };
+    return () => {
+      clearInterval(interval);
+    };
   }, [dispatch, expiresAt]);
 }

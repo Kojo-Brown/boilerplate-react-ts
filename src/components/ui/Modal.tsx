@@ -45,9 +45,13 @@ export function Modal({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => { onClose(); };
+    const handleClose = () => {
+      onClose();
+    };
     dialog.addEventListener("close", handleClose);
-    return () => { dialog.removeEventListener("close", handleClose); };
+    return () => {
+      dialog.removeEventListener("close", handleClose);
+    };
   }, [onClose]);
 
   return createPortal(
@@ -69,10 +73,7 @@ export function Modal({
       <div className="flex flex-col">
         <div className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] p-5">
           <div>
-            <h2
-              id="modal-title"
-              className="text-base font-semibold text-[var(--color-fg)]"
-            >
+            <h2 id="modal-title" className="text-base font-semibold text-[var(--color-fg)]">
               {title}
             </h2>
             {description && (

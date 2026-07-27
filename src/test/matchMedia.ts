@@ -19,19 +19,25 @@ export function installMatchMediaFallback(): void {
         matches: false,
         media: query,
         onchange: null,
-        addEventListener: (_type, listener) =>
-          listeners.add(listener as (event: MediaQueryListEvent) => void),
-        removeEventListener: (_type, listener) =>
-          listeners.delete(listener as (event: MediaQueryListEvent) => void),
+        addEventListener: (_type: string, listener: unknown) => {
+          listeners.add(listener as (event: MediaQueryListEvent) => void);
+        },
+        removeEventListener: (_type: string, listener: unknown) => {
+          listeners.delete(listener as (event: MediaQueryListEvent) => void);
+        },
         dispatchEvent: (event: Event) => {
-          listeners.forEach((l) => { l(event as MediaQueryListEvent); });
+          listeners.forEach((l) => {
+            l(event as MediaQueryListEvent);
+          });
           return true;
         },
         // Deprecated pre-EventTarget API, still called by some libraries.
-        addListener: (listener) =>
-          listeners.add(listener as unknown as (event: MediaQueryListEvent) => void),
-        removeListener: (listener) =>
-          listeners.delete(listener as unknown as (event: MediaQueryListEvent) => void),
+        addListener: (listener: unknown) => {
+          listeners.add(listener as (event: MediaQueryListEvent) => void);
+        },
+        removeListener: (listener: unknown) => {
+          listeners.delete(listener as (event: MediaQueryListEvent) => void);
+        },
       };
       return list;
     },

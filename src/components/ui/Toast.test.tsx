@@ -8,7 +8,9 @@ function ToastTrigger({ title, variant }: { title: string; variant?: "success" |
   const { toast } = useToast();
   return (
     <button
-      onClick={() => { toast({ title, variant }); }}
+      onClick={() => {
+        toast({ title, variant });
+      }}
     >
       Show Toast
     </button>
@@ -43,7 +45,11 @@ describe("ToastProvider / useToast", () => {
     function TriggerWithDesc() {
       const { toast } = useToast();
       return (
-        <button onClick={() => { toast({ title: "Title", description: "Details here" }); }}>
+        <button
+          onClick={() => {
+            toast({ title: "Title", description: "Details here" });
+          }}
+        >
           Show
         </button>
       );
@@ -68,7 +74,13 @@ describe("ToastProvider / useToast", () => {
     function AutoDismissTrigger() {
       const { toast } = useToast();
       return (
-        <button onClick={() => { toast({ title: "Auto gone", duration: 1000 }); }}>Show</button>
+        <button
+          onClick={() => {
+            toast({ title: "Auto gone", duration: 1000 });
+          }}
+        >
+          Show
+        </button>
       );
     }
     renderWithProvider(<AutoDismissTrigger />);
@@ -87,8 +99,20 @@ describe("ToastProvider / useToast", () => {
       const { toast } = useToast();
       return (
         <>
-          <button onClick={() => { toast({ title: "First" }); }}>First</button>
-          <button onClick={() => { toast({ title: "Second" }); }}>Second</button>
+          <button
+            onClick={() => {
+              toast({ title: "First" });
+            }}
+          >
+            First
+          </button>
+          <button
+            onClick={() => {
+              toast({ title: "Second" });
+            }}
+          >
+            Second
+          </button>
         </>
       );
     }

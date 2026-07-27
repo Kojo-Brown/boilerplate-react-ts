@@ -13,9 +13,9 @@ export function isSessionExpired(expiresAt: number): boolean {
 }
 
 export function clearPersistedSession(): void {
-  (Object.values(AUTH_STORAGE_KEYS) as string[]).forEach((key) =>
-    { localStorage.removeItem(key); },
-  );
+  (Object.values(AUTH_STORAGE_KEYS) as string[]).forEach((key) => {
+    localStorage.removeItem(key);
+  });
 }
 
 export function readPersistedSession(): PersistedSession | null {

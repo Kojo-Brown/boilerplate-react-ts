@@ -1,10 +1,5 @@
 import { baseApi } from "@/store/api";
-import {
-  setCredentials,
-  refreshAccessToken,
-  logout,
-  type AuthUser,
-} from "@/store/authSlice";
+import { setCredentials, refreshAccessToken, logout, type AuthUser } from "@/store/authSlice";
 
 interface LoginRequest {
   email: string;

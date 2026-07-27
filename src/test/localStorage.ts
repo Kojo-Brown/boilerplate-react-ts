@@ -19,15 +19,15 @@ export class MemoryStorage implements Storage {
   }
 
   getItem(key: string): string | null {
-    return this.#entries.get(String(key)) ?? null;
+    return this.#entries.get(key) ?? null;
   }
 
   setItem(key: string, value: string): void {
-    this.#entries.set(String(key), String(value));
+    this.#entries.set(key, value);
   }
 
   removeItem(key: string): void {
-    this.#entries.delete(String(key));
+    this.#entries.delete(key);
   }
 
   clear(): void {

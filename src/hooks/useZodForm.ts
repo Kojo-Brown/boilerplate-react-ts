@@ -18,10 +18,7 @@ import { type ZodType } from "zod";
  */
 export function useZodForm<TSchema extends ZodType<FieldValues, FieldValues>>(
   schema: TSchema,
-  options?: Omit<
-    UseFormProps<z.input<TSchema>, unknown, z.output<TSchema>>,
-    "resolver"
-  >,
+  options?: Omit<UseFormProps<z.input<TSchema>, unknown, z.output<TSchema>>, "resolver">,
 ): UseFormReturn<z.input<TSchema>, unknown, z.output<TSchema>> {
   return useForm<z.input<TSchema>, unknown, z.output<TSchema>>({
     ...options,

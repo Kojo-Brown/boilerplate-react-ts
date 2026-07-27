@@ -16,9 +16,7 @@ const ITEMS: readonly Item[] = [
 
 describe("useFilteredSortedItems", () => {
   it("returns all items sorted asc when query is empty", () => {
-    const { result } = renderHook(() =>
-      useFilteredSortedItems(ITEMS, "", "name", "name", "asc"),
-    );
+    const { result } = renderHook(() => useFilteredSortedItems(ITEMS, "", "name", "name", "asc"));
     expect(result.current.map((i) => i.name)).toEqual(["Alice", "Bob", "Charlie"]);
   });
 
@@ -31,9 +29,7 @@ describe("useFilteredSortedItems", () => {
   });
 
   it("sorts descending when sortDir is desc", () => {
-    const { result } = renderHook(() =>
-      useFilteredSortedItems(ITEMS, "", "name", "name", "desc"),
-    );
+    const { result } = renderHook(() => useFilteredSortedItems(ITEMS, "", "name", "name", "desc"));
     expect(result.current.map((i) => i.name)).toEqual(["Charlie", "Bob", "Alice"]);
   });
 
@@ -46,8 +42,7 @@ describe("useFilteredSortedItems", () => {
 
   it("recomputes when query changes", () => {
     const { result, rerender } = renderHook(
-      ({ query }: { query: string }) =>
-        useFilteredSortedItems(ITEMS, query, "name", "name", "asc"),
+      ({ query }: { query: string }) => useFilteredSortedItems(ITEMS, query, "name", "name", "asc"),
       { initialProps: { query: "" } },
     );
     expect(result.current).toHaveLength(3);
@@ -58,9 +53,7 @@ describe("useFilteredSortedItems", () => {
   });
 
   it("does not mutate the original array order", () => {
-    renderHook(() =>
-      useFilteredSortedItems(ITEMS, "", "name", "name", "asc"),
-    );
+    renderHook(() => useFilteredSortedItems(ITEMS, "", "name", "name", "asc"));
     expect(ITEMS.map((i) => i.name)).toEqual(["Charlie", "Alice", "Bob"]);
   });
 });

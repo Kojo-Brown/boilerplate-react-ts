@@ -6,7 +6,10 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  globalIgnores(["dist", "coverage", "playwright-report", ".tsbuildinfo"]),
+  // eslint.config.ts is excluded from the tsconfig projects (the `globals`
+  // package ships no type declarations, which breaks `tsc -b`), so type-aware
+  // linting cannot resolve it either.
+  globalIgnores(["dist", "coverage", "playwright-report", ".tsbuildinfo", "eslint.config.ts"]),
   {
     extends: [js.configs.recommended, tseslint.configs.strictTypeChecked],
     files: ["**/*.{ts,tsx}"],
@@ -37,10 +40,7 @@ export default defineConfig(
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       // Interpolating a number is safe and universally readable; the default
       // ban on it produces noise without catching real defects.
-      "@typescript-eslint/restrict-template-expressions": [
-        "error",
-        { allowNumber: true },
-      ],
+      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
       // JSX event handlers are fire-and-forget by design. Promise-returning
       // handlers still matter elsewhere, so only the attribute check is off.
       "@typescript-eslint/no-misused-promises": [

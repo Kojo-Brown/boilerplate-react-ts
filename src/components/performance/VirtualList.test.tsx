@@ -62,9 +62,7 @@ describe("VirtualList", () => {
     render(
       <VirtualList
         items={items}
-        renderItem={(item) => (
-          <span data-testid="custom-row">{item.label}</span>
-        )}
+        renderItem={(item) => <span data-testid="custom-row">{item.label}</span>}
       />,
     );
     const rows = screen.getAllByTestId("custom-row");

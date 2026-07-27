@@ -20,7 +20,9 @@ const Row = memo(
       <li
         role="option"
         aria-selected={isSelected}
-        onClick={() => { onToggle(item.id); }}
+        onClick={() => {
+          onToggle(item.id);
+        }}
         className={cn(
           "flex cursor-pointer items-center justify-between px-3 py-2",
           "rounded-[var(--radius-md)] transition-colors",
@@ -31,9 +33,7 @@ const Row = memo(
       >
         <span className="font-medium">{item.label}</span>
         {item.meta && (
-          <span className={cn("text-xs opacity-60", isSelected && "opacity-80")}>
-            {item.meta}
-          </span>
+          <span className={cn("text-xs opacity-60", isSelected && "opacity-80")}>{item.meta}</span>
         )}
       </li>
     );
@@ -55,9 +55,7 @@ export function MemoizedList({
   initialSelectedIds = [],
   onSelectionChange,
 }: MemoizedListProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(initialSelectedIds),
-  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(initialSelectedIds));
 
   // useCallback keeps onToggle referentially stable so memo'd Row components
   // skip re-renders when unrelated parent state changes.
@@ -84,22 +82,13 @@ export function MemoizedList({
   );
 
   if (!sortedItems.length) {
-    return (
-      <p className="px-3 py-4 text-sm text-[var(--color-fg)]">
-        No items.
-      </p>
-    );
+    return <p className="px-3 py-4 text-sm text-[var(--color-fg)]">No items.</p>;
   }
 
   return (
     <ul role="listbox" aria-multiselectable className="flex flex-col gap-1 p-1">
       {sortedItems.map((item) => (
-        <Row
-          key={item.id}
-          item={item}
-          isSelected={selectedIds.has(item.id)}
-          onToggle={onToggle}
-        />
+        <Row key={item.id} item={item} isSelected={selectedIds.has(item.id)} onToggle={onToggle} />
       ))}
     </ul>
   );

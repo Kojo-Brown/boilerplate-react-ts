@@ -16,9 +16,7 @@ export interface VirtualListProps {
   height?: number | undefined;
   className?: string | undefined;
   /** Optional custom row renderer — receives the item and its 0-based index. */
-  renderItem?:
-    | ((item: VirtualListItem, index: number) => React.ReactNode)
-    | undefined;
+  renderItem?: ((item: VirtualListItem, index: number) => React.ReactNode) | undefined;
 }
 
 /**
@@ -60,10 +58,7 @@ export function VirtualList({
       )}
       style={{ height }}
     >
-      <div
-        style={{ height: virtualizer.getTotalSize() }}
-        className="relative w-full"
-      >
+      <div style={{ height: virtualizer.getTotalSize() }} className="relative w-full">
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const item = items[virtualRow.index];
           // The virtualizer can briefly report a row whose index is past the
@@ -75,7 +70,7 @@ export function VirtualList({
               role="listitem"
               data-index={virtualRow.index}
               ref={virtualizer.measureElement}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{ transform: `translateY(${virtualRow.start}px)` }}
             >
               {renderItem ? (
@@ -99,22 +94,15 @@ interface DefaultRowProps {
 function DefaultRow({ item, index }: DefaultRowProps) {
   return (
     <div
-      className={cn(
-        "flex items-center gap-3 px-3 py-2",
-        "border-b border-[var(--color-border)]",
-      )}
+      className={cn("flex items-center gap-3 px-3 py-2", "border-b border-[var(--color-border)]")}
     >
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-muted)] text-xs font-medium text-[var(--color-fg)]">
         {index + 1}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-[var(--color-fg)]">
-          {item.label}
-        </p>
+        <p className="truncate text-sm font-medium text-[var(--color-fg)]">{item.label}</p>
         {item.description && (
-          <p className="truncate text-xs text-[var(--color-fg)] opacity-60">
-            {item.description}
-          </p>
+          <p className="truncate text-xs text-[var(--color-fg)] opacity-60">{item.description}</p>
         )}
       </div>
     </div>

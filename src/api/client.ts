@@ -17,7 +17,9 @@ let isRefreshing = false;
 const pendingQueue: Array<(token: string | null) => void> = [];
 
 function drainQueue(token: string | null): void {
-  pendingQueue.forEach((resolve) => { resolve(token); });
+  pendingQueue.forEach((resolve) => {
+    resolve(token);
+  });
   pendingQueue.length = 0;
 }
 

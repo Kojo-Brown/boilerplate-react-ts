@@ -23,16 +23,17 @@ export const createNotificationsSlice: StateCreator<
   NotificationsSlice
 > = (set) => ({
   notifications: [],
-  addNotification: (notification) =>
-    { set((state) => ({
-      notifications: [
-        ...state.notifications,
-        { id: crypto.randomUUID(), ...notification },
-      ],
-    })); },
-  removeNotification: (id) =>
-    { set((state) => ({
+  addNotification: (notification) => {
+    set((state) => ({
+      notifications: [...state.notifications, { id: crypto.randomUUID(), ...notification }],
+    }));
+  },
+  removeNotification: (id) => {
+    set((state) => ({
       notifications: state.notifications.filter((n) => n.id !== id),
-    })); },
-  clearNotifications: () => { set({ notifications: [] }); },
+    }));
+  },
+  clearNotifications: () => {
+    set({ notifications: [] });
+  },
 });

@@ -1,19 +1,17 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { AUTH_STORAGE_KEYS } from "@/store/authSlice";
-import {
-  isSessionExpired,
-  readPersistedSession,
-  clearPersistedSession,
-} from "./persistedSession";
+import { isSessionExpired, readPersistedSession, clearPersistedSession } from "./persistedSession";
 
 const mockUser = { id: "1", email: "test@example.com", role: "user" as const };
 
-function populateStorage(overrides: Partial<{
-  token: string | null;
-  refreshToken: string | null;
-  expiresAt: number | null;
-  user: typeof mockUser | null;
-}> = {}): void {
+function populateStorage(
+  overrides: Partial<{
+    token: string | null;
+    refreshToken: string | null;
+    expiresAt: number | null;
+    user: typeof mockUser | null;
+  }> = {},
+): void {
   const defaults = {
     token: "access-token",
     refreshToken: "refresh-token",
@@ -22,8 +20,7 @@ function populateStorage(overrides: Partial<{
   };
   const merged = { ...defaults, ...overrides };
 
-  if (merged.token !== null)
-    localStorage.setItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN, merged.token);
+  if (merged.token !== null) localStorage.setItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN, merged.token);
   if (merged.refreshToken !== null)
     localStorage.setItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN, merged.refreshToken);
   if (merged.expiresAt !== null)
@@ -53,7 +50,9 @@ describe("isSessionExpired", () => {
 });
 
 describe("clearPersistedSession", () => {
-  beforeEach(() => { localStorage.clear(); });
+  beforeEach(() => {
+    localStorage.clear();
+  });
 
   it("removes all auth keys from localStorage", () => {
     populateStorage();
@@ -65,7 +64,9 @@ describe("clearPersistedSession", () => {
   });
 
   it("is safe to call when storage is empty", () => {
-    expect(() => { clearPersistedSession(); }).not.toThrow();
+    expect(() => {
+      clearPersistedSession();
+    }).not.toThrow();
   });
 });
 

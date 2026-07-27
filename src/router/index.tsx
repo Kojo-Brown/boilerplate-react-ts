@@ -12,9 +12,7 @@ import {
 } from "@/components/skeletons";
 import { PageLoader } from "@/components/ui/PageLoader";
 
-const LazyHomePage = lazy(() =>
-  import("@/pages/HomePage").then((m) => ({ default: m.HomePage })),
-);
+const LazyHomePage = lazy(() => import("@/pages/HomePage").then((m) => ({ default: m.HomePage })));
 
 const LazyDashboardPage = lazy(() =>
   import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),

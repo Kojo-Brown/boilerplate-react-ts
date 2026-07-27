@@ -11,10 +11,14 @@ export function useGlobalQueryError() {
     }
 
     window.addEventListener(QUERY_ERROR_EVENT, onQueryError);
-    return () => { window.removeEventListener(QUERY_ERROR_EVENT, onQueryError); };
+    return () => {
+      window.removeEventListener(QUERY_ERROR_EVENT, onQueryError);
+    };
   }, []);
 
-  const clearError = useCallback(() => { setError(null); }, []);
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return { error, clearError };
 }

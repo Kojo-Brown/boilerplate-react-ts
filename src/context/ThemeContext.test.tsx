@@ -40,64 +40,92 @@ describe("ThemeProvider / useTheme", () => {
   });
 
   it("defaults to system mode", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(false) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
     expect(result.current.mode).toBe("system");
   });
 
   it("restores stored mode from localStorage", () => {
     localStorage.setItem("theme", "dark");
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(false) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
     expect(result.current.mode).toBe("dark");
   });
 
   it("persists mode changes to localStorage", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(false) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
-    act(() => { result.current.setMode("light"); });
+    act(() => {
+      result.current.setMode("light");
+    });
     expect(localStorage.getItem("theme")).toBe('"light"');
   });
 
   it("isDark is true when mode is dark", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(false) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
-    act(() => { result.current.setMode("dark"); });
+    act(() => {
+      result.current.setMode("dark");
+    });
     expect(result.current.isDark).toBe(true);
   });
 
   it("isDark is false when mode is light regardless of OS", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(true) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(true) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
-    act(() => { result.current.setMode("light"); });
+    act(() => {
+      result.current.setMode("light");
+    });
     expect(result.current.isDark).toBe(false);
   });
 
   it("isDark follows OS when mode is system and OS is dark", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(true) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(true) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
     // mode is 'system' by default
     expect(result.current.isDark).toBe(true);
   });
 
   it("isDark is false when mode is system and OS is light", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(false) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
     expect(result.current.isDark).toBe(false);
   });
 
   it("adds .dark class to documentElement when isDark", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(false) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
-    act(() => { result.current.setMode("dark"); });
+    act(() => {
+      result.current.setMode("dark");
+    });
     expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
 
   it("removes .dark class from documentElement when not isDark", () => {
     document.documentElement.classList.add("dark");
-    vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+    vi.spyOn(window, "matchMedia").mockReturnValue(
+      makeMediaQuery(false) as unknown as MediaQueryList,
+    );
     const { result } = renderHook(() => useTheme(), { wrapper });
-    act(() => { result.current.setMode("light"); });
+    act(() => {
+      result.current.setMode("light");
+    });
     expect(document.documentElement.classList.contains("dark")).toBe(false);
   });
 

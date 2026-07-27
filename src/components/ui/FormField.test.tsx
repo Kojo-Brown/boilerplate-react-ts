@@ -4,7 +4,11 @@ import { FormField } from "./FormField";
 
 describe("FormField", () => {
   it("renders the label text", () => {
-    render(<FormField label="Email"><input /></FormField>);
+    render(
+      <FormField label="Email">
+        <input />
+      </FormField>,
+    );
     expect(screen.getByText("Email")).toBeInTheDocument();
   });
 
@@ -27,23 +31,39 @@ describe("FormField", () => {
   });
 
   it("renders required asterisk when required is true", () => {
-    render(<FormField label="Email" required><input /></FormField>);
+    render(
+      <FormField label="Email" required>
+        <input />
+      </FormField>,
+    );
     expect(screen.getByText("*")).toBeInTheDocument();
   });
 
   it("does not render asterisk when required is false or omitted", () => {
-    render(<FormField label="Email"><input /></FormField>);
+    render(
+      <FormField label="Email">
+        <input />
+      </FormField>,
+    );
     expect(screen.queryByText("*")).not.toBeInTheDocument();
   });
 
   it("renders error message with role=alert", () => {
-    render(<FormField label="Email" error="Invalid email address"><input /></FormField>);
+    render(
+      <FormField label="Email" error="Invalid email address">
+        <input />
+      </FormField>,
+    );
     const alert = screen.getByRole("alert");
     expect(alert).toHaveTextContent("Invalid email address");
   });
 
   it("does not render an alert when error is undefined", () => {
-    render(<FormField label="Email"><input /></FormField>);
+    render(
+      <FormField label="Email">
+        <input />
+      </FormField>,
+    );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 

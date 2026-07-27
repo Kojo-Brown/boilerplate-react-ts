@@ -51,10 +51,7 @@ export default function ErrorPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
-      <p
-        className="text-8xl font-bold text-[var(--color-muted-fg)]"
-        aria-hidden="true"
-      >
+      <p className="text-8xl font-bold text-[var(--color-muted-fg)]" aria-hidden="true">
         {status}
       </p>
       <h1 className="text-2xl font-semibold">{title}</h1>
