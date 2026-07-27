@@ -27,7 +27,7 @@ describe("NotFoundPage", () => {
 
   it("renders a description", () => {
     setup();
-    expect(screen.getByText(/doesn't exist or has been moved/i)).toBeInTheDocument();
+    expect(screen.getByText(/exist or has been moved/i)).toBeInTheDocument();
   });
 
   it("navigates to home when Go home is clicked", async () => {

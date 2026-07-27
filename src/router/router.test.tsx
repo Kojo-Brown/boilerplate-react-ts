@@ -46,14 +46,14 @@ describe("router", () => {
   it("renders DashboardPage at /dashboard when authenticated", async () => {
     renderRoute("/dashboard", true);
     await waitFor(() => {
-      expect(screen.getByText("Dashboard")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
     });
   });
 
   it("renders AboutPage at /about", async () => {
     renderRoute("/about");
     await waitFor(() => {
-      expect(screen.getByText("About")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: "About" })).toBeInTheDocument();
     });
   });
 

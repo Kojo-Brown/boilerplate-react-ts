@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, act, type RenderResult } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { render, screen, act, fireEvent, type RenderResult } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { ToastProvider, useToast } from "./Toast";
@@ -22,6 +22,12 @@ function renderWithProvider(ui: ReactElement): RenderResult {
 }
 
 describe("ToastProvider / useToast", () => {
+  // Without this, a test that fails before its own `useRealTimers()` leaves the
+  // fake clock installed and every later test hangs waiting on it.
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("throws when useToast is used outside provider", () => {
     const ConsumerWithoutProvider = () => {
       useToast();
@@ -68,9 +74,8 @@ describe("ToastProvider / useToast", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("auto-dismisses after duration", async () => {
+  it("auto-dismisses after duration", () => {
     vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     function AutoDismissTrigger() {
       const { toast } = useToast();
       return (
@@ -84,13 +89,18 @@ describe("ToastProvider / useToast", () => {
       );
     }
     renderWithProvider(<AutoDismissTrigger />);
-    await user.click(screen.getByRole("button", { name: "Show" }));
+
+    // `fireEvent` rather than `userEvent`: userEvent awaits its own internal
+    // delay timers, which deadlocks against Vitest's fake clock here.
+    act(() => {
+      fireEvent.click(screen.getByRole("button", { name: "Show" }));
+    });
     expect(screen.getByRole("alert")).toBeInTheDocument();
+
     act(() => {
       vi.advanceTimersByTime(1001);
     });
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    vi.useRealTimers();
   });
 
   it("shows multiple toasts", async () => {

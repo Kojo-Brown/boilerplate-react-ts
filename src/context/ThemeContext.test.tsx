@@ -64,7 +64,7 @@ describe("ThemeProvider / useTheme", () => {
     act(() => {
       result.current.setMode("light");
     });
-    expect(localStorage.getItem("theme")).toBe('"light"');
+    expect(localStorage.getItem("theme")).toBe("light");
   });
 
   it("isDark is true when mode is dark", () => {

@@ -212,7 +212,7 @@ exports[`UI system snapshots > DarkModeToggle > system mode (default) 1`] = `
 exports[`UI system snapshots > Input > default 1`] = `
 <DocumentFragment>
   <input
-    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
     placeholder="Enter value"
   />
 </DocumentFragment>
@@ -221,7 +221,7 @@ exports[`UI system snapshots > Input > default 1`] = `
 exports[`UI system snapshots > Input > disabled state 1`] = `
 <DocumentFragment>
   <input
-    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
     disabled=""
     placeholder="Disabled"
   />
@@ -231,7 +231,7 @@ exports[`UI system snapshots > Input > disabled state 1`] = `
 exports[`UI system snapshots > Input > error state 1`] = `
 <DocumentFragment>
   <input
-    class="h-10 w-full rounded-[var(--radius-md)] border bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-[var(--color-danger)] focus:ring-[var(--color-danger)]"
+    class="h-10 w-full rounded-[var(--radius-md)] border bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 border-[var(--color-danger)] focus:ring-[var(--color-danger)]"
     placeholder="Error input"
   />
 </DocumentFragment>
@@ -240,7 +240,7 @@ exports[`UI system snapshots > Input > error state 1`] = `
 exports[`UI system snapshots > Input > with value 1`] = `
 <DocumentFragment>
   <input
-    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
     readonly=""
     value="Hello world"
   />
@@ -625,7 +625,7 @@ exports[`UI system snapshots > ToastProvider > renders empty notification region
 <div
   aria-label="Notifications"
   aria-live="polite"
-  class="fixed bottom-4 right-4 z-[1500] flex flex-col gap-2"
+  class="fixed right-4 bottom-4 z-[1500] flex flex-col gap-2"
   role="region"
 />
 `;

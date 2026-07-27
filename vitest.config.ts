@@ -8,7 +8,9 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     // `e2e/` holds Playwright specs; running them under Vitest throws
     // "Playwright Test did not expect test.describe() to be called here".
-    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
+    // `.tsbuildinfo/` holds tsc -b output, including compiled copies of the
+    // Playwright specs; collecting either form throws inside Vitest.
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**", ".tsbuildinfo/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "json-summary", "html", "lcov"],

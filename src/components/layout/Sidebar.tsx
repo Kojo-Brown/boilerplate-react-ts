@@ -39,9 +39,10 @@ export function Sidebar() {
           // Mobile: slide in/out based on Zustand state
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
-        aria-label="Sidebar navigation"
       >
-        <nav className="flex flex-col gap-1 px-3">
+        {/* The label belongs on the <nav> landmark, not the <aside>: it is the
+            navigation region that assistive tech announces and queries by name. */}
+        <nav className="flex flex-col gap-1 px-3" aria-label="Sidebar navigation">
           {SIDEBAR_ITEMS.map((item) => (
             <NavLink
               key={item.to}
