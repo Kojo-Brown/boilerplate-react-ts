@@ -38,20 +38,29 @@ describe("useLocalStorage", () => {
   });
 
   it("falls back to the initial value when storage access throws", () => {
-    // Spy on the live global rather than Storage.prototype: under this test
-    // environment `localStorage` may be a standalone fallback object whose
-    // methods are own properties, so a prototype spy would never be hit and
-    // the test would pass without exercising the catch branch at all.
-    const getItem = vi.spyOn(globalThis.localStorage, "getItem").mockImplementation(() => {
+    // Swap the whole global rather than spying on a method: jsdom's Storage is
+    // proxy-backed on some Node versions, and the in-memory fallback keeps its
+    // methods as own properties on others — a method spy silently misses in
+    // one environment or the other. Replacing the object works in both.
+    const original = globalThis.localStorage;
+    const getItem = vi.fn((_key: string): string | null => {
       throw new Error("storage disabled");
     });
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: { ...original, getItem },
+    });
 
-    const { result } = renderHook(() => useLocalStorage("blocked", "fallback"));
-
-    expect(getItem).toHaveBeenCalledWith("blocked");
-    expect(result.current[0]).toBe("fallback");
-
-    getItem.mockRestore();
+    try {
+      const { result } = renderHook(() => useLocalStorage("blocked", "fallback"));
+      expect(getItem).toHaveBeenCalledWith("blocked");
+      expect(result.current[0]).toBe("fallback");
+    } finally {
+      Object.defineProperty(globalThis, "localStorage", {
+        configurable: true,
+        value: original,
+      });
+    }
   });
 
   it("persists a directly assigned value", () => {
