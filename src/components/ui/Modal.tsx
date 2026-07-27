@@ -45,9 +45,9 @@ export function Modal({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onClose();
+    const handleClose = () => { onClose(); };
     dialog.addEventListener("close", handleClose);
-    return () => dialog.removeEventListener("close", handleClose);
+    return () => { dialog.removeEventListener("close", handleClose); };
   }, [onClose]);
 
   return createPortal(

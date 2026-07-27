@@ -24,9 +24,14 @@ describe("useZodForm", () => {
   });
 
   it("populates errors for failing fields after submit attempt", async () => {
-    const { result } = renderHook(() =>
-      useZodForm(schema, { defaultValues: { name: "", age: 0 } }),
-    );
+    // `formState` is a Proxy that only tracks the fields read during render.
+    // Reading `errors` inside the hook callback subscribes to it; reading it
+    // only from `result.current` afterwards would never see an update.
+    const { result } = renderHook(() => {
+      const form = useZodForm(schema, { defaultValues: { name: "", age: 0 } });
+      void form.formState.errors;
+      return form;
+    });
 
     await act(async () => {
       await result.current.handleSubmit(vi.fn())();
@@ -45,10 +50,9 @@ describe("useZodForm", () => {
       await result.current.handleSubmit(onSubmit)();
     });
 
-    expect(onSubmit).toHaveBeenCalledWith(
-      { name: "Bob", age: 25 },
-      expect.anything(),
-    );
+    // Submitting programmatically passes no DOM event, so the second argument
+    // is `undefined` — which `expect.anything()` deliberately does not match.
+    expect(onSubmit).toHaveBeenCalledWith({ name: "Bob", age: 25 }, undefined);
   });
 
   it("does not call submit handler when form is invalid", async () => {

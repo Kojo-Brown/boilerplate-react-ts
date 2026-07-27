@@ -27,7 +27,7 @@ describe("useFilteredSortedItems", () => {
       useFilteredSortedItems(ITEMS, "ali", "name", "name", "asc"),
     );
     expect(result.current).toHaveLength(1);
-    expect(result.current[0].name).toBe("Alice");
+    expect(result.current[0]?.name).toBe("Alice");
   });
 
   it("sorts descending when sortDir is desc", () => {
@@ -54,15 +54,13 @@ describe("useFilteredSortedItems", () => {
 
     rerender({ query: "bob" });
     expect(result.current).toHaveLength(1);
-    expect(result.current[0].name).toBe("Bob");
+    expect(result.current[0]?.name).toBe("Bob");
   });
 
   it("does not mutate the original array order", () => {
     renderHook(() =>
       useFilteredSortedItems(ITEMS, "", "name", "name", "asc"),
     );
-    expect(ITEMS[0].name).toBe("Charlie");
-    expect(ITEMS[1].name).toBe("Alice");
-    expect(ITEMS[2].name).toBe("Bob");
+    expect(ITEMS.map((i) => i.name)).toEqual(["Charlie", "Alice", "Bob"]);
   });
 });

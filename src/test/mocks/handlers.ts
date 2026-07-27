@@ -35,14 +35,17 @@ export const postHandlers = [
       { id: 2, title: "Second Post", body: "Content two", userId: 1 },
     ]),
   ),
-  http.get(`${API}/posts/:id`, ({ params }) =>
-    HttpResponse.json({
-      id: Number(params["id"]),
-      title: `Post ${params["id"]}`,
+  http.get(`${API}/posts/:id`, ({ params }) => {
+    // A path param is typed as string | readonly string[] because a pattern can
+    // match repeated segments; this route only ever binds a single value.
+    const id = Number(params["id"]);
+    return HttpResponse.json({
+      id,
+      title: `Post ${id}`,
       body: "Post body content",
       userId: 1,
-    }),
-  ),
+    });
+  }),
   http.post(`${API}/posts`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({ id: 100, ...body }, { status: 201 });

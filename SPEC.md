@@ -50,3 +50,52 @@
 - [x] Dockerfile (multi-stage, nginx, non-root user)
 - [x] `.env.example` with all required vars documented
 - [x] Bundle analysis script (`rollup-plugin-visualizer`)
+
+## Phase 9 — React 19 Concurrency
+- [ ] `useTransition` + `useDeferredValue` on a heavy filterable list, with a jank before/after benchmark
+- [ ] `useOptimistic` mutations with automatic rollback on failure
+- [ ] `use()` API for unwrapping promises and context inside Suspense boundaries
+- [ ] Actions API: `useActionState` + `useFormStatus` replacing manual form submit state
+- [ ] React Compiler enabled incrementally with an ESLint rule and a memo-removal audit
+- [ ] Suspense-driven data fetching with streaming boundaries and nested fallbacks
+- [ ] `startTransition` for route changes to keep the old UI interactive during navigation
+
+## Phase 10 — Advanced Patterns & Architecture
+- [ ] Compound components with context: `<Tabs><Tabs.List><Tabs.Panel>` and a typed slot API
+- [ ] Headless component pattern: behaviour hooks split from presentation
+- [ ] Polymorphic `as` prop with full generic type inference
+- [ ] Render-prop and HOC patterns documented with their modern-hook equivalents
+- [ ] State machines with XState for a multi-step checkout flow
+- [ ] Feature-Sliced Design directory refactor with an import-boundary lint rule
+- [ ] Dependency inversion: swap the API client via context for tests and Storybook
+
+## Phase 11 — Performance Engineering
+- [ ] Web Workers via Comlink for CPU-bound parsing off the main thread
+- [ ] Windowed infinite scroll with TanStack Virtual + intersection prefetch
+- [ ] Core Web Vitals instrumentation (INP, LCP, CLS) reported to an analytics sink
+- [ ] Route-level prefetch on hover/viewport with an idle-time budget
+- [ ] Bundle budget gate in CI that fails the build on regression
+- [ ] Image pipeline: AVIF/WebP `srcset`, priority hints, and CLS-safe aspect ratios
+- [ ] Memory-leak hunt: detached-node and listener audit with a documented method
+
+## Phase 12 — Resilience & Offline
+- [ ] Error boundaries per route with retry, reset keys, and Sentry-style reporting
+- [ ] Offline-first with a service worker: stale-while-revalidate + a background sync queue
+- [ ] Request deduplication, cancellation via `AbortController`, and retry with jitter
+- [ ] Optimistic cache updates in TanStack Query with rollback and invalidation rules
+- [ ] Network-status-aware UI with a queued-mutation replay on reconnect
+
+## Phase 13 — Accessibility & i18n
+- [ ] WCAG 2.2 AA audit with axe in CI, zero-violation gate
+- [ ] Focus management: focus traps, skip links, and route-change announcements
+- [ ] Full keyboard interaction patterns for Modal, Menu, Combobox, and Tabs
+- [ ] Screen-reader live regions for async status and toasts
+- [ ] i18n with `react-intl`: plurals, dates, number formats, and an RTL layout pass
+
+## Phase 14 — Security & TDD
+- [ ] XSS-safe rendering: sanitisation policy and a `dangerouslySetInnerHTML` lint ban
+- [ ] CSP with nonces wired through the Vite build
+- [ ] Token storage hardening: in-memory access token + httpOnly refresh cookie, no `localStorage`
+- [ ] Dependency supply-chain gate: `npm audit` + provenance check in CI
+- [ ] TDD kata: one component built red→green→refactor, one commit per step
+- [ ] Mutation testing with Stryker + a CI threshold

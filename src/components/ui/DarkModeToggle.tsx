@@ -1,7 +1,8 @@
 import { cn } from "@/lib/cn";
 import { useTheme, type ThemeMode } from "@/context/ThemeContext";
 
-const CYCLE: ThemeMode[] = ["system", "light", "dark"];
+// Non-empty tuple so the cycle always has a well-defined fallback entry.
+const CYCLE = ["system", "light", "dark"] as const satisfies readonly ThemeMode[];
 
 function SunIcon({ className }: { className?: string }) {
   return (
@@ -77,7 +78,7 @@ export function DarkModeToggle({ className }: DarkModeToggleProps) {
 
   function handleClick() {
     const idx = CYCLE.indexOf(mode);
-    const next = CYCLE[(idx + 1) % CYCLE.length];
+    const next = CYCLE[(idx + 1) % CYCLE.length] ?? CYCLE[0];
     setMode(next);
   }
 

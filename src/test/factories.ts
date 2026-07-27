@@ -1,4 +1,4 @@
-import type { AuthUser, UserRole } from "@/store/authSlice";
+import type { AuthUser } from "@/store/authSlice";
 import type { Post, CreatePostInput } from "@/store/postsApi";
 
 let _seq = 1;
@@ -13,7 +13,7 @@ export function makeUser(overrides: Partial<AuthUser> = {}): AuthUser {
   return {
     id: String(id),
     email: `user${id}@example.com`,
-    role: "user" as UserRole,
+    role: "user",
     ...overrides,
   };
 }

@@ -5,18 +5,20 @@ import { cn } from "@/lib/cn";
 export interface VirtualListItem {
   id: string;
   label: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export interface VirtualListProps {
   items: VirtualListItem[];
   /** Estimated row height in px used for initial layout (default 48). */
-  estimateSize?: number;
+  estimateSize?: number | undefined;
   /** Height of the scrollable container in px (default 400). */
-  height?: number;
-  className?: string;
+  height?: number | undefined;
+  className?: string | undefined;
   /** Optional custom row renderer — receives the item and its 0-based index. */
-  renderItem?: (item: VirtualListItem, index: number) => React.ReactNode;
+  renderItem?:
+    | ((item: VirtualListItem, index: number) => React.ReactNode)
+    | undefined;
 }
 
 /**
@@ -64,6 +66,9 @@ export function VirtualList({
       >
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const item = items[virtualRow.index];
+          // The virtualizer can briefly report a row whose index is past the
+          // end of `items` while a resize is settling.
+          if (!item) return null;
           return (
             <div
               key={virtualRow.key}

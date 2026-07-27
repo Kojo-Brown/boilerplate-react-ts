@@ -19,8 +19,8 @@ interface ToastItem {
 }
 
 type ToastInput = Omit<ToastItem, "id" | "variant" | "duration"> & {
-  variant?: ToastVariant;
-  duration?: number;
+  variant?: ToastVariant | undefined;
+  duration?: number | undefined;
 };
 
 interface ToastContextValue {
@@ -152,7 +152,7 @@ function ToastCard({ item, onDismiss }: ToastCardProps) {
         )}
       </div>
       <button
-        onClick={() => onDismiss(item.id)}
+        onClick={() => { onDismiss(item.id); }}
         className="shrink-0 text-[var(--color-muted-fg)] transition-colors hover:text-[var(--color-fg)]"
         aria-label="Dismiss notification"
       >

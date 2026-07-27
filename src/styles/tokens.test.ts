@@ -63,7 +63,7 @@ describe("Design tokens", () => {
     for (const [name, palette] of Object.entries(palettes)) {
       it(`${name} has all 11 shades (50–950)`, () => {
         for (const shade of expectedShades) {
-          const value = palette[shade as keyof typeof palette];
+          const value = palette[shade];
           expect(value, `${name}[${shade}]`).toBeDefined();
           expect(isCssVar(value), `${name}[${shade}] = "${value}"`).toBe(true);
         }

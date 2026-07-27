@@ -3,11 +3,11 @@ import { cn } from "@/lib/cn";
 
 interface FormFieldProps {
   label: string;
-  error?: string;
-  hint?: string;
-  required?: boolean;
+  error?: string | undefined;
+  hint?: string | undefined;
+  required?: boolean | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function FormField({ label, error, hint, required, children, className }: FormFieldProps) {

@@ -4,11 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/mocks/server";
 import { renderWithProviders } from "@/test/renderWithProviders";
-import { setCredentials, AUTH_STORAGE_KEYS } from "@/store/authSlice";
+import { setCredentials, AUTH_STORAGE_KEYS, type AuthUser } from "@/store/authSlice";
 import { useLoginMutation, useRefreshMutation, useLogoutUserMutation } from "./authApi";
 
 const API = "http://localhost:4000";
-const mockUser = { id: "1", email: "test@example.com", role: "user" };
+const mockUser: AuthUser = { id: "1", email: "test@example.com", role: "user" };
 
 function LoginButton() {
   const [login, { isLoading, isSuccess, isError }] = useLoginMutation();
@@ -66,7 +66,7 @@ describe("authApi — useLoginMutation", () => {
     const { store } = renderWithProviders(<LoginButton />);
     await user.click(screen.getByRole("button", { name: "Login" }));
 
-    await waitFor(() => expect(screen.getByText("Logged in!")).toBeInTheDocument());
+    await waitFor(() => { expect(screen.getByText("Logged in!")).toBeInTheDocument(); });
 
     const authState = store.getState().auth;
     expect(authState.token).toBe("access-tok");
@@ -108,7 +108,7 @@ describe("authApi — useLoginMutation", () => {
     renderWithProviders(<LoginButton />);
     await user.click(screen.getByRole("button", { name: "Login" }));
 
-    await waitFor(() => expect(screen.getByText("Error!")).toBeInTheDocument());
+    await waitFor(() => { expect(screen.getByText("Error!")).toBeInTheDocument(); });
   });
 });
 
@@ -128,7 +128,7 @@ describe("authApi — useRefreshMutation", () => {
     const { store } = renderWithProviders(<RefreshButton />);
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
-    await waitFor(() => expect(screen.getByText("Refreshed!")).toBeInTheDocument());
+    await waitFor(() => { expect(screen.getByText("Refreshed!")).toBeInTheDocument(); });
 
     expect(store.getState().auth.token).toBe("new-access-tok");
     expect(store.getState().auth.expiresAt).toBeGreaterThan(Date.now());
@@ -174,7 +174,7 @@ describe("authApi — useLogoutUserMutation", () => {
 
     await user.click(screen.getByRole("button", { name: "Logout" }));
 
-    await waitFor(() => expect(screen.getByText("Logged out!")).toBeInTheDocument());
+    await waitFor(() => { expect(screen.getByText("Logged out!")).toBeInTheDocument(); });
 
     const authState = store.getState().auth;
     expect(authState.token).toBeNull();

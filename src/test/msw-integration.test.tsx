@@ -131,7 +131,7 @@ describe("renderWithProviders integration", () => {
       React.useEffect(() => {
         void fetch(`${API}/auth/me`)
           .then((r) => r.json())
-          .then((u: { email: string }) => setEmail(u.email));
+          .then((u: { email: string }) => { setEmail(u.email); });
       }, []);
       return <p>{email ?? "loading"}</p>;
     }
@@ -163,7 +163,7 @@ describe("renderWithProviders integration", () => {
 
     renderWithProviders(<LoginTrigger />);
     await user.click(screen.getByRole("button", { name: "login" }));
-    await waitFor(() => expect(screen.getByText("done")).toBeInTheDocument());
+    await waitFor(() => { expect(screen.getByText("done")).toBeInTheDocument(); });
     expect(capturedToken).toBe("interaction-token");
   });
 });

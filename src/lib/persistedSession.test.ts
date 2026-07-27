@@ -53,7 +53,7 @@ describe("isSessionExpired", () => {
 });
 
 describe("clearPersistedSession", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => { localStorage.clear(); });
 
   it("removes all auth keys from localStorage", () => {
     populateStorage();
@@ -65,7 +65,7 @@ describe("clearPersistedSession", () => {
   });
 
   it("is safe to call when storage is empty", () => {
-    expect(() => clearPersistedSession()).not.toThrow();
+    expect(() => { clearPersistedSession(); }).not.toThrow();
   });
 });
 

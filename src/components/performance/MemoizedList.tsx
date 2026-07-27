@@ -20,7 +20,7 @@ const Row = memo(
       <li
         role="option"
         aria-selected={isSelected}
-        onClick={() => onToggle(item.id)}
+        onClick={() => { onToggle(item.id); }}
         className={cn(
           "flex cursor-pointer items-center justify-between px-3 py-2",
           "rounded-[var(--radius-md)] transition-colors",

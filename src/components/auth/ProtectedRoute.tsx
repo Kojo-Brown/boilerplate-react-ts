@@ -4,8 +4,8 @@ import { ROUTES } from "@/router/paths";
 import type { UserRole } from "@/store/authSlice";
 
 interface ProtectedRouteProps {
-  redirectTo?: string;
-  requiredRoles?: readonly UserRole[];
+  redirectTo?: string | undefined;
+  requiredRoles?: readonly UserRole[] | undefined;
 }
 
 export function ProtectedRoute({

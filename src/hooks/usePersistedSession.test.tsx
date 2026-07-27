@@ -26,7 +26,7 @@ describe("usePersistedSession", () => {
 
   it("does nothing when there is no session (expiresAt is null)", () => {
     const store = makeStore();
-    renderHook(() => usePersistedSession(), { wrapper: makeWrapper(store) });
+    renderHook(() => { usePersistedSession(); }, { wrapper: makeWrapper(store) });
 
     act(() => { vi.advanceTimersByTime(120_000); });
 
@@ -46,7 +46,7 @@ describe("usePersistedSession", () => {
     // Wind clock past expiry
     vi.setSystemTime(Date.now() + 2_000);
 
-    renderHook(() => usePersistedSession(), { wrapper: makeWrapper(store) });
+    renderHook(() => { usePersistedSession(); }, { wrapper: makeWrapper(store) });
 
     expect(store.getState().auth.token).toBeNull();
     expect(store.getState().auth.user).toBeNull();
@@ -63,7 +63,7 @@ describe("usePersistedSession", () => {
       }),
     );
 
-    renderHook(() => usePersistedSession(), { wrapper: makeWrapper(store) });
+    renderHook(() => { usePersistedSession(); }, { wrapper: makeWrapper(store) });
     expect(store.getState().auth.token).toBe("tok");
 
     // Move time past expiry
@@ -90,7 +90,7 @@ describe("usePersistedSession", () => {
     );
 
     const dispatchSpy = vi.spyOn(store, "dispatch");
-    renderHook(() => usePersistedSession(), { wrapper: makeWrapper(store) });
+    renderHook(() => { usePersistedSession(); }, { wrapper: makeWrapper(store) });
 
     act(() => { vi.advanceTimersByTime(600_000); });
 
@@ -111,7 +111,7 @@ describe("usePersistedSession", () => {
       }),
     );
 
-    const { unmount } = renderHook(() => usePersistedSession(), {
+    const { unmount } = renderHook(() => { usePersistedSession(); }, {
       wrapper: makeWrapper(store),
     });
 

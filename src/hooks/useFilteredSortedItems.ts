@@ -6,7 +6,11 @@ export type SortDir = "asc" | "desc";
  * Derives a filtered and sorted list from `items` using useMemo.
  * Only re-computes when items, query, searchKey, sortKey, or sortDir change.
  */
-export function useFilteredSortedItems<T extends Record<string, unknown>>(
+// Constrained to `object` rather than `Record<string, unknown>`: interfaces
+// have no implicit index signature, so they never satisfy Record<...> and every
+// caller passing an interface would fail to compile. Indexing is still safe
+// because the keys are constrained to `keyof T`.
+export function useFilteredSortedItems<T extends object>(
   items: readonly T[],
   query: string,
   searchKey: keyof T,

@@ -36,7 +36,7 @@ function loadInitialState(): AuthState {
     const expiresAt = JSON.parse(expiresAtRaw) as unknown;
     if (typeof expiresAt !== "number" || Date.now() >= expiresAt) {
       (Object.values(AUTH_STORAGE_KEYS) as string[]).forEach((k) =>
-        localStorage.removeItem(k),
+        { localStorage.removeItem(k); },
       );
       return { token: null, refreshToken: null, expiresAt: null, user: null };
     }
@@ -92,7 +92,7 @@ export const authSlice = createSlice({
       state.expiresAt = null;
       state.user = null;
       (Object.values(AUTH_STORAGE_KEYS) as string[]).forEach((key) =>
-        localStorage.removeItem(key),
+        { localStorage.removeItem(key); },
       );
     },
   },

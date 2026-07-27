@@ -12,6 +12,8 @@ function renderRoute(initialPath: string, authed = false) {
     store.dispatch(
       setCredentials({
         token: "tok-test",
+        refreshToken: "refresh-tok-test",
+        expiresIn: 900,
         user: { id: "1", email: "test@example.com", role: "user" },
       }),
     );
