@@ -33,8 +33,15 @@ export const authApi = baseApi.injectEndpoints({
         body: credentials,
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        dispatch(setCredentials(data));
+        // `queryFulfilled` rejects on any failed request. Awaiting it without a
+        // catch leaves an unhandled rejection on every bad login — the error is
+        // already surfaced to callers through the hook's `isError` state.
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setCredentials(data));
+        } catch {
+          // Handled by the caller via the mutation's error state.
+        }
       },
     }),
 
@@ -45,8 +52,13 @@ export const authApi = baseApi.injectEndpoints({
         body: { refreshToken },
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        dispatch(refreshAccessToken(data));
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(refreshAccessToken(data));
+        } catch {
+          // A failed refresh is handled by the caller; the silent-refresh loop
+          // stops on error rather than retrying here.
+        }
       },
     }),
 
@@ -56,11 +68,15 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        // `finally` alone still lets the rejection propagate, so a failing
+        // server-side logout became an unhandled rejection. Local auth state is
+        // cleared either way: the user asked to log out.
         try {
           await queryFulfilled;
-        } finally {
-          dispatch(logout());
+        } catch {
+          // Server-side logout failed; clearing locally is still correct.
         }
+        dispatch(logout());
       },
     }),
 
@@ -71,8 +87,12 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        dispatch(setCredentials(data));
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setCredentials(data));
+        } catch {
+          // Handled by the caller via the mutation's error state.
+        }
       },
     }),
   }),

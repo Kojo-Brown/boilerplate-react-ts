@@ -14,7 +14,13 @@ function LoginButton() {
   const [login, { isLoading, isSuccess, isError }] = useLoginMutation();
   return (
     <div>
-      <button onClick={() => void login({ email: "test@example.com", password: "password123" })}>
+      {/* The rejection is asserted through the hook's `isError` state, so it is
+          swallowed here; leaving it unhandled fails the whole Vitest run. */}
+      <button
+        onClick={() => {
+          login({ email: "test@example.com", password: "password123" }).catch(() => undefined);
+        }}
+      >
         Login
       </button>
       {isLoading && <p>Loading...</p>}
@@ -28,7 +34,13 @@ function RefreshButton() {
   const [refresh, { isLoading, isSuccess }] = useRefreshMutation();
   return (
     <div>
-      <button onClick={() => void refresh("my-refresh-token")}>Refresh</button>
+      <button
+        onClick={() => {
+          refresh("my-refresh-token").catch(() => undefined);
+        }}
+      >
+        Refresh
+      </button>
       {isLoading && <p>Refreshing...</p>}
       {isSuccess && <p>Refreshed!</p>}
     </div>
@@ -39,7 +51,13 @@ function LogoutButton() {
   const [logoutUser, { isSuccess }] = useLogoutUserMutation();
   return (
     <div>
-      <button onClick={() => void logoutUser()}>Logout</button>
+      <button
+        onClick={() => {
+          logoutUser().catch(() => undefined);
+        }}
+      >
+        Logout
+      </button>
       {isSuccess && <p>Logged out!</p>}
     </div>
   );
