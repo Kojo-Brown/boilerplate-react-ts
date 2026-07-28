@@ -7,21 +7,18 @@ interface SkeletonProps {
   className?: string;
   width?: string;
   height?: string;
-  "aria-label"?: string;
 }
 
-export function Skeleton({
-  variant = "rect",
-  className,
-  width,
-  height,
-  "aria-label": ariaLabel,
-}: SkeletonProps) {
+/**
+ * A single placeholder bar. Decorative by design: the page-level skeleton
+ * announces loading once via `role="status"`, so individual bars are hidden
+ * from the accessibility tree. Per-bar labels would flood screen readers and
+ * collide with the accessible names of the real controls they stand in for.
+ */
+export function Skeleton({ variant = "rect", className, width, height }: SkeletonProps) {
   return (
     <div
-      role="status"
-      aria-label={ariaLabel ?? "Loading…"}
-      aria-busy="true"
+      aria-hidden="true"
       style={{ width, height }}
       className={cn(
         "animate-pulse bg-[var(--color-muted)]",

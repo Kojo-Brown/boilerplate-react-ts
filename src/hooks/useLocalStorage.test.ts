@@ -46,9 +46,11 @@ describe("useLocalStorage", () => {
     const getItem = vi.fn((_key: string): string | null => {
       throw new Error("storage disabled");
     });
+    // Only getItem is exercised on the hook's init path, so the stub carries
+    // nothing else (spreading `original` would also drop Storage's prototype).
     Object.defineProperty(globalThis, "localStorage", {
       configurable: true,
-      value: { ...original, getItem },
+      value: { getItem },
     });
 
     try {

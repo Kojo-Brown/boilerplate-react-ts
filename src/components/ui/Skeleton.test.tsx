@@ -1,44 +1,36 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-describe("Skeleton", () => {
-  it("renders with default aria attributes", () => {
-    render(<Skeleton />);
-    const el = screen.getByRole("status");
-    expect(el).toBeInTheDocument();
-    expect(el).toHaveAttribute("aria-busy", "true");
-    expect(el).toHaveAttribute("aria-label", "Loading…");
-  });
+function renderSkeleton(ui: React.ReactElement): HTMLElement {
+  const { container } = render(ui);
+  return container.firstElementChild as HTMLElement;
+}
 
-  it("accepts a custom aria-label", () => {
-    render(<Skeleton aria-label="Loading profile picture" />);
-    expect(screen.getByLabelText("Loading profile picture")).toBeInTheDocument();
+describe("Skeleton", () => {
+  it("is hidden from the accessibility tree", () => {
+    const el = renderSkeleton(<Skeleton />);
+    expect(el).toHaveAttribute("aria-hidden", "true");
   });
 
   it("applies circle variant class", () => {
-    render(<Skeleton variant="circle" />);
-    expect(screen.getByRole("status")).toHaveClass("rounded-full");
+    expect(renderSkeleton(<Skeleton variant="circle" />)).toHaveClass("rounded-full");
   });
 
   it("applies text variant class", () => {
-    render(<Skeleton variant="text" />);
-    expect(screen.getByRole("status")).toHaveClass("h-4");
+    expect(renderSkeleton(<Skeleton variant="text" />)).toHaveClass("h-4");
   });
 
   it("applies rect variant class by default", () => {
-    render(<Skeleton />);
-    expect(screen.getByRole("status")).toHaveClass("rounded-md");
+    expect(renderSkeleton(<Skeleton />)).toHaveClass("rounded-md");
   });
 
   it("forwards width and height as inline styles", () => {
-    render(<Skeleton width="120px" height="40px" />);
-    const el = screen.getByRole("status");
+    const el = renderSkeleton(<Skeleton width="120px" height="40px" />);
     expect(el).toHaveStyle({ width: "120px", height: "40px" });
   });
 
   it("merges custom className", () => {
-    render(<Skeleton className="w-32" />);
-    expect(screen.getByRole("status")).toHaveClass("w-32");
+    expect(renderSkeleton(<Skeleton className="w-32" />)).toHaveClass("w-32");
   });
 });

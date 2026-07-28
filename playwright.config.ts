@@ -28,7 +28,10 @@ export default defineConfig({
     },
   ],
   webServer: {
+    // MSW's service worker would intercept requests before page.route() —
+    // disable it so each test fully controls the network.
     command: "pnpm dev",
+    env: { VITE_DISABLE_MSW: "true" },
     url: "http://localhost:3000",
     reuseExistingServer: !process.env["CI"],
     stdout: "pipe",

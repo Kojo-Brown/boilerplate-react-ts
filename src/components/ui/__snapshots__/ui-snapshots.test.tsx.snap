@@ -507,10 +507,8 @@ exports[`UI system snapshots > Modal > xl size 1`] = `
 exports[`UI system snapshots > Skeleton > circle variant 1`] = `
 <DocumentFragment>
   <div
-    aria-busy="true"
-    aria-label="Loading…"
+    aria-hidden="true"
     class="animate-pulse bg-[var(--color-muted)] rounded-full"
-    role="status"
     style="width: 48px; height: 48px;"
   />
 </DocumentFragment>
@@ -519,10 +517,8 @@ exports[`UI system snapshots > Skeleton > circle variant 1`] = `
 exports[`UI system snapshots > Skeleton > default (rect) 1`] = `
 <DocumentFragment>
   <div
-    aria-busy="true"
-    aria-label="Loading…"
+    aria-hidden="true"
     class="animate-pulse bg-[var(--color-muted)] rounded-md"
-    role="status"
   />
 </DocumentFragment>
 `;
@@ -530,21 +526,8 @@ exports[`UI system snapshots > Skeleton > default (rect) 1`] = `
 exports[`UI system snapshots > Skeleton > text variant 1`] = `
 <DocumentFragment>
   <div
-    aria-busy="true"
-    aria-label="Loading…"
+    aria-hidden="true"
     class="animate-pulse bg-[var(--color-muted)] h-4 rounded"
-    role="status"
-  />
-</DocumentFragment>
-`;
-
-exports[`UI system snapshots > Skeleton > with custom aria-label 1`] = `
-<DocumentFragment>
-  <div
-    aria-busy="true"
-    aria-label="Loading avatar"
-    class="animate-pulse bg-[var(--color-muted)] rounded-md"
-    role="status"
   />
 </DocumentFragment>
 `;
@@ -552,10 +535,8 @@ exports[`UI system snapshots > Skeleton > with custom aria-label 1`] = `
 exports[`UI system snapshots > Skeleton > with explicit dimensions 1`] = `
 <DocumentFragment>
   <div
-    aria-busy="true"
-    aria-label="Loading…"
+    aria-hidden="true"
     class="animate-pulse bg-[var(--color-muted)] rounded-md"
-    role="status"
     style="width: 240px; height: 120px;"
   />
 </DocumentFragment>

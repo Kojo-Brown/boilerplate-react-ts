@@ -190,11 +190,6 @@ describe("UI system snapshots", () => {
       const { asFragment } = render(<Skeleton width="240px" height="120px" />);
       expect(asFragment()).toMatchSnapshot();
     });
-
-    it("with custom aria-label", () => {
-      const { asFragment } = render(<Skeleton aria-label="Loading avatar" />);
-      expect(asFragment()).toMatchSnapshot();
-    });
   });
 
   describe("Modal", () => {

@@ -5,11 +5,15 @@ import { LoginPageSkeleton } from "@/components/skeletons/LoginPageSkeleton";
 describe("LoginPageSkeleton", () => {
   it("renders with loading state attributes", () => {
     render(<LoginPageSkeleton />);
-    expect(screen.getByLabelText("Loading login page")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("status", { name: "Loading login page" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
   });
 
   it("renders form field skeletons", () => {
-    render(<LoginPageSkeleton />);
-    expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(6);
+    const { container } = render(<LoginPageSkeleton />);
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThanOrEqual(6);
   });
 });

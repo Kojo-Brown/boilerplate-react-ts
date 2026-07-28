@@ -14,3 +14,4 @@ stats.html
 
 # tsc -b output
 .tsbuildinfo/
+test-results
