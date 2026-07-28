@@ -4,10 +4,13 @@
 
 ## Phase 0 — Green Baseline (blocks all feature work)
 
-- [ ] Fix the 10 remaining test failures: Toast auto-dismiss timeouts (needs fake timers), duplicate-text queries in Sidebar/RootLayout, ThemeContext localStorage persistence, NotFoundPage copy drift, router `/about` + `/dashboard` assertions
-- [ ] Restore `.github/workflows/ci.yml` from `workflow-templates/` now that the token has `workflow` scope, and confirm it runs green on a PR
-- [ ] Add `pnpm build` to CI and fix any production-build-only failures
-- [ ] Verify Playwright E2E actually runs (`pnpm test:e2e`) and wire it into CI
+- [x] Fix the 10 remaining test failures: Toast auto-dismiss timeouts (needs fake timers), duplicate-text queries in Sidebar/RootLayout, ThemeContext localStorage persistence, NotFoundPage copy drift, router `/about` + `/dashboard` assertions
+- [x] Restore `.github/workflows/ci.yml` from `workflow-templates/` now that the token has `workflow` scope, and confirm it runs green on a PR
+- [x] Add `pnpm build` to CI and fix any production-build-only failures
+- [x] Verify Playwright E2E actually runs (`pnpm test:e2e`) and wire it into CI — required committing the missing `public/mockServiceWorker.js`, disabling MSW during E2E (`VITE_DISABLE_MSW`) so `page.route()` owns the network, making skeleton bars `aria-hidden` (their `role="status"` labels collided with real controls' accessible names), and pinning CI to `--project=chromium`
+
+Phase 0 complete as of PR #18 (2026-07-28): install, typecheck, lint, format,
+454 unit tests, 19 E2E tests, and build all green in CI.
 
 ## Phase 1 — Foundation
 
