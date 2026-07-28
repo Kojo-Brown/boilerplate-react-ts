@@ -5,11 +5,15 @@ import { AboutPageSkeleton } from "@/components/skeletons/AboutPageSkeleton";
 describe("AboutPageSkeleton", () => {
   it("renders with loading state attributes", () => {
     render(<AboutPageSkeleton />);
-    expect(screen.getByLabelText("Loading about page")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("status", { name: "Loading about page" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
   });
 
   it("renders multiple skeleton placeholders", () => {
-    render(<AboutPageSkeleton />);
-    expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(4);
+    const { container } = render(<AboutPageSkeleton />);
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThanOrEqual(4);
   });
 });

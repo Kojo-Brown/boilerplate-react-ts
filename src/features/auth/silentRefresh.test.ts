@@ -2,11 +2,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/mocks/server";
 import { makeStore } from "@/test/renderWithProviders";
-import { setCredentials, logout } from "@/store/authSlice";
+import { setCredentials, logout, type AuthUser } from "@/store/authSlice";
 import { startSilentRefresh, stopSilentRefresh } from "./silentRefresh";
 
 const API = "http://localhost:4000";
-const mockUser = { id: "1", email: "test@example.com", role: "user" };
+const mockUser: AuthUser = { id: "1", email: "test@example.com", role: "user" };
+
+interface RefreshRequestBody {
+  refreshToken: string;
+}
 
 describe("silentRefresh", () => {
   beforeEach(() => {
@@ -22,7 +26,12 @@ describe("silentRefresh", () => {
   it("does not schedule a refresh timer when there is no stored token", async () => {
     const store = makeStore();
     const refreshCalled = vi.fn();
-    server.use(http.post(`${API}/auth/refresh`, () => { refreshCalled(); return HttpResponse.json({ token: "t", expiresIn: 900 }); }));
+    server.use(
+      http.post(`${API}/auth/refresh`, () => {
+        refreshCalled();
+        return HttpResponse.json({ token: "t", expiresIn: 900 });
+      }),
+    );
 
     startSilentRefresh(store);
     await vi.advanceTimersByTimeAsync(600_000);
@@ -36,10 +45,13 @@ describe("silentRefresh", () => {
       setCredentials({ token: "tok", refreshToken: "ref-tok", expiresIn: 120, user: mockUser }),
     );
 
-    let capturedBody: Record<string, unknown> | null = null;
+    // Held in an object rather than a bare `let`: TypeScript's control-flow
+    // analysis cannot see the assignment inside the async handler and would
+    // narrow a `let` to `null` for the rest of the test.
+    const captured: { body: RefreshRequestBody | null } = { body: null };
     server.use(
       http.post(`${API}/auth/refresh`, async ({ request }) => {
-        capturedBody = (await request.json()) as Record<string, unknown>;
+        captured.body = (await request.json()) as RefreshRequestBody;
         return HttpResponse.json({ token: "new-tok", expiresIn: 900 });
       }),
     );
@@ -48,7 +60,7 @@ describe("silentRefresh", () => {
 
     // Not yet in the 60s buffer window — should not have fired
     await vi.advanceTimersByTimeAsync(59_000);
-    expect(capturedBody).toBeNull();
+    expect(captured.body).toBeNull();
 
     // Now past the buffer (60s elapsed, 60s until expiry — within buffer)
     await vi.advanceTimersByTimeAsync(2_000);
@@ -57,8 +69,8 @@ describe("silentRefresh", () => {
     await vi.advanceTimersByTimeAsync(0);
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(capturedBody).not.toBeNull();
-    expect(capturedBody?.refreshToken).toBe("ref-tok");
+    expect(captured.body).not.toBeNull();
+    expect(captured.body?.refreshToken).toBe("ref-tok");
   });
 
   it("updates the Redux access token after the silent refresh completes", async () => {
@@ -140,7 +152,12 @@ describe("silentRefresh", () => {
     );
 
     const refreshCalled = vi.fn();
-    server.use(http.post(`${API}/auth/refresh`, () => { refreshCalled(); return HttpResponse.json({ token: "new", expiresIn: 900 }); }));
+    server.use(
+      http.post(`${API}/auth/refresh`, () => {
+        refreshCalled();
+        return HttpResponse.json({ token: "new", expiresIn: 900 });
+      }),
+    );
 
     startSilentRefresh(store);
     stopSilentRefresh();

@@ -4,17 +4,23 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/mocks/server";
 import { renderWithProviders } from "@/test/renderWithProviders";
-import { setCredentials, AUTH_STORAGE_KEYS } from "@/store/authSlice";
+import { setCredentials, AUTH_STORAGE_KEYS, type AuthUser } from "@/store/authSlice";
 import { useLoginMutation, useRefreshMutation, useLogoutUserMutation } from "./authApi";
 
 const API = "http://localhost:4000";
-const mockUser = { id: "1", email: "test@example.com", role: "user" };
+const mockUser: AuthUser = { id: "1", email: "test@example.com", role: "user" };
 
 function LoginButton() {
   const [login, { isLoading, isSuccess, isError }] = useLoginMutation();
   return (
     <div>
-      <button onClick={() => void login({ email: "test@example.com", password: "password123" })}>
+      {/* The rejection is asserted through the hook's `isError` state, so it is
+          swallowed here; leaving it unhandled fails the whole Vitest run. */}
+      <button
+        onClick={() => {
+          login({ email: "test@example.com", password: "password123" }).catch(() => undefined);
+        }}
+      >
         Login
       </button>
       {isLoading && <p>Loading...</p>}
@@ -28,7 +34,13 @@ function RefreshButton() {
   const [refresh, { isLoading, isSuccess }] = useRefreshMutation();
   return (
     <div>
-      <button onClick={() => void refresh("my-refresh-token")}>Refresh</button>
+      <button
+        onClick={() => {
+          refresh("my-refresh-token").catch(() => undefined);
+        }}
+      >
+        Refresh
+      </button>
       {isLoading && <p>Refreshing...</p>}
       {isSuccess && <p>Refreshed!</p>}
     </div>
@@ -39,7 +51,13 @@ function LogoutButton() {
   const [logoutUser, { isSuccess }] = useLogoutUserMutation();
   return (
     <div>
-      <button onClick={() => void logoutUser()}>Logout</button>
+      <button
+        onClick={() => {
+          logoutUser().catch(() => undefined);
+        }}
+      >
+        Logout
+      </button>
       {isSuccess && <p>Logged out!</p>}
     </div>
   );
@@ -66,7 +84,9 @@ describe("authApi — useLoginMutation", () => {
     const { store } = renderWithProviders(<LoginButton />);
     await user.click(screen.getByRole("button", { name: "Login" }));
 
-    await waitFor(() => expect(screen.getByText("Logged in!")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("Logged in!")).toBeInTheDocument();
+    });
 
     const authState = store.getState().auth;
     expect(authState.token).toBe("access-tok");
@@ -108,7 +128,9 @@ describe("authApi — useLoginMutation", () => {
     renderWithProviders(<LoginButton />);
     await user.click(screen.getByRole("button", { name: "Login" }));
 
-    await waitFor(() => expect(screen.getByText("Error!")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("Error!")).toBeInTheDocument();
+    });
   });
 });
 
@@ -128,7 +150,9 @@ describe("authApi — useRefreshMutation", () => {
     const { store } = renderWithProviders(<RefreshButton />);
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
-    await waitFor(() => expect(screen.getByText("Refreshed!")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("Refreshed!")).toBeInTheDocument();
+    });
 
     expect(store.getState().auth.token).toBe("new-access-tok");
     expect(store.getState().auth.expiresAt).toBeGreaterThan(Date.now());
@@ -158,9 +182,7 @@ describe("authApi — useLogoutUserMutation", () => {
 
   it("clears auth state in Redux after logout", async () => {
     const user = userEvent.setup();
-    server.use(
-      http.post(`${API}/auth/logout`, () => new HttpResponse(null, { status: 200 })),
-    );
+    server.use(http.post(`${API}/auth/logout`, () => new HttpResponse(null, { status: 200 })));
 
     const { store } = renderWithProviders(<LogoutButton />);
     store.dispatch(
@@ -174,7 +196,9 @@ describe("authApi — useLogoutUserMutation", () => {
 
     await user.click(screen.getByRole("button", { name: "Logout" }));
 
-    await waitFor(() => expect(screen.getByText("Logged out!")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("Logged out!")).toBeInTheDocument();
+    });
 
     const authState = store.getState().auth;
     expect(authState.token).toBeNull();

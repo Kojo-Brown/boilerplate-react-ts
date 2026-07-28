@@ -43,9 +43,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Keep osDark in sync with the OS preference.
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => setOsDark(e.matches);
+    const handler = (e: MediaQueryListEvent) => {
+      setOsDark(e.matches);
+    };
     mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    return () => {
+      mq.removeEventListener("change", handler);
+    };
   }, []);
 
   const isDark = mode === "dark" || (mode === "system" && osDark);

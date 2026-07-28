@@ -38,7 +38,7 @@ export function Divider({
         className={cn("flex items-center gap-3", className)}
       >
         <div className="h-px flex-1 bg-[var(--color-border)]" />
-        <span className="select-none text-xs text-[var(--color-fg-subtle)]">{label}</span>
+        <span className="text-xs text-[var(--color-fg-subtle)] select-none">{label}</span>
         <div className="h-px flex-1 bg-[var(--color-border)]" />
       </div>
     );

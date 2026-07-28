@@ -43,7 +43,9 @@ describe("notificationsSlice", () => {
   });
 
   it("removeNotification is a no-op for unknown id", () => {
-    useBoundStore.getState().addNotification({ message: "Keep me", type: "success", duration: 3000 });
+    useBoundStore
+      .getState()
+      .addNotification({ message: "Keep me", type: "success", duration: 3000 });
     useBoundStore.getState().removeNotification("non-existent-id");
     expect(useBoundStore.getState().notifications).toHaveLength(1);
   });

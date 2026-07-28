@@ -1,5 +1,5 @@
-import { describe, it, expect, act } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { act, renderHook } from "@testing-library/react";
 import { QUERY_ERROR_EVENT, type QueryErrorDetail } from "@/api/queryClient";
 import { useGlobalQueryError } from "./useGlobalQueryError";
 
@@ -18,7 +18,9 @@ describe("useGlobalQueryError", () => {
   it("captures error message when query:error fires", () => {
     const { result } = renderHook(() => useGlobalQueryError());
 
-    act(() => fireQueryError("Something went wrong"));
+    act(() => {
+      fireQueryError("Something went wrong");
+    });
 
     expect(result.current.error).toBe("Something went wrong");
   });
@@ -26,20 +28,28 @@ describe("useGlobalQueryError", () => {
   it("clears error when clearError is called", () => {
     const { result } = renderHook(() => useGlobalQueryError());
 
-    act(() => fireQueryError("Some error"));
+    act(() => {
+      fireQueryError("Some error");
+    });
     expect(result.current.error).toBe("Some error");
 
-    act(() => result.current.clearError());
+    act(() => {
+      result.current.clearError();
+    });
     expect(result.current.error).toBeNull();
   });
 
   it("updates to latest error on subsequent events", () => {
     const { result } = renderHook(() => useGlobalQueryError());
 
-    act(() => fireQueryError("First error"));
+    act(() => {
+      fireQueryError("First error");
+    });
     expect(result.current.error).toBe("First error");
 
-    act(() => fireQueryError("Second error"));
+    act(() => {
+      fireQueryError("Second error");
+    });
     expect(result.current.error).toBe("Second error");
   });
 
@@ -48,7 +58,9 @@ describe("useGlobalQueryError", () => {
 
     unmount();
 
-    act(() => fireQueryError("Post-unmount error"));
+    act(() => {
+      fireQueryError("Post-unmount error");
+    });
 
     expect(result.current.error).toBeNull();
   });

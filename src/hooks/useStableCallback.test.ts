@@ -38,9 +38,7 @@ describe("useStableCallback", () => {
   });
 
   it("remains stable even when a new fn identity is passed each render", () => {
-    const { result, rerender } = renderHook(() =>
-      useStableCallback(() => Math.PI),
-    );
+    const { result, rerender } = renderHook(() => useStableCallback(() => Math.PI));
     const ref1 = result.current;
     rerender();
     rerender();

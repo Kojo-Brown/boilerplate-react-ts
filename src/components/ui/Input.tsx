@@ -15,7 +15,7 @@ export function Input({ error, className, ref, ...props }: InputProps) {
         "bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)]",
         "placeholder:text-[var(--color-muted-fg)]",
         "transition-colors",
-        "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1",
+        "focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:outline-none",
         "disabled:cursor-not-allowed disabled:opacity-50",
         error && "border-[var(--color-danger)] focus:ring-[var(--color-danger)]",
         className,

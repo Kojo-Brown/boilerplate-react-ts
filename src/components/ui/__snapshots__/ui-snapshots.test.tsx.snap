@@ -1,0 +1,612 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`UI system snapshots > Badge > danger variant 1`] = `
+<DocumentFragment>
+  <span
+    class="inline-flex items-center rounded-[var(--radius-full)] font-medium bg-[var(--color-danger)] text-[var(--color-danger-fg)] px-2 py-0.5 text-xs"
+  >
+    Error
+  </span>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Badge > default variant 1`] = `
+<DocumentFragment>
+  <span
+    class="inline-flex items-center rounded-[var(--radius-full)] font-medium bg-[var(--color-muted)] text-[var(--color-fg)] px-2 py-0.5 text-xs"
+  >
+    Default
+  </span>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Badge > outline variant 1`] = `
+<DocumentFragment>
+  <span
+    class="inline-flex items-center rounded-[var(--radius-full)] font-medium border border-[var(--color-border)] bg-transparent text-[var(--color-fg)] px-2 py-0.5 text-xs"
+  >
+    Tag
+  </span>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Badge > primary variant 1`] = `
+<DocumentFragment>
+  <span
+    class="inline-flex items-center rounded-[var(--radius-full)] font-medium bg-[var(--color-primary)] text-[var(--color-primary-fg)] px-2 py-0.5 text-xs"
+  >
+    Primary
+  </span>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Badge > sm size 1`] = `
+<DocumentFragment>
+  <span
+    class="inline-flex items-center rounded-[var(--radius-full)] font-medium bg-[var(--color-muted)] text-[var(--color-fg)] px-1.5 py-0.5 text-xs"
+  >
+    Small
+  </span>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Badge > success variant 1`] = `
+<DocumentFragment>
+  <span
+    class="inline-flex items-center rounded-[var(--radius-full)] font-medium bg-[var(--color-success)] text-[var(--color-success-fg)] px-2 py-0.5 text-xs"
+  >
+    Active
+  </span>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Badge > warning variant 1`] = `
+<DocumentFragment>
+  <span
+    class="inline-flex items-center rounded-[var(--radius-full)] font-medium bg-[var(--color-warning)] text-[var(--color-warning-fg)] px-2 py-0.5 text-xs"
+  >
+    Warning
+  </span>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > danger variant 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-danger)] text-white hover:opacity-90 h-10 px-4 text-sm"
+  >
+    Delete
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > default (primary/md) 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
+  >
+    Submit
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > disabled state 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
+    disabled=""
+  >
+    Disabled
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > ghost variant 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-transparent hover:bg-[var(--color-muted)] text-[var(--color-fg)] h-10 px-4 text-sm"
+  >
+    Ghost
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > lg size 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-12 px-6 text-base"
+  >
+    Large
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > loading state 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
+    disabled=""
+  >
+    <svg
+      class="h-4 w-4 animate-spin"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        class="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        stroke-width="4"
+      />
+      <path
+        class="opacity-75"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+        fill="currentColor"
+      />
+    </svg>
+    Saving
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > secondary variant 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-muted)] text-[var(--color-fg)] hover:bg-[var(--color-border)] h-10 px-4 text-sm"
+  >
+    Cancel
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Button > sm size 1`] = `
+<DocumentFragment>
+  <button
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-8 px-3 text-sm"
+  >
+    Small
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > DarkModeToggle > system mode (default) 1`] = `
+<DocumentFragment>
+  <button
+    aria-label="Switch to light theme"
+    class="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] text-[var(--color-fg-subtle)] transition-colors hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
+    title="System theme"
+    type="button"
+  >
+    <svg
+      aria-hidden="true"
+      class="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+    >
+      <rect
+        height="14"
+        rx="2"
+        width="20"
+        x="2"
+        y="3"
+      />
+      <path
+        d="M8 21h8M12 17v4"
+      />
+    </svg>
+    <span
+      class="sr-only"
+    >
+      System theme
+    </span>
+  </button>
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Input > default 1`] = `
+<DocumentFragment>
+  <input
+    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+    placeholder="Enter value"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Input > disabled state 1`] = `
+<DocumentFragment>
+  <input
+    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+    disabled=""
+    placeholder="Disabled"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Input > error state 1`] = `
+<DocumentFragment>
+  <input
+    class="h-10 w-full rounded-[var(--radius-md)] border bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 border-[var(--color-danger)] focus:ring-[var(--color-danger)]"
+    placeholder="Error input"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Input > with value 1`] = `
+<DocumentFragment>
+  <input
+    class="h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-muted-fg)] transition-colors focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+    readonly=""
+    value="Hello world"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Modal > lg size 1`] = `
+<dialog
+  aria-labelledby="modal-title"
+  class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-lg"
+  open=""
+>
+  <div
+    class="flex flex-col"
+  >
+    <div
+      class="flex items-start justify-between gap-4 border-b border-[var(--color-border)] p-5"
+    >
+      <div>
+        <h2
+          class="text-base font-semibold text-[var(--color-fg)]"
+          id="modal-title"
+        >
+          Large Modal
+        </h2>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="shrink-0 text-[var(--color-muted-fg)] transition-colors hover:text-[var(--color-fg)]"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <path
+            d="M18 6L6 18M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="p-5"
+    >
+      <p>
+        Content
+      </p>
+    </div>
+  </div>
+</dialog>
+`;
+
+exports[`UI system snapshots > Modal > open with description 1`] = `
+<dialog
+  aria-describedby="modal-description"
+  aria-labelledby="modal-title"
+  class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md"
+  open=""
+>
+  <div
+    class="flex flex-col"
+  >
+    <div
+      class="flex items-start justify-between gap-4 border-b border-[var(--color-border)] p-5"
+    >
+      <div>
+        <h2
+          class="text-base font-semibold text-[var(--color-fg)]"
+          id="modal-title"
+        >
+          Delete Item
+        </h2>
+        <p
+          class="mt-1 text-sm text-[var(--color-muted-fg)]"
+          id="modal-description"
+        >
+          This action cannot be undone.
+        </p>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="shrink-0 text-[var(--color-muted-fg)] transition-colors hover:text-[var(--color-fg)]"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <path
+            d="M18 6L6 18M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="p-5"
+    >
+      <p>
+        Confirm?
+      </p>
+    </div>
+  </div>
+</dialog>
+`;
+
+exports[`UI system snapshots > Modal > open with title and children 1`] = `
+<dialog
+  aria-labelledby="modal-title"
+  class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md"
+  open=""
+>
+  <div
+    class="flex flex-col"
+  >
+    <div
+      class="flex items-start justify-between gap-4 border-b border-[var(--color-border)] p-5"
+    >
+      <div>
+        <h2
+          class="text-base font-semibold text-[var(--color-fg)]"
+          id="modal-title"
+        >
+          Confirm Action
+        </h2>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="shrink-0 text-[var(--color-muted-fg)] transition-colors hover:text-[var(--color-fg)]"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <path
+            d="M18 6L6 18M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="p-5"
+    >
+      <p>
+        Are you sure you want to proceed?
+      </p>
+    </div>
+  </div>
+</dialog>
+`;
+
+exports[`UI system snapshots > Modal > sm size 1`] = `
+<dialog
+  aria-labelledby="modal-title"
+  class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-sm"
+  open=""
+>
+  <div
+    class="flex flex-col"
+  >
+    <div
+      class="flex items-start justify-between gap-4 border-b border-[var(--color-border)] p-5"
+    >
+      <div>
+        <h2
+          class="text-base font-semibold text-[var(--color-fg)]"
+          id="modal-title"
+        >
+          Small Modal
+        </h2>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="shrink-0 text-[var(--color-muted-fg)] transition-colors hover:text-[var(--color-fg)]"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <path
+            d="M18 6L6 18M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="p-5"
+    >
+      <p>
+        Content
+      </p>
+    </div>
+  </div>
+</dialog>
+`;
+
+exports[`UI system snapshots > Modal > xl size 1`] = `
+<dialog
+  aria-labelledby="modal-title"
+  class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-xl"
+  open=""
+>
+  <div
+    class="flex flex-col"
+  >
+    <div
+      class="flex items-start justify-between gap-4 border-b border-[var(--color-border)] p-5"
+    >
+      <div>
+        <h2
+          class="text-base font-semibold text-[var(--color-fg)]"
+          id="modal-title"
+        >
+          XL Modal
+        </h2>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="shrink-0 text-[var(--color-muted-fg)] transition-colors hover:text-[var(--color-fg)]"
+      >
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <path
+            d="M18 6L6 18M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="p-5"
+    >
+      <p>
+        Content
+      </p>
+    </div>
+  </div>
+</dialog>
+`;
+
+exports[`UI system snapshots > Skeleton > circle variant 1`] = `
+<DocumentFragment>
+  <div
+    aria-hidden="true"
+    class="animate-pulse bg-[var(--color-muted)] rounded-full"
+    style="width: 48px; height: 48px;"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Skeleton > default (rect) 1`] = `
+<DocumentFragment>
+  <div
+    aria-hidden="true"
+    class="animate-pulse bg-[var(--color-muted)] rounded-md"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Skeleton > text variant 1`] = `
+<DocumentFragment>
+  <div
+    aria-hidden="true"
+    class="animate-pulse bg-[var(--color-muted)] h-4 rounded"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Skeleton > with explicit dimensions 1`] = `
+<DocumentFragment>
+  <div
+    aria-hidden="true"
+    class="animate-pulse bg-[var(--color-muted)] rounded-md"
+    style="width: 240px; height: 120px;"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Spinner > custom label 1`] = `
+<DocumentFragment>
+  <div
+    aria-label="Saving changes…"
+    class="animate-spin rounded-full border-[var(--color-border)] border-t-[var(--color-primary)] h-6 w-6 border-2"
+    role="status"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Spinner > default (md) 1`] = `
+<DocumentFragment>
+  <div
+    aria-label="Loading…"
+    class="animate-spin rounded-full border-[var(--color-border)] border-t-[var(--color-primary)] h-6 w-6 border-2"
+    role="status"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Spinner > lg size 1`] = `
+<DocumentFragment>
+  <div
+    aria-label="Loading…"
+    class="animate-spin rounded-full border-[var(--color-border)] border-t-[var(--color-primary)] h-8 w-8 border-[3px]"
+    role="status"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Spinner > sm size 1`] = `
+<DocumentFragment>
+  <div
+    aria-label="Loading…"
+    class="animate-spin rounded-full border-[var(--color-border)] border-t-[var(--color-primary)] h-4 w-4 border-2"
+    role="status"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Spinner > xl size 1`] = `
+<DocumentFragment>
+  <div
+    aria-label="Loading…"
+    class="animate-spin rounded-full border-[var(--color-border)] border-t-[var(--color-primary)] h-12 w-12 border-4"
+    role="status"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > Spinner > xs size 1`] = `
+<DocumentFragment>
+  <div
+    aria-label="Loading…"
+    class="animate-spin rounded-full border-[var(--color-border)] border-t-[var(--color-primary)] h-3 w-3 border-2"
+    role="status"
+  />
+</DocumentFragment>
+`;
+
+exports[`UI system snapshots > ToastProvider > renders empty notification region 1`] = `
+<div
+  aria-label="Notifications"
+  aria-live="polite"
+  class="fixed right-4 bottom-4 z-[1500] flex flex-col gap-2"
+  role="region"
+/>
+`;

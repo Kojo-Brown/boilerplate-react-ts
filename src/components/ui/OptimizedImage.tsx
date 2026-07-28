@@ -1,8 +1,10 @@
 import { useState, type ImgHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-interface OptimizedImageProps
-  extends Omit<ImgHTMLAttributes<HTMLImageElement>, "loading" | "placeholder"> {
+interface OptimizedImageProps extends Omit<
+  ImgHTMLAttributes<HTMLImageElement>,
+  "loading" | "placeholder"
+> {
   src: string;
   alt: string;
   width?: number;

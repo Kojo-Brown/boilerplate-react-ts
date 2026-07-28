@@ -16,9 +16,7 @@ const ITEMS: readonly Item[] = [
 
 describe("useFilteredSortedItems", () => {
   it("returns all items sorted asc when query is empty", () => {
-    const { result } = renderHook(() =>
-      useFilteredSortedItems(ITEMS, "", "name", "name", "asc"),
-    );
+    const { result } = renderHook(() => useFilteredSortedItems(ITEMS, "", "name", "name", "asc"));
     expect(result.current.map((i) => i.name)).toEqual(["Alice", "Bob", "Charlie"]);
   });
 
@@ -27,13 +25,11 @@ describe("useFilteredSortedItems", () => {
       useFilteredSortedItems(ITEMS, "ali", "name", "name", "asc"),
     );
     expect(result.current).toHaveLength(1);
-    expect(result.current[0].name).toBe("Alice");
+    expect(result.current[0]?.name).toBe("Alice");
   });
 
   it("sorts descending when sortDir is desc", () => {
-    const { result } = renderHook(() =>
-      useFilteredSortedItems(ITEMS, "", "name", "name", "desc"),
-    );
+    const { result } = renderHook(() => useFilteredSortedItems(ITEMS, "", "name", "name", "desc"));
     expect(result.current.map((i) => i.name)).toEqual(["Charlie", "Bob", "Alice"]);
   });
 
@@ -46,23 +42,18 @@ describe("useFilteredSortedItems", () => {
 
   it("recomputes when query changes", () => {
     const { result, rerender } = renderHook(
-      ({ query }: { query: string }) =>
-        useFilteredSortedItems(ITEMS, query, "name", "name", "asc"),
+      ({ query }: { query: string }) => useFilteredSortedItems(ITEMS, query, "name", "name", "asc"),
       { initialProps: { query: "" } },
     );
     expect(result.current).toHaveLength(3);
 
     rerender({ query: "bob" });
     expect(result.current).toHaveLength(1);
-    expect(result.current[0].name).toBe("Bob");
+    expect(result.current[0]?.name).toBe("Bob");
   });
 
   it("does not mutate the original array order", () => {
-    renderHook(() =>
-      useFilteredSortedItems(ITEMS, "", "name", "name", "asc"),
-    );
-    expect(ITEMS[0].name).toBe("Charlie");
-    expect(ITEMS[1].name).toBe("Alice");
-    expect(ITEMS[2].name).toBe("Bob");
+    renderHook(() => useFilteredSortedItems(ITEMS, "", "name", "name", "asc"));
+    expect(ITEMS.map((i) => i.name)).toEqual(["Charlie", "Alice", "Bob"]);
   });
 });

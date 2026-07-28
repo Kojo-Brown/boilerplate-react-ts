@@ -11,3 +11,7 @@ stats.html
 
 # macOS
 .DS_Store
+
+# tsc -b output
+.tsbuildinfo/
+test-results

@@ -6,8 +6,8 @@ import { LoginForm } from "./LoginForm";
 describe("LoginForm", () => {
   it("renders email and password fields", () => {
     render(<LoginForm />);
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Email/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Password/)).toBeInTheDocument();
   });
 
   it("renders a submit button", () => {
@@ -30,8 +30,8 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText("Email"), "notanemail");
-    await user.type(screen.getByLabelText("Password"), "password123");
+    await user.type(screen.getByLabelText(/^Email/), "notanemail");
+    await user.type(screen.getByLabelText(/^Password/), "password123");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
@@ -43,8 +43,8 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText("Email"), "user@example.com");
-    await user.type(screen.getByLabelText("Password"), "short");
+    await user.type(screen.getByLabelText(/^Email/), "user@example.com");
+    await user.type(screen.getByLabelText(/^Password/), "short");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
@@ -57,8 +57,8 @@ describe("LoginForm", () => {
     const user = userEvent.setup();
     render(<LoginForm onSubmit={onSubmit} />);
 
-    await user.type(screen.getByLabelText("Email"), "user@example.com");
-    await user.type(screen.getByLabelText("Password"), "securepassword");
+    await user.type(screen.getByLabelText(/^Email/), "user@example.com");
+    await user.type(screen.getByLabelText(/^Password/), "securepassword");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {

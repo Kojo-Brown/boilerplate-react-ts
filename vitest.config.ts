@@ -6,11 +6,16 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
+    // `e2e/` holds Playwright specs; running them under Vitest throws
+    // "Playwright Test did not expect test.describe() to be called here".
+    // `.tsbuildinfo/` holds tsc -b output, including compiled copies of the
+    // Playwright specs; collecting either form throws inside Vitest.
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**", ".tsbuildinfo/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "json-summary", "html", "lcov"],
       reportsDirectory: "./coverage",
-      all: true,
+      // `all` was removed in Vitest 4; `include` alone now covers untested files.
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "src/test/**",

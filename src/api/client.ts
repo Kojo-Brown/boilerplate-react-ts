@@ -17,7 +17,9 @@ let isRefreshing = false;
 const pendingQueue: Array<(token: string | null) => void> = [];
 
 function drainQueue(token: string | null): void {
-  pendingQueue.forEach((resolve) => resolve(token));
+  pendingQueue.forEach((resolve) => {
+    resolve(token);
+  });
   pendingQueue.length = 0;
 }
 
@@ -52,7 +54,9 @@ async function executeRequest<T>(
 
   const res = await fetch(url, { ...init, headers });
   if (!res.ok) {
-    const body = await res.json().catch(() => undefined);
+    // An error body is caller-defined JSON; `unknown` keeps it honest rather
+    // than letting `any` leak into ApiError's payload.
+    const body: unknown = await res.json().catch(() => undefined);
     throw new ApiError(res.status, res.statusText, body);
   }
   return res.json() as Promise<T>;

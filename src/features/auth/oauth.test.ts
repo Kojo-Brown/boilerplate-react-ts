@@ -43,24 +43,20 @@ describe("validateOAuthCallback", () => {
 
   it("throws when stored state is absent", () => {
     sessionStorage.setItem(OAUTH_STORAGE_KEYS.CODE_VERIFIER, "verifier");
-    expect(() => validateOAuthCallback({ code: "c", state: "s" })).toThrow(
-      "state mismatch",
-    );
+    expect(() => validateOAuthCallback({ code: "c", state: "s" })).toThrow("state mismatch");
   });
 
   it("throws on state mismatch", () => {
     sessionStorage.setItem(OAUTH_STORAGE_KEYS.STATE, "expected");
     sessionStorage.setItem(OAUTH_STORAGE_KEYS.CODE_VERIFIER, "verifier");
-    expect(() =>
-      validateOAuthCallback({ code: "c", state: "wrong" }),
-    ).toThrow("state mismatch");
+    expect(() => validateOAuthCallback({ code: "c", state: "wrong" })).toThrow("state mismatch");
   });
 
   it("throws when the code verifier is missing", () => {
     sessionStorage.setItem(OAUTH_STORAGE_KEYS.STATE, "state");
-    expect(() =>
-      validateOAuthCallback({ code: "c", state: "state" }),
-    ).toThrow("code verifier missing");
+    expect(() => validateOAuthCallback({ code: "c", state: "state" })).toThrow(
+      "code verifier missing",
+    );
   });
 
   it("returns the code and verifier on success", () => {
@@ -83,9 +79,7 @@ describe("validateOAuthCallback", () => {
   it("clears sessionStorage even when validation fails", () => {
     sessionStorage.setItem(OAUTH_STORAGE_KEYS.STATE, "expected");
     sessionStorage.setItem(OAUTH_STORAGE_KEYS.CODE_VERIFIER, "verifier");
-    expect(() =>
-      validateOAuthCallback({ code: "c", state: "wrong" }),
-    ).toThrow();
+    expect(() => validateOAuthCallback({ code: "c", state: "wrong" })).toThrow();
     expect(sessionStorage.getItem(OAUTH_STORAGE_KEYS.STATE)).toBeNull();
     expect(sessionStorage.getItem(OAUTH_STORAGE_KEYS.CODE_VERIFIER)).toBeNull();
   });

@@ -37,9 +37,7 @@ describe("MSW server lifecycle", () => {
   });
 
   it("handler added per-test is scoped to that test", async () => {
-    server.use(
-      http.get(`${API}/temp`, () => HttpResponse.json({ ephemeral: true })),
-    );
+    server.use(http.get(`${API}/temp`, () => HttpResponse.json({ ephemeral: true })));
 
     const res = await fetch(`${API}/temp`);
     expect(res.ok).toBe(true);
@@ -131,7 +129,9 @@ describe("renderWithProviders integration", () => {
       React.useEffect(() => {
         void fetch(`${API}/auth/me`)
           .then((r) => r.json())
-          .then((u: { email: string }) => setEmail(u.email));
+          .then((u: { email: string }) => {
+            setEmail(u.email);
+          });
       }, []);
       return <p>{email ?? "loading"}</p>;
     }
@@ -163,7 +163,9 @@ describe("renderWithProviders integration", () => {
 
     renderWithProviders(<LoginTrigger />);
     await user.click(screen.getByRole("button", { name: "login" }));
-    await waitFor(() => expect(screen.getByText("done")).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText("done")).toBeInTheDocument();
+    });
     expect(capturedToken).toBe("interaction-token");
   });
 });

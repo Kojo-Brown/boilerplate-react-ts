@@ -5,11 +5,15 @@ import { HomePageSkeleton } from "@/components/skeletons/HomePageSkeleton";
 describe("HomePageSkeleton", () => {
   it("renders with loading state attributes", () => {
     render(<HomePageSkeleton />);
-    expect(screen.getByLabelText("Loading home page")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("status", { name: "Loading home page" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
   });
 
   it("renders multiple skeleton placeholders", () => {
-    render(<HomePageSkeleton />);
-    expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(3);
+    const { container } = render(<HomePageSkeleton />);
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThanOrEqual(3);
   });
 });

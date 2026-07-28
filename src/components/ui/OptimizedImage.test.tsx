@@ -31,12 +31,8 @@ describe("OptimizedImage", () => {
 
   it("renders blur placeholder before image loads", () => {
     const blurDataURL = "data:image/png;base64,abc123";
-    render(
-      <OptimizedImage src="/photo.jpg" alt="Blur test" blurDataURL={blurDataURL} />,
-    );
-    const placeholder = document.querySelector(
-      'img[aria-hidden="true"]',
-    ) as HTMLImageElement;
+    render(<OptimizedImage src="/photo.jpg" alt="Blur test" blurDataURL={blurDataURL} />);
+    const placeholder = document.querySelector('img[aria-hidden="true"]') as HTMLImageElement;
     expect(placeholder).toBeInTheDocument();
     expect(placeholder).toHaveAttribute("src", blurDataURL);
     expect(placeholder).toHaveClass("blur-xl");
@@ -44,9 +40,7 @@ describe("OptimizedImage", () => {
 
   it("removes blur placeholder after image loads", () => {
     const blurDataURL = "data:image/png;base64,abc123";
-    render(
-      <OptimizedImage src="/photo.jpg" alt="Blur removed" blurDataURL={blurDataURL} />,
-    );
+    render(<OptimizedImage src="/photo.jpg" alt="Blur removed" blurDataURL={blurDataURL} />);
     const img = screen.getByAltText("Blur removed");
     fireEvent.load(img);
     expect(document.querySelector('img[aria-hidden="true"]')).not.toBeInTheDocument();
@@ -67,29 +61,19 @@ describe("OptimizedImage", () => {
   it("shows error fallback when image fails to load", () => {
     render(<OptimizedImage src="/broken.jpg" alt="Broken photo" />);
     fireEvent.error(screen.getByAltText("Broken photo"));
-    expect(
-      screen.getByRole("img", { name: "Failed to load: Broken photo" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Failed to load: Broken photo" })).toBeInTheDocument();
   });
 
   it("removes blur placeholder on error", () => {
     const blurDataURL = "data:image/png;base64,abc123";
-    render(
-      <OptimizedImage
-        src="/broken.jpg"
-        alt="Error removes blur"
-        blurDataURL={blurDataURL}
-      />,
-    );
+    render(<OptimizedImage src="/broken.jpg" alt="Error removes blur" blurDataURL={blurDataURL} />);
     fireEvent.error(screen.getByAltText("Error removes blur"));
     expect(document.querySelector('img[aria-hidden="true"]')).not.toBeInTheDocument();
   });
 
   it("calls onError callback when image fails", () => {
     const onError = vi.fn();
-    render(
-      <OptimizedImage src="/broken.jpg" alt="Error callback" onError={onError} />,
-    );
+    render(<OptimizedImage src="/broken.jpg" alt="Error callback" onError={onError} />);
     fireEvent.error(screen.getByAltText("Error callback"));
     expect(onError).toHaveBeenCalledOnce();
   });
@@ -102,9 +86,7 @@ describe("OptimizedImage", () => {
   });
 
   it("applies width as inline style on wrapper", () => {
-    const { container } = render(
-      <OptimizedImage src="/photo.jpg" alt="Width test" width={400} />,
-    );
+    const { container } = render(<OptimizedImage src="/photo.jpg" alt="Width test" width={400} />);
     expect(container.firstChild).toHaveStyle({ width: "400px" });
   });
 
@@ -123,13 +105,7 @@ describe("OptimizedImage", () => {
   });
 
   it("merges imgClassName onto img element", () => {
-    render(
-      <OptimizedImage
-        src="/photo.jpg"
-        alt="Custom img"
-        imgClassName="rounded-full"
-      />,
-    );
+    render(<OptimizedImage src="/photo.jpg" alt="Custom img" imgClassName="rounded-full" />);
     expect(screen.getByAltText("Custom img")).toHaveClass("rounded-full");
   });
 });

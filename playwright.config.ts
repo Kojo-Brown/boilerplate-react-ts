@@ -6,10 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env["CI"],
   retries: process.env["CI"] ? 2 : 0,
   workers: process.env["CI"] ? 1 : undefined,
-  reporter: [
-    ["html", { outputFolder: "playwright-report", open: "never" }],
-    ["list"],
-  ],
+  reporter: [["html", { outputFolder: "playwright-report", open: "never" }], ["list"]],
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
@@ -31,7 +28,10 @@ export default defineConfig({
     },
   ],
   webServer: {
+    // MSW's service worker would intercept requests before page.route() —
+    // disable it so each test fully controls the network.
     command: "pnpm dev",
+    env: { VITE_DISABLE_MSW: "true" },
     url: "http://localhost:3000",
     reuseExistingServer: !process.env["CI"],
     stdout: "pipe",

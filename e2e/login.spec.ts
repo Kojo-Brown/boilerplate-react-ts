@@ -10,12 +10,12 @@ test.describe("Login flow", () => {
     await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible();
     await expect(page.getByLabel("Email")).toBeVisible();
     await expect(page.getByLabel("Password")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /Sign in with Google/i })).toBeVisible();
   });
 
   test("shows client-side validation errors on empty submit", async ({ page }) => {
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByText("Invalid email address")).toBeVisible();
     await expect(page.getByText("Password must be at least 8 characters")).toBeVisible();
   });
@@ -23,7 +23,7 @@ test.describe("Login flow", () => {
   test("shows validation error for malformed email", async ({ page }) => {
     await page.getByLabel("Email").fill("not-an-email");
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByText("Invalid email address")).toBeVisible();
   });
 
@@ -38,7 +38,7 @@ test.describe("Login flow", () => {
 
     await page.getByLabel("Email").fill("test@example.com");
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page).toHaveURL("/dashboard");
     await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
@@ -60,7 +60,7 @@ test.describe("Login flow", () => {
     // Log in — should return to the originally requested page
     await page.getByLabel("Email").fill("test@example.com");
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page).toHaveURL("/dashboard");
   });
@@ -72,7 +72,7 @@ test.describe("Login flow", () => {
 
     await page.getByLabel("Email").fill("wrong@example.com");
     await page.getByLabel("Password").fill("wrongpassword");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page.getByRole("alert")).toContainText("Invalid email or password");
     await expect(page).toHaveURL("/login");
@@ -85,7 +85,7 @@ test.describe("Login flow", () => {
 
     await page.getByLabel("Email").fill("test@example.com");
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page.getByRole("alert")).toContainText("Server error");
     await expect(page).toHaveURL("/login");

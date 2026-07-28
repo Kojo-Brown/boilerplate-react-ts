@@ -5,11 +5,12 @@ import {
   refreshAccessToken,
   logout,
   AUTH_STORAGE_KEYS,
+  type AuthUser,
 } from "./authSlice";
 
 const { reducer } = authSlice;
 
-const mockUser = { id: "1", email: "test@example.com", role: "user" };
+const mockUser: AuthUser = { id: "1", email: "test@example.com", role: "user" };
 const mockToken = "mock-access-token";
 const mockRefreshToken = "mock-refresh-token";
 const mockExpiresIn = 900;
@@ -85,7 +86,10 @@ describe("authSlice", () => {
         user: mockUser,
       }),
     );
-    const refreshed = reducer(base, refreshAccessToken({ token: "new-access-token", expiresIn: 900 }));
+    const refreshed = reducer(
+      base,
+      refreshAccessToken({ token: "new-access-token", expiresIn: 900 }),
+    );
     expect(refreshed.token).toBe("new-access-token");
     expect(refreshed.refreshToken).toBe(mockRefreshToken);
     expect(refreshed.user).toEqual(mockUser);

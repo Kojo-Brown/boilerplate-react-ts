@@ -19,7 +19,9 @@ function makeMediaQuery(matches: boolean) {
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.classList.remove("dark");
-  vi.spyOn(window, "matchMedia").mockReturnValue(makeMediaQuery(false) as unknown as MediaQueryList);
+  vi.spyOn(window, "matchMedia").mockReturnValue(
+    makeMediaQuery(false) as unknown as MediaQueryList,
+  );
 });
 
 afterEach(() => {

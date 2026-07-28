@@ -3,12 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/mocks/server";
 import { renderWithProviders } from "@/test/renderWithProviders";
-import {
-  useGetPostsQuery,
-  useGetPostQuery,
-  useCreatePostMutation,
-  type Post,
-} from "./postsApi";
+import { useGetPostsQuery, useGetPostQuery, useCreatePostMutation, type Post } from "./postsApi";
 
 const API = "http://localhost:4000";
 
@@ -40,9 +35,7 @@ function CreatePostButton() {
   const [createPost, { isLoading, isSuccess }] = useCreatePostMutation();
   return (
     <div>
-      <button
-        onClick={() => createPost({ title: "New Post", body: "New body", userId: 1 })}
-      >
+      <button onClick={() => createPost({ title: "New Post", body: "New body", userId: 1 })}>
         Create
       </button>
       {isLoading && <p>Creating...</p>}
@@ -65,9 +58,7 @@ describe("postsApi — useGetPostsQuery", () => {
 
   it("shows error state on server failure", async () => {
     server.use(
-      http.get(`${API}/posts`, () =>
-        HttpResponse.json({ error: "Server error" }, { status: 500 }),
-      ),
+      http.get(`${API}/posts`, () => HttpResponse.json({ error: "Server error" }, { status: 500 })),
     );
     renderWithProviders(<PostsList />);
 

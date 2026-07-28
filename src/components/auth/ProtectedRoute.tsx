@@ -4,14 +4,11 @@ import { ROUTES } from "@/router/paths";
 import type { UserRole } from "@/store/authSlice";
 
 interface ProtectedRouteProps {
-  redirectTo?: string;
-  requiredRoles?: readonly UserRole[];
+  redirectTo?: string | undefined;
+  requiredRoles?: readonly UserRole[] | undefined;
 }
 
-export function ProtectedRoute({
-  redirectTo = ROUTES.LOGIN,
-  requiredRoles,
-}: ProtectedRouteProps) {
+export function ProtectedRoute({ redirectTo = ROUTES.LOGIN, requiredRoles }: ProtectedRouteProps) {
   const token = useAppSelector((state) => state.auth.token);
   const user = useAppSelector((state) => state.auth.user);
   const location = useLocation();
@@ -20,11 +17,7 @@ export function ProtectedRoute({
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
-  if (
-    requiredRoles &&
-    requiredRoles.length > 0 &&
-    !requiredRoles.some((r) => r === user?.role)
-  ) {
+  if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.some((r) => r === user?.role)) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 

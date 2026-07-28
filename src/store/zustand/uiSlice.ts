@@ -13,9 +13,19 @@ export interface UiSlice {
 export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   sidebarOpen: false,
   activeModal: null,
-  openSidebar: () => set({ sidebarOpen: true }),
-  closeSidebar: () => set({ sidebarOpen: false }),
-  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
-  openModal: (id) => set({ activeModal: id }),
-  closeModal: () => set({ activeModal: null }),
+  openSidebar: () => {
+    set({ sidebarOpen: true });
+  },
+  closeSidebar: () => {
+    set({ sidebarOpen: false });
+  },
+  toggleSidebar: () => {
+    set((s) => ({ sidebarOpen: !s.sidebarOpen }));
+  },
+  openModal: (id) => {
+    set({ activeModal: id });
+  },
+  closeModal: () => {
+    set({ activeModal: null });
+  },
 });

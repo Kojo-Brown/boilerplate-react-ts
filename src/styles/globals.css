@@ -24,14 +24,14 @@
     /* Primary (blue) palette */
     --color-primary-50: oklch(96% 0.04 250);
     --color-primary-100: oklch(92% 0.07 250);
-    --color-primary-200: oklch(85% 0.10 250);
+    --color-primary-200: oklch(85% 0.1 250);
     --color-primary-300: oklch(76% 0.14 250);
     --color-primary-400: oklch(66% 0.18 250);
-    --color-primary-500: oklch(55% 0.20 250);
-    --color-primary-600: oklch(47% 0.20 250);
+    --color-primary-500: oklch(55% 0.2 250);
+    --color-primary-600: oklch(47% 0.2 250);
     --color-primary-700: oklch(39% 0.18 250);
     --color-primary-800: oklch(30% 0.14 250);
-    --color-primary-900: oklch(22% 0.10 250);
+    --color-primary-900: oklch(22% 0.1 250);
     --color-primary-950: oklch(14% 0.06 250);
 
     /* Danger (red) palette */
@@ -44,13 +44,13 @@
     --color-danger-600: oklch(47% 0.22 27);
     --color-danger-700: oklch(39% 0.19 27);
     --color-danger-800: oklch(30% 0.15 27);
-    --color-danger-900: oklch(22% 0.10 27);
+    --color-danger-900: oklch(22% 0.1 27);
     --color-danger-950: oklch(14% 0.06 27);
 
     /* Success (green) palette */
     --color-success-50: oklch(97% 0.04 145);
     --color-success-100: oklch(93% 0.07 145);
-    --color-success-200: oklch(87% 0.10 145);
+    --color-success-200: oklch(87% 0.1 145);
     --color-success-300: oklch(78% 0.13 145);
     --color-success-400: oklch(67% 0.16 145);
     --color-success-500: oklch(55% 0.18 145);
@@ -67,7 +67,7 @@
     --color-warning-300: oklch(82% 0.15 80);
     --color-warning-400: oklch(74% 0.19 80);
     --color-warning-500: oklch(65% 0.21 80);
-    --color-warning-600: oklch(56% 0.20 80);
+    --color-warning-600: oklch(56% 0.2 80);
     --color-warning-700: oklch(46% 0.17 80);
     --color-warning-800: oklch(35% 0.13 80);
     --color-warning-900: oklch(25% 0.09 80);
@@ -108,46 +108,46 @@
     /* ── Spacing scale ── */
     --spacing-px: 1px;
     --spacing-0: 0px;
-    --spacing-0-5: 0.125rem;  /* 2px */
-    --spacing-1: 0.25rem;     /* 4px */
-    --spacing-1-5: 0.375rem;  /* 6px */
-    --spacing-2: 0.5rem;      /* 8px */
-    --spacing-2-5: 0.625rem;  /* 10px */
-    --spacing-3: 0.75rem;     /* 12px */
-    --spacing-3-5: 0.875rem;  /* 14px */
-    --spacing-4: 1rem;        /* 16px */
-    --spacing-5: 1.25rem;     /* 20px */
-    --spacing-6: 1.5rem;      /* 24px */
-    --spacing-7: 1.75rem;     /* 28px */
-    --spacing-8: 2rem;        /* 32px */
-    --spacing-9: 2.25rem;     /* 36px */
-    --spacing-10: 2.5rem;     /* 40px */
-    --spacing-11: 2.75rem;    /* 44px */
-    --spacing-12: 3rem;       /* 48px */
-    --spacing-14: 3.5rem;     /* 56px */
-    --spacing-16: 4rem;       /* 64px */
-    --spacing-20: 5rem;       /* 80px */
-    --spacing-24: 6rem;       /* 96px */
-    --spacing-28: 7rem;       /* 112px */
-    --spacing-32: 8rem;       /* 128px */
-    --spacing-36: 9rem;       /* 144px */
-    --spacing-40: 10rem;      /* 160px */
-    --spacing-48: 12rem;      /* 192px */
-    --spacing-56: 14rem;      /* 224px */
-    --spacing-64: 16rem;      /* 256px */
-    --spacing-72: 18rem;      /* 288px */
-    --spacing-80: 20rem;      /* 320px */
-    --spacing-96: 24rem;      /* 384px */
+    --spacing-0-5: 0.125rem; /* 2px */
+    --spacing-1: 0.25rem; /* 4px */
+    --spacing-1-5: 0.375rem; /* 6px */
+    --spacing-2: 0.5rem; /* 8px */
+    --spacing-2-5: 0.625rem; /* 10px */
+    --spacing-3: 0.75rem; /* 12px */
+    --spacing-3-5: 0.875rem; /* 14px */
+    --spacing-4: 1rem; /* 16px */
+    --spacing-5: 1.25rem; /* 20px */
+    --spacing-6: 1.5rem; /* 24px */
+    --spacing-7: 1.75rem; /* 28px */
+    --spacing-8: 2rem; /* 32px */
+    --spacing-9: 2.25rem; /* 36px */
+    --spacing-10: 2.5rem; /* 40px */
+    --spacing-11: 2.75rem; /* 44px */
+    --spacing-12: 3rem; /* 48px */
+    --spacing-14: 3.5rem; /* 56px */
+    --spacing-16: 4rem; /* 64px */
+    --spacing-20: 5rem; /* 80px */
+    --spacing-24: 6rem; /* 96px */
+    --spacing-28: 7rem; /* 112px */
+    --spacing-32: 8rem; /* 128px */
+    --spacing-36: 9rem; /* 144px */
+    --spacing-40: 10rem; /* 160px */
+    --spacing-48: 12rem; /* 192px */
+    --spacing-56: 14rem; /* 224px */
+    --spacing-64: 16rem; /* 256px */
+    --spacing-72: 18rem; /* 288px */
+    --spacing-80: 20rem; /* 320px */
+    --spacing-96: 24rem; /* 384px */
 
     /* ── Border radius scale ── */
     --radius-none: 0px;
-    --radius-xs: 0.125rem;   /* 2px */
-    --radius-sm: 0.375rem;   /* 6px */
-    --radius-md: 0.5rem;     /* 8px */
-    --radius-lg: 0.75rem;    /* 12px */
-    --radius-xl: 1rem;       /* 16px */
-    --radius-2xl: 1.5rem;    /* 24px */
-    --radius-3xl: 2rem;      /* 32px */
+    --radius-xs: 0.125rem; /* 2px */
+    --radius-sm: 0.375rem; /* 6px */
+    --radius-md: 0.5rem; /* 8px */
+    --radius-lg: 0.75rem; /* 12px */
+    --radius-xl: 1rem; /* 16px */
+    --radius-2xl: 1.5rem; /* 24px */
+    --radius-3xl: 2rem; /* 32px */
     --radius-full: 9999px;
 
     /* ── Shadow scale ── */
@@ -161,16 +161,16 @@
     --shadow-inner: inset 0 2px 4px 0 oklch(0% 0 0 / 6%);
 
     /* ── Typography — font size ── */
-    --font-size-xs: 0.75rem;    /* 12px */
-    --font-size-sm: 0.875rem;   /* 14px */
-    --font-size-base: 1rem;     /* 16px */
-    --font-size-lg: 1.125rem;   /* 18px */
-    --font-size-xl: 1.25rem;    /* 20px */
-    --font-size-2xl: 1.5rem;    /* 24px */
-    --font-size-3xl: 1.875rem;  /* 30px */
-    --font-size-4xl: 2.25rem;   /* 36px */
-    --font-size-5xl: 3rem;      /* 48px */
-    --font-size-6xl: 3.75rem;   /* 60px */
+    --font-size-xs: 0.75rem; /* 12px */
+    --font-size-sm: 0.875rem; /* 14px */
+    --font-size-base: 1rem; /* 16px */
+    --font-size-lg: 1.125rem; /* 18px */
+    --font-size-xl: 1.25rem; /* 20px */
+    --font-size-2xl: 1.5rem; /* 24px */
+    --font-size-3xl: 1.875rem; /* 30px */
+    --font-size-4xl: 2.25rem; /* 36px */
+    --font-size-5xl: 3rem; /* 48px */
+    --font-size-6xl: 3.75rem; /* 60px */
 
     /* ── Typography — font weight ── */
     --font-weight-thin: 100;

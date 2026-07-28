@@ -3,18 +3,18 @@ import { cn } from "@/lib/cn";
 
 interface FormFieldProps {
   label: string;
-  error?: string;
-  hint?: string;
-  required?: boolean;
+  error?: string | undefined;
+  hint?: string | undefined;
+  required?: boolean | undefined;
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function FormField({ label, error, hint, required, children, className }: FormFieldProps) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium leading-none text-[var(--color-fg)]">
+        <span className="text-sm leading-none font-medium text-[var(--color-fg)]">
           {label}
           {required && (
             <span className="ml-0.5 text-[var(--color-danger)]" aria-hidden="true">

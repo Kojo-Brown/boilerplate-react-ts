@@ -5,11 +5,15 @@ import { DashboardPageSkeleton } from "@/components/skeletons/DashboardPageSkele
 describe("DashboardPageSkeleton", () => {
   it("renders with loading state attributes", () => {
     render(<DashboardPageSkeleton />);
-    expect(screen.getByLabelText("Loading dashboard")).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("status", { name: "Loading dashboard" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
   });
 
   it("renders stat card skeletons", () => {
-    render(<DashboardPageSkeleton />);
-    expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(6);
+    const { container } = render(<DashboardPageSkeleton />);
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThanOrEqual(6);
   });
 });

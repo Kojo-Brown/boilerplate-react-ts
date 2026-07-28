@@ -1,8 +1,10 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from "vitest";
 import { ErrorBoundary, ErrorFallback } from "./ErrorBoundary";
 
-let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+// `ReturnType<typeof vi.spyOn>` resolves to an `any`-typed generic instantiation,
+// which then poisons every call on the spy.
+let consoleErrorSpy: MockInstance<(...args: unknown[]) => void>;
 
 beforeEach(() => {
   consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});

@@ -25,7 +25,7 @@ test.describe("API mock patterns", () => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(mockUser.email);
     await page.getByLabel("Password").fill("secret123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page).toHaveURL("/dashboard");
 
@@ -39,7 +39,7 @@ test.describe("API mock patterns", () => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("test@example.com");
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page.getByRole("alert")).toContainText("Login failed");
   });
@@ -56,7 +56,7 @@ test.describe("API mock patterns", () => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("taken@example.com");
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page.getByRole("alert")).toContainText("Please check your input");
   });
@@ -82,7 +82,7 @@ test.describe("API mock patterns", () => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(mockUser.email);
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page).toHaveURL("/dashboard");
   });
@@ -100,7 +100,7 @@ test.describe("API mock patterns", () => {
     await page.goto("/login");
     await page.getByLabel("Email").fill(mockUser.email);
     await page.getByLabel("Password").fill("password123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL("/dashboard");
 
     // Now simulate expiry: clear auth and assert the route guard fires on reload

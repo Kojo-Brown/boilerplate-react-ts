@@ -12,9 +12,15 @@ import { App } from "@/App";
 import "@/styles/globals.css";
 
 async function enableMocking(): Promise<void> {
-  if (!import.meta.env.DEV) return;
-  const { worker } = await import("@/test/mocks/browser");
-  await worker.start({ onUnhandledRequest: "bypass" });
+  // E2E runs set VITE_DISABLE_MSW so Playwright's page.route() owns the
+  // network; the MSW service worker would otherwise answer first.
+  if (!import.meta.env.DEV || import.meta.env["VITE_DISABLE_MSW"] === "true") return;
+  try {
+    const { worker } = await import("@/test/mocks/browser");
+    await worker.start({ onUnhandledRequest: "bypass" });
+  } catch (error) {
+    console.error("MSW failed to start; continuing without API mocks.", error);
+  }
 }
 
 startSilentRefresh(store);
