@@ -64,6 +64,17 @@ describe("router", () => {
     });
   });
 
+  it("renders ConcurrencyLabPage at /labs/concurrency", async () => {
+    // A small dataset keeps this a routing assertion; the page's own tests and
+    // the Playwright benchmark cover it at full size.
+    renderRoute("/labs/concurrency?n=10");
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Concurrency Lab" }),
+      ).toBeInTheDocument();
+    });
+  });
+
   it("renders NotFoundPage for unknown routes", async () => {
     renderRoute("/this-does-not-exist");
     await waitFor(() => {

@@ -6,6 +6,7 @@ describe("ROUTES", () => {
     expect(ROUTES.HOME).toBe("/");
     expect(ROUTES.DASHBOARD).toBe("/dashboard");
     expect(ROUTES.ABOUT).toBe("/about");
+    expect(ROUTES.CONCURRENCY_LAB).toBe("/labs/concurrency");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -15,6 +16,7 @@ describe("typedRoute", () => {
     expect(typedRoute("/")).toBe("/");
     expect(typedRoute("/dashboard")).toBe("/dashboard");
     expect(typedRoute("/about")).toBe("/about");
+    expect(typedRoute("/labs/concurrency")).toBe("/labs/concurrency");
     expect(typedRoute("/login")).toBe("/login");
   });
 });
