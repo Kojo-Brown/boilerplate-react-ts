@@ -26,6 +26,10 @@ const LazyLoginPage = lazy(() =>
   import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
 );
 
+const LazyConcurrencyLabPage = lazy(() =>
+  import("@/pages/ConcurrencyLabPage").then((m) => ({ default: m.ConcurrencyLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -78,6 +82,16 @@ export const routes: RouteObject[] = [
         element: (
           <Suspense fallback={<AboutPageSkeleton />}>
             <LazyAboutPage />
+          </Suspense>
+        ),
+      },
+      {
+        // Reference demo for the React 19 concurrency pattern. Deliberately
+        // unlinked from the nav — it is a lab, not part of the app shell.
+        path: "labs/concurrency",
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <LazyConcurrencyLabPage />
           </Suspense>
         ),
       },

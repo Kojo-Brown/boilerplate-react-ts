@@ -2,6 +2,7 @@ export const ROUTES = {
   HOME: "/",
   DASHBOARD: "/dashboard",
   ABOUT: "/about",
+  CONCURRENCY_LAB: "/labs/concurrency",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;
