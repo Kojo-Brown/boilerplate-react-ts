@@ -71,7 +71,7 @@ Phase 0 complete as of PR #18 (2026-07-28): install, typecheck, lint, format,
 
 ## Phase 9 — React 19 Concurrency
 
-- [ ] `useTransition` + `useDeferredValue` on a heavy filterable list, with a jank before/after benchmark
+- [x] `useTransition` + `useDeferredValue` on a heavy filterable list, with a jank before/after benchmark — `<ConcurrentFilterList>` plus a `/labs/concurrency` harness and a Playwright benchmark that drives both arms. The memo boundary around the rows turned out to be load-bearing: without it the urgent render still reconciles every row and deferring buys almost nothing (840ms vs 1232ms worst keypress-to-paint, against 256ms vs 824ms with it). The benchmark is what caught that (PR #19)
 - [ ] `useOptimistic` mutations with automatic rollback on failure
 - [ ] `use()` API for unwrapping promises and context inside Suspense boundaries
 - [ ] Actions API: `useActionState` + `useFormStatus` replacing manual form submit state
