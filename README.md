@@ -122,6 +122,63 @@ Frame numbers improve less than input numbers, and that is the honest result:
 rendering becomes interruptible, but the commit that finally inserts the rows
 does not. What concurrency buys is that the keystroke no longer waits for it.
 
+## Optimistic Mutations
+
+`useOptimisticList` (`src/hooks/`) draws a change before the request that makes
+it real has come back, and takes it back off if that request fails.
+`<OptimisticTaskList>` (`src/components/mutations/`) is the worked example.
+
+The hook holds two lists. `committed` is what the server has confirmed;
+`useOptimistic` layers the in-flight actions on top of it. Every mutation names
+its change twice — once as a guess, once as a fact:
+
+```tsx
+mutate({
+  optimistic: { type: "create", item: { id: draftId, title, done: false } },
+  commit: async () => ({ type: "create", item: await api.create(title) }),
+});
+```
+
+**Nothing ever undoes an optimistic action.** The rollback is the _absence_ of a
+commit: a `commit()` that rejects leaves the committed list untouched, React
+discards the optimistic layer when the transition settles, and the row is gone.
+There is no snapshot to restore, so there is no window in which a half-applied
+change can be observed. Both layers go through the same reducer
+(`src/lib/optimisticList.ts`) — if the guess and the truth were computed by
+different code they could disagree in ways no test would catch, because the
+optimistic render is thrown away before anything can assert on it.
+
+Three things about this were not obvious, and each one cost a debugging round:
+
+- **The `await` has to happen inside the transition.** React holds the
+  optimistic layer for exactly as long as the transition is pending. Awaiting
+  outside it makes the provisional row flicker in and straight back out.
+- **Ordinary state set inside an async transition does not land when you think.**
+  An update made synchronously inside the transition, before the first `await`,
+  is absorbed into it and never renders on its own — the UI keeps its old value
+  until the action settles. Clearing the previous error in there left a stale
+  "change reverted" banner up for the whole of the _next_ request. `mutate`
+  clears it as an urgent update, outside the transition. Optimistic state is the
+  exception; that is the entire reason `useOptimistic` exists.
+- **Optimistic actions unwind as a group, not individually.** If two mutations
+  overlap and the first fails, its row stays on screen alongside the error until
+  the _last_ in-flight action settles, at which point the whole layer is
+  discarded at once. The end state is always correct; the intermediate frame can
+  briefly show a row already reported as reverted. This is React's model, not a
+  choice the hook makes, and it is asserted in the hook's tests so it is
+  documented rather than rediscovered.
+
+Rollback is silent by default, which is the failure mode worth designing
+against: on its own, a rejected mutation just removes the row the user added
+with no explanation. `error` exists for that reason, and the component renders
+it — an automatic rollback with no message is a bug report waiting to happen.
+
+### Trying it
+
+`/labs/optimistic` runs the list against a fake server whose behaviour comes
+from the URL (`?server=failing&latency=1500`), so the failure path — the half of
+the pattern that is hard to reach on a healthy backend — is one click away.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

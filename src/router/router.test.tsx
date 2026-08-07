@@ -75,6 +75,13 @@ describe("router", () => {
     });
   });
 
+  it("renders OptimisticLabPage at /labs/optimistic", async () => {
+    renderRoute("/labs/optimistic?latency=0");
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: "Optimistic Lab" })).toBeInTheDocument();
+    });
+  });
+
   it("renders NotFoundPage for unknown routes", async () => {
     renderRoute("/this-does-not-exist");
     await waitFor(() => {
