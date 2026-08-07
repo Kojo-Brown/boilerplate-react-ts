@@ -30,6 +30,10 @@ const LazyConcurrencyLabPage = lazy(() =>
   import("@/pages/ConcurrencyLabPage").then((m) => ({ default: m.ConcurrencyLabPage })),
 );
 
+const LazyOptimisticLabPage = lazy(() =>
+  import("@/pages/OptimisticLabPage").then((m) => ({ default: m.OptimisticLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -92,6 +96,17 @@ export const routes: RouteObject[] = [
         element: (
           <Suspense fallback={<PageLoader />}>
             <LazyConcurrencyLabPage />
+          </Suspense>
+        ),
+      },
+      {
+        // Reference demo for the React 19 optimistic-mutation pattern. Also
+        // unlinked from the nav — the failing-server mode is not something to
+        // stumble into from the app shell.
+        path: "labs/optimistic",
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <LazyOptimisticLabPage />
           </Suspense>
         ),
       },
