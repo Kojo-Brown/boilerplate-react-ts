@@ -1,5 +1,7 @@
 export { renderWithProviders, makeStore } from "./renderWithProviders";
 export type { TestStore } from "./renderWithProviders";
+export { renderAsync, actAsync } from "./renderSuspense";
+export type { RenderSuspenseResult } from "./renderSuspense";
 export {
   makeUser,
   makeAdminUser,
