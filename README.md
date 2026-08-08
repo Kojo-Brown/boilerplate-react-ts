@@ -179,6 +179,90 @@ it — an automatic rollback with no message is a bug report waiting to happen.
 from the URL (`?server=failing&latency=1500`), so the failure path — the half of
 the pattern that is hard to reach on a healthy backend — is one click away.
 
+## Reading Promises with `use()`
+
+`<UserProfileCard>` (`src/components/suspense/`) renders data that has not
+arrived yet, with no loading flag and no `data === undefined` branch:
+
+```tsx
+const cache = propCache ?? use(ProfileCacheContext);
+const profile = use(cache.read(userId));
+```
+
+Both halves of the API are in those two lines.
+
+**`use(promise)` needs a cached promise.** React re-renders a suspended
+component every time its boundary retries, so a promise created _during_ render
+is a different promise each pass: the component suspends on it, React retries,
+render makes another one, and the fallback never leaves. `createPromiseCache`
+(`src/lib/promiseCache.ts`) is what makes `read(key)` return the identical
+promise object every render. Rendering never calls the API directly.
+
+**`use(Context)` can be called conditionally**, which nothing else hook-shaped
+can. `propCache ?? use(ProfileCacheContext)` short-circuits, so a caller that
+passes a cache explicitly never subscribes to the context and never re-renders
+when the provider's value changes. That is also why the context is exported as
+the context object rather than behind a `useProfileCache` hook — a hook would
+put the rules-of-hooks constraint straight back.
+
+**`use()` communicates by throwing**, so both boundaries are mandatory: a
+pending promise suspends to the nearest `<Suspense>`, a rejected one throws to
+the nearest error boundary, and the error boundary has to be _outside_ the
+Suspense boundary. `<ProfilePanel>` wires up both per profile, so one card
+failing leaves its siblings on screen. Hoisting them to wrap a group is a real
+trade — the slowest request then decides when any of them appears, and one
+failure blanks all of them.
+
+Three things cost a debugging round each:
+
+- **Rejected cache entries are sticky, and have to be.** Dropping an entry when
+  its promise rejects looks like free retry-on-error and is actually an
+  invisible hang: React re-renders the suspended component after the rejection,
+  a dropped entry hands it a fresh _pending_ promise, so it suspends instead of
+  throwing and the boundary falls back forever without the error ever
+  surfacing. The entry stays, and retrying is explicit — `<ProfilePanel>`'s
+  "Try again" calls `invalidate(userId)` _before_ resetting the boundary. Reset
+  alone re-reads the same rejection and visibly does nothing.
+- **Replacing the cache is an update, and updates can be transitions.** React
+  Router runs navigations inside a transition, and a transition that suspends
+  holds the _previous_ UI until the new data is ready — so handing the same
+  subtree a new cache leaves the old server's cards under the new server's
+  controls. `/labs/use` remounts the subtree with a `key` instead, which is the
+  honest read: different source, fresh fallback.
+- **A cached rejection nobody reads is an unhandled rejection.** The entry is
+  created during render and `use()` only observes it on the retry pass, so the
+  cache attaches a no-op `catch` at store time. It stores the original promise,
+  not the one `catch` returns, so `use()` still sees the rejection.
+
+### Testing components that `use()`
+
+Testing Library's `render` wraps the initial render in a **synchronous** `act()`.
+A component that suspends inside a non-awaited act scope leaves its retry queued
+in a scope that closes before anything can flush it: the promise resolves, React
+marks it fulfilled, and the fallback stays up until `waitFor` times out.
+`lazy()` does not hit this — which is why the router tests never needed it —
+and `use()` hits it every time.
+
+`src/test/renderSuspense.tsx` is the fix. `renderAsync` renders inside an
+awaited act scope, and `actAsync` does the same for an interaction that pushes
+the tree back into a fallback:
+
+```tsx
+await renderAsync(<ProfilePanel userId="u-1" />);
+await actAsync(() => user.click(screen.getByTestId("retry-profile")));
+```
+
+Awaiting the act scope does not wait out a pending request, so a fallback is
+still observable afterwards and resolved UI is still asserted with
+`findBy*`/`waitFor`.
+
+### Trying it
+
+`/labs/use` runs two profile cards against a fake service configured from the
+URL (`?server=failing&latency=2000`). Slow it down to read the fallback, or
+break it to watch one card land in its error boundary while the other carries
+on.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.
