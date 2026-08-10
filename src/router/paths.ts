@@ -5,6 +5,7 @@ export const ROUTES = {
   CONCURRENCY_LAB: "/labs/concurrency",
   OPTIMISTIC_LAB: "/labs/optimistic",
   USE_API_LAB: "/labs/use",
+  ACTIONS_LAB: "/labs/actions",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

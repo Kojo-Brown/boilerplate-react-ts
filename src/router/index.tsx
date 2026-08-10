@@ -38,6 +38,10 @@ const LazyUseApiLabPage = lazy(() =>
   import("@/pages/UseApiLabPage").then((m) => ({ default: m.UseApiLabPage })),
 );
 
+const LazyActionsLabPage = lazy(() =>
+  import("@/pages/ActionsLabPage").then((m) => ({ default: m.ActionsLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -122,6 +126,17 @@ export const routes: RouteObject[] = [
         element: (
           <Suspense fallback={<PageLoader />}>
             <LazyUseApiLabPage />
+          </Suspense>
+        ),
+      },
+      {
+        // Reference demo for the React 19 Actions API. Unlinked from the nav
+        // for the same reason as the others — the failing-server mode is not
+        // something to stumble into from the app shell.
+        path: "labs/actions",
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <LazyActionsLabPage />
           </Suspense>
         ),
       },

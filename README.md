@@ -263,6 +263,78 @@ URL (`?server=failing&latency=2000`). Slow it down to read the fallback, or
 break it to watch one card land in its error boundary while the other carries
 on.
 
+## Forms with the Actions API
+
+`<InviteTeammateForm>` (`src/components/forms/`) has no `isSubmitting`, no
+`setError`, and no `try/finally` resetting a flag — the three things a
+hand-rolled form spends most of its code on. The action is an ordinary async
+function that takes the `FormData` and returns the next state:
+
+```tsx
+const [state, formAction] = useActionState(async (_previous, formData) => {
+  const values = readFormValues(formData, INVITE_FIELDS);
+  const parsed = inviteSchema.safeParse(values);
+  if (!parsed.success) {
+    return formFailed(values, { fieldErrors: fieldErrorsFromZod(parsed.error, INVITE_FIELDS) });
+  }
+  // …
+}, IDLE_STATE);
+```
+
+`src/lib/formState.ts` is the reusable half: one `FormState<Field>` shape that
+both a schema failure and a server rejection resolve to, so the form renders one
+thing rather than branching on where the problem came from. Compare
+`<LoginForm>`, which wires the same concerns up by hand through React Hook Form
+— both are valid; this one is the smaller surface when validation is
+server-authoritative.
+
+**React resets the form once the action settles.** That is right for a success
+and actively hostile on a failure: the user is handed an empty form and asked to
+retype the value that was just rejected. The action echoes the submitted values
+back in `state.values`, every control reads its `defaultValue` from there, and
+the reset restores what was typed instead of wiping it. On success the echo is
+empty, so the same mechanism clears the form — one behaviour, both outcomes, no
+imperative reset call anywhere.
+
+**`useFormStatus` only reports to descendants of the `<form>`.** Calling it in
+the component that _renders_ the form returns `pending: false` forever, with no
+warning and no error — just a button that never looks busy. That is why
+`<SubmitButton>` is a separate component, and it is what the constraint buys:
+any form can drop it in and get a correct pending state with nothing threaded
+down. `useFormStatus().data` carries the in-flight `FormData` too, which is how
+`<SubmittingNotice>` names the address being sent without the form passing it
+anything.
+
+Two more things cost a debugging round each:
+
+- **`<select>` is the one control the echo does not reach.** React keeps an
+  `<input>`/`<textarea>`'s `defaultValue` in sync after mount, so the reset
+  restores the echoed value. It never propagates a changed `defaultValue` onto
+  an already-mounted `<select>`'s options, so the reset restores whichever
+  option was selected at _mount_ and the user's choice disappears — silently,
+  and only on the failure path. The select is keyed on the echoed value so it
+  remounts, which is the only point at which React applies it.
+- **Focus has to key on the state object, not on `status`.** Moving focus to the
+  first invalid control is what makes a server-validated form usable without a
+  mouse, and the effect that does it fires on `state`. Narrowing the dependency
+  to `state.status` is the tempting simplification and breaks the second
+  identical submission, because `status` is already `"error"` and never changes.
+  `useActionState` returns a fresh object per submission; that is the signal.
+
+Server errors decide their own placement. `InviteRejectedError.field` says
+whether a rejection belongs under a control (`ada@example.com` is already on the
+team) or at the top of the form (the service is down), so that judgement is made
+once, by the side that can actually make it, rather than being guessed at from a
+message string in the UI.
+
+### Trying it
+
+`/labs/actions` runs the form against a fake invitation service configured from
+the URL (`?server=failing&latency=2000`). Three failures are reachable and
+deliberately different: a malformed address never leaves the browser,
+`ada@example.com` is rejected by the server and still lands under the field, and
+the failing server produces a form-level message with no field to blame.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.
