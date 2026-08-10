@@ -82,6 +82,13 @@ describe("router", () => {
     });
   });
 
+  it("renders ActionsLabPage at /labs/actions", async () => {
+    renderRoute("/labs/actions?latency=0");
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: "Actions Lab" })).toBeInTheDocument();
+    });
+  });
+
   it("renders NotFoundPage for unknown routes", async () => {
     renderRoute("/this-does-not-exist");
     await waitFor(() => {
