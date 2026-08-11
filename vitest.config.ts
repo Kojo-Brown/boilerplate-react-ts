@@ -1,7 +1,14 @@
 import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "node:url";
+import { reactCompilerBabelPlugin } from "./reactCompiler.config";
 
 export default defineConfig({
+  // Vitest previously transformed JSX with esbuild and no Vite plugins, which
+  // meant the unit suite ran *uncompiled* source. That is fine until manual
+  // memoization starts coming out: "this useMemo was safe to delete" is only
+  // evidence if the tests exercised the compiled output that replaced it.
+  plugins: [react({ babel: { plugins: [reactCompilerBabelPlugin] } })],
   test: {
     environment: "jsdom",
     globals: true,

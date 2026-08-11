@@ -34,7 +34,21 @@ export default defineConfig(
       "react-refresh": reactRefresh,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // The React Compiler's own diagnostics, shipped as lint rules by
+      // `eslint-plugin-react-hooks` v6+ (the separate
+      // `eslint-plugin-react-compiler` package was folded into this one).
+      //
+      // These are what make the compiler rollout safe rather than hopeful:
+      // `annotation` mode means a file is only compiled once it opts in, and
+      // these rules are how you find out whether a file *can* opt in before
+      // adding the directive. A component that lints clean here is one the
+      // compiler can memoize; one that does not is telling you about a real
+      // Rules of React violation, which is a bug with or without the compiler.
+      //
+      // `recommended-latest` is the superset (it adds `void-use-memo`). The
+      // `flat` namespace is the flat-config shape; the top-level
+      // `configs.recommended` is still the legacy eslintrc export.
+      ...reactHooks.configs.flat["recommended-latest"].rules,
       // Provider components live alongside their consumer hook by design; the
       // hook is stable across edits so fast refresh is unaffected.
       "react-refresh/only-export-components": [

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
-import { useFilteredSortedItems } from "./useFilteredSortedItems";
+import { useFilteredSortedItems, type SortDir } from "./useFilteredSortedItems";
 
 interface Item {
   id: string;
@@ -55,5 +55,35 @@ describe("useFilteredSortedItems", () => {
   it("does not mutate the original array order", () => {
     renderHook(() => useFilteredSortedItems(ITEMS, "", "name", "name", "asc"));
     expect(ITEMS.map((i) => i.name)).toEqual(["Charlie", "Alice", "Bob"]);
+  });
+
+  // This hook's `useMemo` was removed when it opted into the React Compiler.
+  // These two tests are what makes that a safe trade rather than an assumption:
+  // they assert the memoization still exists and still invalidates correctly.
+  // They only mean anything because `vitest.config.ts` runs the suite through
+  // the compiler — against uncompiled source the first one fails.
+  it("returns a referentially stable result when inputs are unchanged", () => {
+    const { result, rerender } = renderHook(() =>
+      useFilteredSortedItems(ITEMS, "", "name", "name", "asc"),
+    );
+    const first = result.current;
+
+    rerender();
+    rerender();
+
+    expect(result.current).toBe(first);
+  });
+
+  it("returns a new reference when an input changes", () => {
+    const { result, rerender } = renderHook(
+      ({ dir }: { dir: SortDir }) => useFilteredSortedItems(ITEMS, "", "name", "name", dir),
+      { initialProps: { dir: "asc" as SortDir } },
+    );
+    const asc = result.current;
+
+    rerender({ dir: "desc" });
+
+    expect(result.current).not.toBe(asc);
+    expect(result.current.map((i) => i.name)).toEqual(["Charlie", "Bob", "Alice"]);
   });
 });
