@@ -40,6 +40,16 @@ export function VirtualList({
 }: VirtualListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // `react-hooks/incompatible-library` reports that `useVirtualizer()` returns
+  // functions the React Compiler cannot memoize without risking stale UI, and
+  // that it would therefore skip compiling this component. That diagnostic is
+  // correct and it is the reason `VirtualList` is deliberately *not* in the
+  // compiler's opt-in cohort — see `docs/react-compiler.md`. Because the
+  // project compiles in `annotation` mode, a component without `"use memo"` is
+  // never compiled, so the risk the rule warns about cannot arise here. The
+  // warning is suppressed rather than left to fail `--max-warnings 0`; if this
+  // component is ever annotated, delete this line first and re-read the rule.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,

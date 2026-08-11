@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/cn";
 
@@ -30,14 +30,29 @@ export function useToast(): ToastContextValue {
   return ctx;
 }
 
+/**
+ * Opted into the React Compiler (see `docs/react-compiler.md`).
+ *
+ * This provider is the clearest argument in the codebase for the compiler over
+ * hand-memoization. `toast` and `dismiss` were each wrapped in `useCallback`,
+ * and the context value was still `{{ toast, dismiss }}` — a fresh object on
+ * every render. The stable callbacks bought nothing at the boundary that
+ * mattered, because the object holding them was new each time and that is what
+ * consumers compare. Two correct-looking `useCallback`s, zero effect.
+ *
+ * The compiler memoizes the object literal along with the functions, so the
+ * value is now genuinely stable. `Toast.test.tsx` asserts that.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
+  "use memo";
+
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const dismiss = useCallback((id: string) => {
+  const dismiss = (id: string): void => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  };
 
-  const toast = useCallback(({ variant = "default", duration = 4000, ...input }: ToastInput) => {
+  const toast = ({ variant = "default", duration = 4000, ...input }: ToastInput): void => {
     const id = crypto.randomUUID();
     setToasts((prev) => [...prev, { id, variant, duration, ...input }]);
     if (duration > 0) {
@@ -45,7 +60,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         setToasts((prev) => prev.filter((t) => t.id !== id));
       }, duration);
     }
-  }, []);
+  };
 
   return (
     <ToastContext.Provider value={{ toast, dismiss }}>

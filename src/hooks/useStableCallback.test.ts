@@ -44,4 +44,47 @@ describe("useStableCallback", () => {
     rerender();
     expect(result.current).toBe(ref1);
   });
+
+  // The ref is written in a layout effect rather than during render, because
+  // writing a ref during render is a Rules of React violation that
+  // `react-hooks/refs` reports. The cost of that correctness fix is this
+  // boundary: within the render pass itself the callback still closes over the
+  // previous `fn`. Pinned here so the tradeoff is a decision, not a surprise.
+  it("still delegates to the previous fn when called during render", () => {
+    const calls: string[] = [];
+    let duringRender: string | undefined;
+
+    const { rerender } = renderHook(
+      ({ tag }: { tag: string }) => {
+        const stable = useStableCallback(() => tag);
+        // Deliberately calling during render to observe the boundary. Do not
+        // do this in real code — see the hook's docblock.
+        duringRender = stable();
+        calls.push(tag);
+        return stable;
+      },
+      { initialProps: { tag: "first" } },
+    );
+
+    expect(duringRender).toBe("first");
+
+    rerender({ tag: "second" });
+
+    // The layout effect from the "first" commit had run, but the one for
+    // "second" has not yet, so render still sees the older closure.
+    expect(duringRender).toBe("first");
+    expect(calls).toEqual(["first", "second"]);
+  });
+
+  it("delegates to the latest fn once the layout effect has flushed", () => {
+    const { result, rerender } = renderHook(
+      ({ tag }: { tag: string }) => useStableCallback(() => tag),
+      { initialProps: { tag: "first" } },
+    );
+
+    rerender({ tag: "second" });
+
+    // Called after commit, which is what this hook is for.
+    expect(result.current()).toBe("second");
+  });
 });

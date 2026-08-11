@@ -146,4 +146,32 @@ describe("ThemeProvider / useTheme", () => {
     act(() => changeHandler?.({ matches: true } as MediaQueryListEvent));
     expect(result.current.isDark).toBe(true);
   });
+
+  // The `useMemo` that used to wrap this context value was removed when the
+  // provider opted into the React Compiler. A provider's context value is the
+  // one object where a lost identity is expensive — every consumer in the tree
+  // re-renders — so the replacement memoization is asserted, not assumed.
+  // These pass only because `vitest.config.ts` runs the suite through the
+  // compiler.
+  it("keeps the context value referentially stable across re-renders", () => {
+    const { result, rerender } = renderHook(() => useTheme(), { wrapper });
+    const first = result.current;
+
+    rerender();
+    rerender();
+
+    expect(result.current).toBe(first);
+  });
+
+  it("produces a new context value when the theme actually changes", () => {
+    const { result } = renderHook(() => useTheme(), { wrapper });
+    const first = result.current;
+
+    act(() => {
+      result.current.setMode("dark");
+    });
+
+    expect(result.current).not.toBe(first);
+    expect(result.current.mode).toBe("dark");
+  });
 });
