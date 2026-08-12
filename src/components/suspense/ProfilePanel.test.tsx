@@ -7,16 +7,17 @@ import type { ProfileCache } from "@/context/profileCache";
 import { createInMemoryProfileApi, type UserProfile } from "@/lib/profileApi";
 import { createPromiseCache } from "@/lib/promiseCache";
 import { actAsync, renderAsync } from "@/test/renderSuspense";
+import { createDeferredProfileApi } from "@/test/profileHarness";
 
-const profiles: readonly UserProfile[] = [
-  {
-    id: "u-1",
-    name: "Ada Lovelace",
-    email: "ada@example.com",
-    role: "admin",
-    joinedAt: "2024-03-11",
-  },
-];
+const ADA: UserProfile = {
+  id: "u-1",
+  name: "Ada Lovelace",
+  email: "ada@example.com",
+  role: "admin",
+  joinedAt: "2024-03-11",
+};
+
+const profiles: readonly UserProfile[] = [ADA];
 
 /** A cache whose backing service fails for the first `failures` requests. */
 function flakyCache(failures: number): { cache: ProfileCache; requestCount: () => number } {
@@ -46,9 +47,10 @@ afterEach(() => {
 
 describe("ProfilePanel", () => {
   it("renders the profile once it arrives", async () => {
-    // Slow enough that the request is still in flight when the initial render
-    // settles, so the fallback is observable.
-    const api = createInMemoryProfileApi({ profiles, latencyMs: 50 });
+    // Gated rather than slow: a timer only holds the fallback open for as long
+    // as the machine lets it, and the initial render has to finish inside that
+    // window. See `profileHarness.ts`.
+    const api = createDeferredProfileApi();
     const cache = createPromiseCache({ load: (id: string) => api.fetchProfile(id) });
 
     await renderAsync(
@@ -58,7 +60,10 @@ describe("ProfilePanel", () => {
     );
 
     expect(screen.getByTestId("user-profile-card-skeleton")).toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: "Ada Lovelace" })).toBeInTheDocument();
+
+    await actAsync(() => api.resolve("u-1", ADA));
+
+    expect(screen.getByRole("heading", { name: "Ada Lovelace" })).toBeInTheDocument();
     expect(screen.queryByTestId("profile-error")).not.toBeInTheDocument();
   });
 
