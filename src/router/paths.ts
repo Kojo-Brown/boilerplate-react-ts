@@ -6,6 +6,7 @@ export const ROUTES = {
   OPTIMISTIC_LAB: "/labs/optimistic",
   USE_API_LAB: "/labs/use",
   ACTIONS_LAB: "/labs/actions",
+  STREAMING_LAB: "/labs/streaming",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

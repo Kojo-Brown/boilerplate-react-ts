@@ -42,6 +42,10 @@ const LazyActionsLabPage = lazy(() =>
   import("@/pages/ActionsLabPage").then((m) => ({ default: m.ActionsLabPage })),
 );
 
+const LazyStreamingLabPage = lazy(() =>
+  import("@/pages/StreamingLabPage").then((m) => ({ default: m.StreamingLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -137,6 +141,17 @@ export const routes: RouteObject[] = [
         element: (
           <Suspense fallback={<PageLoader />}>
             <LazyActionsLabPage />
+          </Suspense>
+        ),
+      },
+      {
+        // Reference demo for streaming Suspense boundaries. Unlinked from the
+        // nav for the same reason as the others — the broken-section mode is
+        // not something to stumble into from the app shell.
+        path: "labs/streaming",
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <LazyStreamingLabPage />
           </Suspense>
         ),
       },

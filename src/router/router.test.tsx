@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { describe, it, expect } from "vitest";
 import { routes } from "@/router";
 import { makeStore } from "@/test/renderWithProviders";
+import { actAsync } from "@/test/renderSuspense";
 import { setCredentials } from "@/store/authSlice";
 
 function renderRoute(initialPath: string, authed = false) {
@@ -86,6 +87,23 @@ describe("router", () => {
     renderRoute("/labs/actions?latency=0");
     await waitFor(() => {
       expect(screen.getByRole("heading", { level: 1, name: "Actions Lab" })).toBeInTheDocument();
+    });
+  });
+
+  it("renders StreamingLabPage at /labs/streaming", async () => {
+    // The report suspends on its first pass, so the initial render has to sit
+    // inside an awaited act scope or its retry is stranded — see
+    // `renderSuspense.tsx`. The other lab routes resolve through `lazy()`,
+    // which does not hit that.
+    await actAsync(async () => {
+      renderRoute("/labs/streaming?latency=0");
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Streaming Suspense Lab" }),
+      ).toBeInTheDocument();
     });
   });
 

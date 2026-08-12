@@ -7,24 +7,26 @@ import { ProfileCacheProvider } from "@/context/ProfileCacheProvider";
 import type { ProfileCache } from "@/context/profileCache";
 import { createInMemoryProfileApi, type ProfileApi, type UserProfile } from "@/lib/profileApi";
 import { createPromiseCache } from "@/lib/promiseCache";
-import { renderAsync } from "@/test/renderSuspense";
+import { actAsync, renderAsync } from "@/test/renderSuspense";
+import { createDeferredProfileApi } from "@/test/profileHarness";
 
-const profiles: readonly UserProfile[] = [
-  {
-    id: "u-1",
-    name: "Ada Lovelace",
-    email: "ada@example.com",
-    role: "admin",
-    joinedAt: "2024-03-11",
-  },
-  {
-    id: "u-2",
-    name: "Grace Hopper",
-    email: "grace@example.com",
-    role: "user",
-    joinedAt: "2024-07-02",
-  },
-];
+const ADA: UserProfile = {
+  id: "u-1",
+  name: "Ada Lovelace",
+  email: "ada@example.com",
+  role: "admin",
+  joinedAt: "2024-03-11",
+};
+
+const GRACE: UserProfile = {
+  id: "u-2",
+  name: "Grace Hopper",
+  email: "grace@example.com",
+  role: "user",
+  joinedAt: "2024-07-02",
+};
+
+const profiles: readonly UserProfile[] = [ADA, GRACE];
 
 function makeCache(api: ProfileApi): ProfileCache {
   return createPromiseCache({ load: (id: string) => api.fetchProfile(id) });
@@ -49,9 +51,12 @@ afterEach(() => {
 
 describe("UserProfileCard", () => {
   it("shows the fallback first, then the profile", async () => {
-    // Slow enough that the request is still in flight when the initial render
-    // settles, so the fallback is observable.
-    const { cache } = healthy(50);
+    // Gated rather than slow. Holding the fallback open with a timer means the
+    // initial render has to finish inside that window, and on a loaded runner
+    // it does not — this test failed in CI that way. Nothing settles until
+    // `resolve` is called, so there is no window to lose.
+    const api = createDeferredProfileApi();
+    const cache = makeCache(api);
     await renderAsync(
       <ProfileCacheProvider cache={cache}>
         <Suspense fallback={<UserProfileCardSkeleton />}>
@@ -64,7 +69,9 @@ describe("UserProfileCard", () => {
     // Suspense's, not the component's.
     expect(screen.getByTestId("user-profile-card-skeleton")).toBeInTheDocument();
 
-    expect(await screen.findByTestId("user-profile-card")).toHaveAttribute("data-user-id", "u-1");
+    await actAsync(() => api.resolve("u-1", ADA));
+
+    expect(screen.getByTestId("user-profile-card")).toHaveAttribute("data-user-id", "u-1");
     expect(screen.getByRole("heading", { name: "Ada Lovelace" })).toBeInTheDocument();
     expect(screen.getByText("ada@example.com")).toBeInTheDocument();
     expect(screen.getByText("admin")).toBeInTheDocument();
