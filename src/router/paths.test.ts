@@ -10,6 +10,7 @@ describe("ROUTES", () => {
     expect(ROUTES.OPTIMISTIC_LAB).toBe("/labs/optimistic");
     expect(ROUTES.USE_API_LAB).toBe("/labs/use");
     expect(ROUTES.ACTIONS_LAB).toBe("/labs/actions");
+    expect(ROUTES.STREAMING_LAB).toBe("/labs/streaming");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -23,6 +24,7 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/optimistic")).toBe("/labs/optimistic");
     expect(typedRoute("/labs/use")).toBe("/labs/use");
     expect(typedRoute("/labs/actions")).toBe("/labs/actions");
+    expect(typedRoute("/labs/streaming")).toBe("/labs/streaming");
     expect(typedRoute("/login")).toBe("/login");
   });
 });
