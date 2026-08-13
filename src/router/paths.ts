@@ -7,6 +7,7 @@ export const ROUTES = {
   USE_API_LAB: "/labs/use",
   ACTIONS_LAB: "/labs/actions",
   STREAMING_LAB: "/labs/streaming",
+  NAVIGATION_LAB: "/labs/navigation",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
+import { RouteTransitionHarness } from "@/test/routeTransitionHarness";
 import { Navbar } from "./Navbar";
 
 const mockToggleSidebar = vi.fn();
@@ -15,9 +15,9 @@ vi.mock("@/store/zustand", () => ({
 
 function renderNavbar(initialPath = "/") {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
+    <RouteTransitionHarness initialEntries={[initialPath]}>
       <Navbar />
-    </MemoryRouter>,
+    </RouteTransitionHarness>,
   );
 }
 

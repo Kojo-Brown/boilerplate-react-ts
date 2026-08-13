@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { TransitionNavLink } from "@/components/navigation/TransitionNavLink";
 import { cn } from "@/lib/cn";
 import { useUi } from "@/store/zustand";
 import { ROUTES } from "@/router/paths";
@@ -44,22 +44,23 @@ export function Sidebar() {
             navigation region that assistive tech announces and queries by name. */}
         <nav className="flex flex-col gap-1 px-3" aria-label="Sidebar navigation">
           {SIDEBAR_ITEMS.map((item) => (
-            <NavLink
+            <TransitionNavLink
               key={item.to}
               to={item.to}
               end={item.to === ROUTES.HOME}
               onClick={closeSidebar}
-              className={({ isActive }) =>
+              className={({ isActive, isPendingTarget }) =>
                 cn(
                   "rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium transition-colors",
                   isActive
                     ? "bg-[var(--color-primary)] text-[var(--color-primary-fg)]"
                     : "text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)]",
+                  isPendingTarget && "opacity-60",
                 )
               }
             >
               {item.label}
-            </NavLink>
+            </TransitionNavLink>
           ))}
         </nav>
       </aside>

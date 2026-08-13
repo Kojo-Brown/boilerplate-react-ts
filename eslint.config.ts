@@ -55,7 +55,7 @@ export default defineConfig(
         "warn",
         {
           allowConstantExport: true,
-          allowExportNames: ["useToast", "useAuth", "useTheme"],
+          allowExportNames: ["useToast", "useAuth", "useTheme", "useRouteTransition"],
         },
       ],
       "@typescript-eslint/consistent-type-imports": "error",

@@ -4,12 +4,7 @@ import { RootLayout } from "@/layouts/RootLayout";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import ErrorPage from "@/pages/ErrorPage";
-import {
-  HomePageSkeleton,
-  DashboardPageSkeleton,
-  AboutPageSkeleton,
-  LoginPageSkeleton,
-} from "@/components/skeletons";
+import { LoginPageSkeleton } from "@/components/skeletons";
 import { PageLoader } from "@/components/ui/PageLoader";
 
 const LazyHomePage = lazy(() => import("@/pages/HomePage").then((m) => ({ default: m.HomePage })));
@@ -46,10 +41,31 @@ const LazyStreamingLabPage = lazy(() =>
   import("@/pages/StreamingLabPage").then((m) => ({ default: m.StreamingLabPage })),
 );
 
+const LazyNavigationLabPage = lazy(() =>
+  import("@/pages/NavigationLabPage").then((m) => ({ default: m.NavigationLabPage })),
+);
+
+const LazySlowRouteLabRoute = lazy(() =>
+  import("@/pages/SlowRouteLabPage").then((m) => ({ default: m.SlowRouteLabRoute })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
 
+/*
+ * Route elements under `/` carry no `<Suspense>` of their own.
+ *
+ * `RootLayout` holds one boundary above `<Outlet>` for all of them, which is
+ * what lets a navigation keep the previous page on screen instead of swapping
+ * it for a skeleton — see the comment there and `docs/route-transitions.md`.
+ * Re-adding a boundary to a route element below would restore the flash for
+ * that route only, silently.
+ *
+ * `/login` and `/auth/callback` are outside the layout and so keep theirs:
+ * with no shared parent boundary there is no previous page to hold, and their
+ * skeleton is the only thing that can be shown.
+ */
 export const routes: RouteObject[] = [
   {
     path: "/login",
@@ -74,86 +90,67 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: (
-          <Suspense fallback={<HomePageSkeleton />}>
-            <LazyHomePage />
-          </Suspense>
-        ),
+        element: <LazyHomePage />,
       },
       {
         element: <ProtectedRoute />,
         children: [
           {
             path: "dashboard",
-            element: (
-              <Suspense fallback={<DashboardPageSkeleton />}>
-                <LazyDashboardPage />
-              </Suspense>
-            ),
+            element: <LazyDashboardPage />,
           },
         ],
       },
       {
         path: "about",
-        element: (
-          <Suspense fallback={<AboutPageSkeleton />}>
-            <LazyAboutPage />
-          </Suspense>
-        ),
+        element: <LazyAboutPage />,
       },
       {
         // Reference demo for the React 19 concurrency pattern. Deliberately
         // unlinked from the nav — it is a lab, not part of the app shell.
         path: "labs/concurrency",
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <LazyConcurrencyLabPage />
-          </Suspense>
-        ),
+        element: <LazyConcurrencyLabPage />,
       },
       {
         // Reference demo for the React 19 optimistic-mutation pattern. Also
         // unlinked from the nav — the failing-server mode is not something to
         // stumble into from the app shell.
         path: "labs/optimistic",
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <LazyOptimisticLabPage />
-          </Suspense>
-        ),
+        element: <LazyOptimisticLabPage />,
       },
       {
         // Reference demo for the React 19 `use()` pattern. Unlinked from the
         // nav for the same reason as the others — the failing-server mode is
         // not something to stumble into from the app shell.
         path: "labs/use",
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <LazyUseApiLabPage />
-          </Suspense>
-        ),
+        element: <LazyUseApiLabPage />,
       },
       {
         // Reference demo for the React 19 Actions API. Unlinked from the nav
         // for the same reason as the others — the failing-server mode is not
         // something to stumble into from the app shell.
         path: "labs/actions",
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <LazyActionsLabPage />
-          </Suspense>
-        ),
+        element: <LazyActionsLabPage />,
       },
       {
         // Reference demo for streaming Suspense boundaries. Unlinked from the
         // nav for the same reason as the others — the broken-section mode is
         // not something to stumble into from the app shell.
         path: "labs/streaming",
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <LazyStreamingLabPage />
-          </Suspense>
-        ),
+        element: <LazyStreamingLabPage />,
+      },
+      {
+        // Reference demo for held route transitions. Unlinked from the nav for
+        // the same reason as the others — its slow-route mode is deliberately
+        // unpleasant to navigate.
+        path: "labs/navigation",
+        element: <LazyNavigationLabPage />,
+      },
+      {
+        // The lab's destination. Its element decides where its own boundary
+        // goes, which is the one thing a route config cannot express twice.
+        path: "labs/navigation/slow",
+        element: <LazySlowRouteLabRoute />,
       },
       {
         path: "*",

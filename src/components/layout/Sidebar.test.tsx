@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
+import { RouteTransitionHarness } from "@/test/routeTransitionHarness";
 import { Sidebar } from "./Sidebar";
 
 const mockCloseSidebar = vi.fn();
@@ -18,9 +18,9 @@ vi.mock("@/store/zustand", () => ({
 function renderSidebar(initialPath = "/", sidebarOpen = false) {
   mockUiState.sidebarOpen = sidebarOpen;
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
+    <RouteTransitionHarness initialEntries={[initialPath]}>
       <Sidebar />
-    </MemoryRouter>,
+    </RouteTransitionHarness>,
   );
 }
 
