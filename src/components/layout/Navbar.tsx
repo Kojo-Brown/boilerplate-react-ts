@@ -1,4 +1,5 @@
-import { Link, NavLink } from "react-router";
+import { TransitionLink } from "@/components/navigation/TransitionLink";
+import { TransitionNavLink } from "@/components/navigation/TransitionNavLink";
 import { cn } from "@/lib/cn";
 import { useUi } from "@/store/zustand";
 import { ROUTES } from "@/router/paths";
@@ -33,7 +34,7 @@ export function Navbar() {
         <MenuIcon />
       </button>
 
-      <Link
+      <TransitionLink
         to={ROUTES.HOME}
         className="flex items-center gap-2 font-semibold text-[var(--color-fg)]"
       >
@@ -46,25 +47,30 @@ export function Navbar() {
           R
         </span>
         <span>React TS</span>
-      </Link>
+      </TransitionLink>
 
       <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main navigation">
         {NAV_ITEMS.map((item) => (
-          <NavLink
+          <TransitionNavLink
             key={item.to}
             to={item.to}
             end={item.to === ROUTES.HOME}
-            className={({ isActive }) =>
+            className={({ isActive, isPendingTarget }) =>
               cn(
                 "rounded-[var(--radius-sm)] px-3 py-1.5 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-[var(--color-primary)] text-[var(--color-primary-fg)]"
                   : "text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)]",
+                // The destination being waited on. Without this the only
+                // feedback is the page-level bar, which does not say *which*
+                // item was clicked — and the held page still shows the old
+                // item as the active one.
+                isPendingTarget && "opacity-60",
               )
             }
           >
             {item.label}
-          </NavLink>
+          </TransitionNavLink>
         ))}
       </nav>
     </header>
