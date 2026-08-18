@@ -49,6 +49,10 @@ const LazySlowRouteLabRoute = lazy(() =>
   import("@/pages/SlowRouteLabPage").then((m) => ({ default: m.SlowRouteLabRoute })),
 );
 
+const LazyHeadlessLabPage = lazy(() =>
+  import("@/pages/HeadlessLabPage").then((m) => ({ default: m.HeadlessLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -145,6 +149,13 @@ export const routes: RouteObject[] = [
         // unpleasant to navigate.
         path: "labs/navigation",
         element: <LazyNavigationLabPage />,
+      },
+      {
+        // Reference demo for the headless component pattern. Unlinked from the
+        // nav like the others — three renderings of one list is a lab exhibit,
+        // not something the app shell needs.
+        path: "labs/headless",
+        element: <LazyHeadlessLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary

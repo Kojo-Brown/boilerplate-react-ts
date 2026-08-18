@@ -11,6 +11,8 @@ describe("ROUTES", () => {
     expect(ROUTES.USE_API_LAB).toBe("/labs/use");
     expect(ROUTES.ACTIONS_LAB).toBe("/labs/actions");
     expect(ROUTES.STREAMING_LAB).toBe("/labs/streaming");
+    expect(ROUTES.NAVIGATION_LAB).toBe("/labs/navigation");
+    expect(ROUTES.HEADLESS_LAB).toBe("/labs/headless");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -25,6 +27,8 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/use")).toBe("/labs/use");
     expect(typedRoute("/labs/actions")).toBe("/labs/actions");
     expect(typedRoute("/labs/streaming")).toBe("/labs/streaming");
+    expect(typedRoute("/labs/navigation")).toBe("/labs/navigation");
+    expect(typedRoute("/labs/headless")).toBe("/labs/headless");
     expect(typedRoute("/login")).toBe("/login");
   });
 });
