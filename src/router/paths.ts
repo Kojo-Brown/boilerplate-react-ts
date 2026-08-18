@@ -8,6 +8,7 @@ export const ROUTES = {
   ACTIONS_LAB: "/labs/actions",
   STREAMING_LAB: "/labs/streaming",
   NAVIGATION_LAB: "/labs/navigation",
+  HEADLESS_LAB: "/labs/headless",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

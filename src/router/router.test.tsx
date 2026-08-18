@@ -107,6 +107,13 @@ describe("router", () => {
     });
   });
 
+  it("renders HeadlessLabPage at /labs/headless", async () => {
+    renderRoute("/labs/headless");
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: "Headless Lab" })).toBeInTheDocument();
+    });
+  });
+
   it("renders NotFoundPage for unknown routes", async () => {
     renderRoute("/this-does-not-exist");
     await waitFor(() => {
