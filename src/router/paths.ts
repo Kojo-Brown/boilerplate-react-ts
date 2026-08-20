@@ -9,6 +9,7 @@ export const ROUTES = {
   STREAMING_LAB: "/labs/streaming",
   NAVIGATION_LAB: "/labs/navigation",
   HEADLESS_LAB: "/labs/headless",
+  POLYMORPHIC_LAB: "/labs/polymorphic",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

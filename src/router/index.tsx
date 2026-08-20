@@ -49,6 +49,10 @@ const LazySlowRouteLabRoute = lazy(() =>
   import("@/pages/SlowRouteLabPage").then((m) => ({ default: m.SlowRouteLabRoute })),
 );
 
+const LazyPolymorphicLabPage = lazy(() =>
+  import("@/pages/PolymorphicLabPage").then((m) => ({ default: m.PolymorphicLabPage })),
+);
+
 const LazyHeadlessLabPage = lazy(() =>
   import("@/pages/HeadlessLabPage").then((m) => ({ default: m.HeadlessLabPage })),
 );
@@ -156,6 +160,13 @@ export const routes: RouteObject[] = [
         // not something the app shell needs.
         path: "labs/headless",
         element: <LazyHeadlessLabPage />,
+      },
+      {
+        // Reference demo for the polymorphic `as` prop. Unlinked from the nav
+        // like the others — an element picker over one paragraph is a lab
+        // exhibit, not something the app shell needs.
+        path: "labs/polymorphic",
+        element: <LazyPolymorphicLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary
