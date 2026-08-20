@@ -73,7 +73,7 @@ exports[`UI system snapshots > Badge > warning variant 1`] = `
 exports[`UI system snapshots > Button > danger variant 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-danger)] text-white hover:opacity-90 h-10 px-4 text-sm"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-danger)] text-white hover:opacity-90 h-10 px-4 text-sm"
   >
     Delete
   </button>
@@ -83,7 +83,7 @@ exports[`UI system snapshots > Button > danger variant 1`] = `
 exports[`UI system snapshots > Button > default (primary/md) 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
   >
     Submit
   </button>
@@ -93,7 +93,7 @@ exports[`UI system snapshots > Button > default (primary/md) 1`] = `
 exports[`UI system snapshots > Button > disabled state 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
     disabled=""
   >
     Disabled
@@ -104,7 +104,7 @@ exports[`UI system snapshots > Button > disabled state 1`] = `
 exports[`UI system snapshots > Button > ghost variant 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-transparent hover:bg-[var(--color-muted)] text-[var(--color-fg)] h-10 px-4 text-sm"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-transparent hover:bg-[var(--color-muted)] text-[var(--color-fg)] h-10 px-4 text-sm"
   >
     Ghost
   </button>
@@ -114,7 +114,7 @@ exports[`UI system snapshots > Button > ghost variant 1`] = `
 exports[`UI system snapshots > Button > lg size 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-12 px-6 text-base"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-12 px-6 text-base"
   >
     Large
   </button>
@@ -124,7 +124,7 @@ exports[`UI system snapshots > Button > lg size 1`] = `
 exports[`UI system snapshots > Button > loading state 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-10 px-4 text-sm"
     disabled=""
   >
     <svg
@@ -154,7 +154,7 @@ exports[`UI system snapshots > Button > loading state 1`] = `
 exports[`UI system snapshots > Button > secondary variant 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-muted)] text-[var(--color-fg)] hover:bg-[var(--color-border)] h-10 px-4 text-sm"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-muted)] text-[var(--color-fg)] hover:bg-[var(--color-border)] h-10 px-4 text-sm"
   >
     Cancel
   </button>
@@ -164,7 +164,7 @@ exports[`UI system snapshots > Button > secondary variant 1`] = `
 exports[`UI system snapshots > Button > sm size 1`] = `
 <DocumentFragment>
   <button
-    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-8 px-3 text-sm"
+    class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:opacity-50 disabled:cursor-not-allowed disabled:opacity-50 bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 h-8 px-3 text-sm"
   >
     Small
   </button>
