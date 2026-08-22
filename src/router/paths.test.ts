@@ -13,6 +13,7 @@ describe("ROUTES", () => {
     expect(ROUTES.STREAMING_LAB).toBe("/labs/streaming");
     expect(ROUTES.NAVIGATION_LAB).toBe("/labs/navigation");
     expect(ROUTES.HEADLESS_LAB).toBe("/labs/headless");
+    expect(ROUTES.RENDER_PROPS_LAB).toBe("/labs/render-props");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -29,6 +30,7 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/streaming")).toBe("/labs/streaming");
     expect(typedRoute("/labs/navigation")).toBe("/labs/navigation");
     expect(typedRoute("/labs/headless")).toBe("/labs/headless");
+    expect(typedRoute("/labs/render-props")).toBe("/labs/render-props");
     expect(typedRoute("/login")).toBe("/login");
   });
 });
