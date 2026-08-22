@@ -114,6 +114,15 @@ describe("router", () => {
     });
   });
 
+  it("renders RenderPropsLabPage at /labs/render-props", async () => {
+    renderRoute("/labs/render-props");
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Render Props & HOCs Lab" }),
+      ).toBeInTheDocument();
+    });
+  });
+
   it("renders NotFoundPage for unknown routes", async () => {
     renderRoute("/this-does-not-exist");
     await waitFor(() => {

@@ -57,6 +57,10 @@ const LazyHeadlessLabPage = lazy(() =>
   import("@/pages/HeadlessLabPage").then((m) => ({ default: m.HeadlessLabPage })),
 );
 
+const LazyRenderPropsLabPage = lazy(() =>
+  import("@/pages/RenderPropsLabPage").then((m) => ({ default: m.RenderPropsLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -167,6 +171,13 @@ export const routes: RouteObject[] = [
         // exhibit, not something the app shell needs.
         path: "labs/polymorphic",
         element: <LazyPolymorphicLabPage />,
+      },
+      {
+        // Reference demo for render props and HOCs against the hook that
+        // replaced them. Unlinked from the nav like the others — a row of
+        // three cards reporting the same boolean is a lab exhibit.
+        path: "labs/render-props",
+        element: <LazyRenderPropsLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary
