@@ -61,6 +61,10 @@ const LazyRenderPropsLabPage = lazy(() =>
   import("@/pages/RenderPropsLabPage").then((m) => ({ default: m.RenderPropsLabPage })),
 );
 
+const LazyCheckoutLabPage = lazy(() =>
+  import("@/pages/CheckoutLabPage").then((m) => ({ default: m.CheckoutLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/OAuthCallbackPage").then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -178,6 +182,13 @@ export const routes: RouteObject[] = [
         // three cards reporting the same boolean is a lab exhibit.
         path: "labs/render-props",
         element: <LazyRenderPropsLabPage />,
+      },
+      {
+        // Reference demo for the XState checkout machine. Unlinked from the
+        // nav like the others — a basket that cannot actually be bought is a
+        // lab exhibit, not part of the app shell.
+        path: "labs/checkout",
+        element: <LazyCheckoutLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary

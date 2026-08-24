@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
 import {
+  clearFieldError,
   emptyValues,
   fieldErrorsFromZod,
   firstFieldError,
@@ -181,5 +182,27 @@ describe("fieldErrorsFromZod", () => {
     if (parsed.success) throw new Error("expected the schema to reject this input");
 
     expect(fieldErrorsFromZod<Field>(parsed.error, FIELDS)).toEqual({});
+  });
+});
+
+describe("clearFieldError", () => {
+  it("removes only the named field", () => {
+    const errors = { email: "Invalid.", note: "Too long." };
+
+    expect(clearFieldError<Field>(errors, "email")).toEqual({ note: "Too long." });
+  });
+
+  it("does not mutate what it was given", () => {
+    const errors = { email: "Invalid." };
+
+    clearFieldError<Field>(errors, "email");
+
+    expect(errors).toEqual({ email: "Invalid." });
+  });
+
+  it("is a no-op for a field with no error", () => {
+    const errors = { email: "Invalid." };
+
+    expect(clearFieldError<Field>(errors, "note")).toEqual(errors);
   });
 });

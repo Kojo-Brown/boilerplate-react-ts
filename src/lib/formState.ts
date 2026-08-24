@@ -114,6 +114,30 @@ export function firstFieldError<Field extends string>(
 }
 
 /**
+ * The same errors without the one belonging to `field`.
+ *
+ * Used when a control changes: the message under it has to go away at that
+ * moment rather than at the next submit, because a user who fixes a field and
+ * is still told it is wrong reads the form as having ignored them.
+ *
+ * Written as a rebuild rather than `delete next[field]` because the key is a
+ * variable, and a dynamic `delete` on a typed record is both a lint error here
+ * and a deoptimisation in every engine.
+ */
+export function clearFieldError<Field extends string>(
+  fieldErrors: FieldErrors<Field>,
+  field: Field,
+): FieldErrors<Field> {
+  const remaining: FieldErrors<Field> = {};
+  // `Object.keys` widens to `string[]`; the keys of a `Partial<Record<Field, …>>`
+  // are `Field` by construction, and there is no built-in that says so.
+  for (const key of Object.keys(fieldErrors) as Field[]) {
+    if (key !== field) remaining[key] = fieldErrors[key];
+  }
+  return remaining;
+}
+
+/**
  * Flattens a Zod error into one message per known field.
  *
  * Only the first issue per field survives: a control can display one message,

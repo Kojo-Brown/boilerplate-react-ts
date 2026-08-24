@@ -11,6 +11,7 @@ export const ROUTES = {
   HEADLESS_LAB: "/labs/headless",
   POLYMORPHIC_LAB: "/labs/polymorphic",
   RENDER_PROPS_LAB: "/labs/render-props",
+  CHECKOUT_LAB: "/labs/checkout",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;
