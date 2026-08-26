@@ -1,6 +1,6 @@
 # Headless components: behaviour hooks split from presentation
 
-`useListbox` (`src/hooks/useListbox.ts`) is the worked example. It is a
+`useListbox` (`src/shared/hooks/useListbox.ts`) is the worked example. It is a
 single-select listbox — selection, virtual focus, arrow keys, Home/End,
 typeahead, and the ARIA attributes that make all of it legible — and it renders
 nothing at all. Three presentations in this repository are built on it:
@@ -41,7 +41,7 @@ bordered cards with no `<ul>` anywhere, and it consumes exactly the same two
 getters as the plain list does, because the hook never names an element.
 
 The payoff that is easiest to overlook is the test suite.
-`src/hooks/useListbox.test.ts` contains no JSX: the entire state machine is
+`src/shared/hooks/useListbox.test.ts` contains no JSX: the entire state machine is
 driven through `renderHook` and plain objects standing in for keyboard events.
 Behaviour that lives inside a component can only ever be asserted through
 whatever DOM that component happens to render, which means every behaviour test
@@ -59,7 +59,7 @@ of their own for the same element, and spreading is not merging:
 
 Neither line is an error. The element renders, it looks right, and one of the
 two behaviours is simply absent. So the getters take the caller's props as an
-argument and `mergeProps` (`src/lib/mergeProps.ts`) composes what can be
+argument and `mergeProps` (`src/shared/lib/mergeProps.ts`) composes what can be
 composed: `on*` handlers chain, `className` goes through `cn`, `style` is
 shallow-merged, `ref` goes through `mergeRefs`, and anything else the caller
 sets wins.

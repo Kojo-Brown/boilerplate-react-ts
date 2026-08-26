@@ -1,9 +1,9 @@
-export { renderWithProviders, makeStore } from "./renderWithProviders";
-export type { TestStore } from "./renderWithProviders";
-export { renderAsync, actAsync } from "./renderSuspense";
-export { RouteTransitionHarness } from "./routeTransitionHarness";
-export type { RouteTransitionHarnessProps } from "./routeTransitionHarness";
-export type { RenderSuspenseResult } from "./renderSuspense";
+export { renderWithProviders, makeStore } from "@/test/renderWithProviders";
+export type { TestStore } from "@/test/renderWithProviders";
+export { renderAsync, actAsync } from "@/test/renderSuspense";
+export { RouteTransitionHarness } from "@/test/routeTransitionHarness";
+export type { RouteTransitionHarnessProps } from "@/test/routeTransitionHarness";
+export type { RenderSuspenseResult } from "@/test/renderSuspense";
 export {
   makeUser,
   makeAdminUser,
@@ -12,7 +12,7 @@ export {
   makeCreatePostInput,
   makeAuthResponse,
   resetFactorySequence,
-} from "./factories";
-export type { AuthTokenResponse } from "./factories";
-export { server } from "./mocks/server";
-export { handlers, authHandlers, postHandlers } from "./mocks/handlers";
+} from "@/test/factories";
+export type { AuthTokenResponse } from "@/test/factories";
+export { server } from "@/shared/mocks/server";
+export { handlers, authHandlers, postHandlers } from "@/shared/mocks/handlers";

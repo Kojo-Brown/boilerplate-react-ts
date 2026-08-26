@@ -1,5 +1,10 @@
-import { baseApi } from "@/store/api";
-import { setCredentials, refreshAccessToken, logout, type AuthUser } from "@/store/authSlice";
+import { baseApi } from "@/shared/api/baseApi";
+import {
+  setCredentials,
+  refreshAccessToken,
+  logout,
+  type AuthUser,
+} from "@/entities/session/authSlice";
 
 interface LoginRequest {
   email: string;

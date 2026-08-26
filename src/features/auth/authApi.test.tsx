@@ -2,10 +2,14 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { server } from "@/test/mocks/server";
+import { server } from "@/shared/mocks/server";
 import { renderWithProviders } from "@/test/renderWithProviders";
-import { setCredentials, AUTH_STORAGE_KEYS, type AuthUser } from "@/store/authSlice";
-import { useLoginMutation, useRefreshMutation, useLogoutUserMutation } from "./authApi";
+import { setCredentials, AUTH_STORAGE_KEYS, type AuthUser } from "@/entities/session/authSlice";
+import {
+  useLoginMutation,
+  useRefreshMutation,
+  useLogoutUserMutation,
+} from "@/features/auth/authApi";
 
 const API = "http://localhost:4000";
 const mockUser: AuthUser = { id: "1", email: "test@example.com", role: "user" };

@@ -3,11 +3,11 @@
 One capability — "does this media query match?" — delivered three ways, so the
 three can be compared on identical work rather than on paraphrase:
 
-| Delivery               | File                                         | Shape                                  |
-| ---------------------- | -------------------------------------------- | -------------------------------------- |
-| Hook                   | `src/hooks/useMediaQuery.ts`                 | `const matches = useMediaQuery(query)` |
-| Render prop            | `src/components/patterns/MediaQuery.tsx`     | `<MediaQuery query>{(matches) => …}`   |
-| Higher-order component | `src/components/patterns/withMediaQuery.tsx` | `withMediaQuery(Banner, query)`        |
+| Delivery               | File                                        | Shape                                  |
+| ---------------------- | ------------------------------------------- | -------------------------------------- |
+| Hook                   | `src/shared/hooks/useMediaQuery.ts`         | `const matches = useMediaQuery(query)` |
+| Render prop            | `src/shared/ui/patterns/MediaQuery.tsx`     | `<MediaQuery query>{(matches) => …}`   |
+| Higher-order component | `src/shared/ui/patterns/withMediaQuery.tsx` | `withMediaQuery(Banner, query)`        |
 
 `/labs/render-props` renders all three subscribed to the same query. Resize the
 window across the breakpoint and they flip together, because the second and
@@ -27,9 +27,9 @@ them directly:
 | ------------------------------------- | ---------------------------- | ------------------------------------------- |
 | `withRouter(Component)`               | `useLocation`, `useNavigate` | throughout `src/pages/`                     |
 | `connect(mapState)(Component)`        | `useSelector`                | `useAppSelector` in `src/store`             |
-| `<Media query>{matches => …}</Media>` | `useMediaQuery(query)`       | `src/hooks/useMediaQuery.ts`                |
+| `<Media query>{matches => …}</Media>` | `useMediaQuery(query)`       | `src/shared/hooks/useMediaQuery.ts`         |
 | `<Downshift>{api => …}</Downshift>`   | a behaviour hook             | `useListbox`, `docs/headless-components.md` |
-| `withAuth(Component)`                 | `useAuth()`                  | `src/context/AuthContext.tsx`               |
+| `withAuth(Component)`                 | `useAuth()`                  | `src/features/auth/AuthContext.tsx`         |
 | `<Formik>{form => …}</Formik>`        | a form hook                  | `useZodForm`                                |
 
 The mechanical translation is always the same: whatever the wrapper computed
@@ -178,7 +178,7 @@ so state inside it is stable.
 
 ### And the two chores every HOC owes its wrapper
 
-`src/lib/hoc.ts`: `wrapDisplayName` names the wrapper
+`src/shared/lib/hoc.ts`: `wrapDisplayName` names the wrapper
 `withMediaQuery(Banner)` instead of leaving four identical `WithMediaQuery`
 nodes in devtools, and `copyStatics` hoists the wrapped component's own
 statics, which otherwise stay behind on a component nobody holds a reference to

@@ -1,7 +1,7 @@
 import { Suspense, lazy, type ReactElement, type ReactNode } from "react";
 import { Outlet, RouterProvider, createMemoryRouter, type RouteObject } from "react-router";
 import { act, render } from "@testing-library/react";
-import { RouteTransitionProvider } from "@/router/routeTransition";
+import { RouteTransitionProvider } from "@/features/route-transition/routeTransition";
 
 export interface DeferredChunk {
   Component: React.LazyExoticComponent<() => ReactElement>;

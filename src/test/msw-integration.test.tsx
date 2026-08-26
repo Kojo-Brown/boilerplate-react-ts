@@ -3,15 +3,15 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { renderWithProviders } from "./renderWithProviders";
-import { server } from "./mocks/server";
+import { renderWithProviders } from "@/test/renderWithProviders";
+import { server } from "@/shared/mocks/server";
 import {
   makeUser,
   makePost,
   makePostList,
   makeAuthResponse,
   resetFactorySequence,
-} from "./factories";
+} from "@/test/factories";
 
 const API = "http://localhost:4000";
 

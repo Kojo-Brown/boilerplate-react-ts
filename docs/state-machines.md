@@ -4,11 +4,11 @@ The checkout at `/labs/checkout` is four steps, one actor, and a set of rules
 that are enforced by the _shape_ of the machine rather than by code that
 remembers to check them.
 
-- Machine: `src/machines/checkoutMachine.ts`
-- Domain and fake server: `src/lib/checkoutApi.ts`
-- Validation: `src/lib/checkoutSchemas.ts`
-- React binding: `src/components/checkout/CheckoutFlow.tsx`
-- Lab page: `src/pages/CheckoutLabPage.tsx`
+- Machine: `src/features/checkout/checkoutMachine.ts`
+- Domain and fake server: `src/features/checkout/checkoutApi.ts`
+- Validation: `src/features/checkout/checkoutSchemas.ts`
+- React binding: `src/features/checkout/CheckoutFlow.tsx`
+- Lab page: `src/pages/checkout-lab/CheckoutLabPage.tsx`
 
 ## Why a machine, and when not
 
@@ -145,7 +145,7 @@ behaviour the hook was added to avoid.
 ## Testing
 
 The machine is tested as an actor, with no DOM:
-`src/machines/checkoutMachine.test.ts` drives `createActor(checkoutMachine)`
+`src/features/checkout/checkoutMachine.test.ts` drives `createActor(checkoutMachine)`
 directly. That is the payoff of keeping the logic out of components — the
 double-submit rule, the abort-on-cancel rule and the rejection routing are all
 assertions about a value, not about a rendering.

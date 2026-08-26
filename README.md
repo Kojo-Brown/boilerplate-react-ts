@@ -43,19 +43,30 @@ pnpm build
 
 ## Project Structure
 
+[Feature-Sliced Design](https://feature-sliced.design/). A module may import
+from layers **below** it and never from one above or beside it, which
+`fsd/layer-imports` enforces on every build — see
+[docs/feature-sliced-design.md](docs/feature-sliced-design.md).
+
 ```
 src/
-├── api/          # API client + TanStack Query queryClient
-├── components/
-│   └── ui/       # Design system primitives (Button, Input, Modal…)
-├── hooks/        # Custom hooks
-├── lib/          # Utilities (cn, etc.)
-├── pages/        # Route-level components
-├── store/        # Redux slices + typed hooks
-├── styles/       # Global CSS + design tokens
-├── test/         # MSW handlers, setup, test utilities
-├── types/        # Shared TypeScript types
-└── env.ts        # Typed + validated env vars (Zod)
+├── app/          # Composition root: entry, router, store, query client
+├── pages/        # One slice per route (home/, login/, checkout-lab/…)
+├── widgets/      # Composite blocks: layout shell, streaming report
+├── features/     # User-facing capabilities: auth/, checkout/, invite/…
+├── entities/     # Domain models: session/, user/, post/, task/, report/
+├── shared/       # Reusable, domain-free
+│   ├── ui/       # Design system primitives (Button, Input, Modal…)
+│   ├── lib/      # Utilities (cn, promiseCache, polymorphic…)
+│   ├── hooks/    # Generic hooks
+│   ├── api/      # Base RTK Query API + query-event contract
+│   ├── routes/   # Route paths and href builders
+│   ├── store/    # Typed Redux hooks + Zustand stores
+│   ├── theme/    # Theme provider and toggle
+│   ├── config/   # Typed + validated env vars (Zod)
+│   ├── mocks/    # MSW handlers (dev worker + test server)
+│   └── styles/   # Global CSS + design tokens
+└── test/         # Test scaffolding — deliberately not a layer
 ```
 
 ## Design Tokens
@@ -75,7 +86,7 @@ All design tokens are CSS custom properties on `:root`. Override in `.dark` for 
 
 ## React 19 Concurrency
 
-`<ConcurrentFilterList>` (`src/components/performance/`) filters a large list
+`<ConcurrentFilterList>` (`src/shared/ui/performance/`) filters a large list
 without letting the render block typing:
 
 - **`useDeferredValue`** splits the query into an urgent copy (what the input
@@ -97,7 +108,7 @@ list this size in a real screen, combine it with `<VirtualList>`.
 
 `/labs/concurrency` is a harness for the pattern — dataset size and scheduling
 mode come from the URL (`?mode=blocking&n=15000`), and the page records real
-frame timings with `src/lib/jankMeter.ts`. `e2e/concurrency-benchmark.spec.ts`
+frame timings with `src/shared/lib/jankMeter.ts`. `e2e/concurrency-benchmark.spec.ts`
 drives both arms and fails if the gap disappears:
 
 ```bash
@@ -124,9 +135,9 @@ does not. What concurrency buys is that the keystroke no longer waits for it.
 
 ## Optimistic Mutations
 
-`useOptimisticList` (`src/hooks/`) draws a change before the request that makes
+`useOptimisticList` (`src/shared/hooks/`) draws a change before the request that makes
 it real has come back, and takes it back off if that request fails.
-`<OptimisticTaskList>` (`src/components/mutations/`) is the worked example.
+`<OptimisticTaskList>` (`src/features/tasks/`) is the worked example.
 
 The hook holds two lists. `committed` is what the server has confirmed;
 `useOptimistic` layers the in-flight actions on top of it. Every mutation names
@@ -144,7 +155,7 @@ commit: a `commit()` that rejects leaves the committed list untouched, React
 discards the optimistic layer when the transition settles, and the row is gone.
 There is no snapshot to restore, so there is no window in which a half-applied
 change can be observed. Both layers go through the same reducer
-(`src/lib/optimisticList.ts`) — if the guess and the truth were computed by
+(`src/shared/lib/optimisticList.ts`) — if the guess and the truth were computed by
 different code they could disagree in ways no test would catch, because the
 optimistic render is thrown away before anything can assert on it.
 
@@ -181,7 +192,7 @@ the pattern that is hard to reach on a healthy backend — is one click away.
 
 ## Reading Promises with `use()`
 
-`<UserProfileCard>` (`src/components/suspense/`) renders data that has not
+`<UserProfileCard>` (`src/entities/report/`, `src/entities/user/`, `src/widgets/streaming-report/`) renders data that has not
 arrived yet, with no loading flag and no `data === undefined` branch:
 
 ```tsx
@@ -195,7 +206,7 @@ Both halves of the API are in those two lines.
 component every time its boundary retries, so a promise created _during_ render
 is a different promise each pass: the component suspends on it, React retries,
 render makes another one, and the fallback never leaves. `createPromiseCache`
-(`src/lib/promiseCache.ts`) is what makes `read(key)` return the identical
+(`src/shared/lib/promiseCache.ts`) is what makes `read(key)` return the identical
 promise object every render. Rendering never calls the API directly.
 
 **`use(Context)` can be called conditionally**, which nothing else hook-shaped
@@ -265,7 +276,7 @@ on.
 
 ## Forms with the Actions API
 
-`<InviteTeammateForm>` (`src/components/forms/`) has no `isSubmitting`, no
+`<InviteTeammateForm>` (`src/features/auth/`, `src/features/invite/`) has no `isSubmitting`, no
 `setError`, and no `try/finally` resetting a flag — the three things a
 hand-rolled form spends most of its code on. The action is an ordinary async
 function that takes the `FormData` and returns the next state:
@@ -281,7 +292,7 @@ const [state, formAction] = useActionState(async (_previous, formData) => {
 }, IDLE_STATE);
 ```
 
-`src/lib/formState.ts` is the reusable half: one `FormState<Field>` shape that
+`src/shared/lib/formState.ts` is the reusable half: one `FormState<Field>` shape that
 both a schema failure and a server rejection resolve to, so the form renders one
 thing rather than branching on where the problem came from. Compare
 `<LoginForm>`, which wires the same concerns up by hand through React Hook Form

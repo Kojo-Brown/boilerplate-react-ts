@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
-import { server } from "@/test/mocks/server";
+import { server } from "@/shared/mocks/server";
 import { makeStore } from "@/test/renderWithProviders";
-import { setCredentials, logout, type AuthUser } from "@/store/authSlice";
-import { startSilentRefresh, stopSilentRefresh } from "./silentRefresh";
+import { setCredentials, logout, type AuthUser } from "@/entities/session/authSlice";
+import { startSilentRefresh, stopSilentRefresh } from "@/features/auth/silentRefresh";
 
 const API = "http://localhost:4000";
 const mockUser: AuthUser = { id: "1", email: "test@example.com", role: "user" };

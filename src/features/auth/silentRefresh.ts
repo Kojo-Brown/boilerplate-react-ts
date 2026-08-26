@@ -1,5 +1,5 @@
-import type { AppStore } from "@/store";
-import { authApi } from "./authApi";
+import type { AppStore } from "@/app/store";
+import { authApi } from "@/features/auth/authApi";
 
 const REFRESH_BUFFER_MS = 60_000;
 

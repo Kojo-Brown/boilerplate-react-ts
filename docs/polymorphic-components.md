@@ -1,6 +1,6 @@
 # Polymorphic components: the `as` prop with full type inference
 
-`src/lib/polymorphic.ts` holds the types; `Text` and `Button` are the two
+`src/shared/lib/polymorphic.ts` holds the types; `Text` and `Button` are the two
 worked examples; `/labs/polymorphic` drives both by hand.
 
 ```tsx
