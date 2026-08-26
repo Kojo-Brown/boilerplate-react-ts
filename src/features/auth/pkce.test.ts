@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateCodeVerifier, generateCodeChallenge, generateState } from "./pkce";
+import { generateCodeVerifier, generateCodeChallenge, generateState } from "@/features/auth/pkce";
 
 const BASE64URL_RE = /^[A-Za-z0-9_-]+$/;
 

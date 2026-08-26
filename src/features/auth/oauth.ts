@@ -1,5 +1,5 @@
-import { env } from "@/env";
-import { generateCodeVerifier, generateCodeChallenge, generateState } from "./pkce";
+import { env } from "@/shared/config/env";
+import { generateCodeVerifier, generateCodeChallenge, generateState } from "@/features/auth/pkce";
 
 const GOOGLE_AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_SCOPES = "openid email profile";

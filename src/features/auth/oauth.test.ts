@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { buildGoogleAuthUrl, validateOAuthCallback, OAUTH_STORAGE_KEYS } from "./oauth";
+import {
+  buildGoogleAuthUrl,
+  validateOAuthCallback,
+  OAUTH_STORAGE_KEYS,
+} from "@/features/auth/oauth";
 
 describe("buildGoogleAuthUrl", () => {
   const base = {

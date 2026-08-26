@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router";
-import { RouteTransitionProvider } from "@/router/routeTransition";
+import { RouteTransitionProvider } from "@/features/route-transition/routeTransition";
 
 export interface RouteTransitionHarnessProps {
   children: ReactNode;

@@ -7,7 +7,7 @@ import {
   type ReportSectionName,
   type ReportSections,
   type RequestEvent,
-} from "@/lib/reportApi";
+} from "@/entities/report/reportApi";
 
 export interface DeferredReportApi extends ReportApi {
   /** Settles the in-flight request for `section`. */

@@ -1,8 +1,8 @@
 import "@testing-library/jest-dom";
 import { afterAll, afterEach, beforeAll } from "vitest";
-import { server } from "./mocks/server";
-import { installStorageFallback } from "./localStorage";
-import { installMatchMediaFallback } from "./matchMedia";
+import { server } from "@/shared/mocks/server";
+import { installStorageFallback } from "@/test/localStorage";
+import { installMatchMediaFallback } from "@/test/matchMedia";
 
 installStorageFallback();
 installMatchMediaFallback();

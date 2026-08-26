@@ -2,7 +2,7 @@
  * The claims about the checkout machine that a jsdom test cannot make.
  *
  * Most of this machine is pure and is asserted directly against the actor in
- * `src/machines/checkoutMachine.test.ts`, which is the right place for it —
+ * `src/features/checkout/checkoutMachine.test.ts`, which is the right place for it —
  * an actor test does not need a DOM to prove that `submitting` has no
  * `order.place` transition.
  *

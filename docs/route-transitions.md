@@ -112,14 +112,14 @@ skeleton flash it replaces, so the hold is not shippable on its own:
 
 ## The pieces
 
-| file                                              | role                                                                                   |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `src/router/routeTransition.tsx`                  | `RouteTransitionProvider` + `useRouteTransition()` — one transition for the whole tree |
-| `src/components/navigation/useTransitionLink.ts`  | click handling shared by both link components                                          |
-| `src/components/navigation/TransitionLink.tsx`    | drop-in for `<Link>`                                                                   |
-| `src/components/navigation/TransitionNavLink.tsx` | drop-in for `<NavLink>`                                                                |
-| `src/components/navigation/RoutePendingBar.tsx`   | the only sign a held navigation is happening                                           |
-| `src/router/RouteFallback.tsx`                    | per-route skeleton for the one hoisted boundary                                        |
+| file                                                  | role                                                                                   |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/features/route-transition/routeTransition.tsx`   | `RouteTransitionProvider` + `useRouteTransition()` — one transition for the whole tree |
+| `src/features/route-transition/useTransitionLink.ts`  | click handling shared by both link components                                          |
+| `src/features/route-transition/TransitionLink.tsx`    | drop-in for `<Link>`                                                                   |
+| `src/features/route-transition/TransitionNavLink.tsx` | drop-in for `<NavLink>`                                                                |
+| `src/features/route-transition/RoutePendingBar.tsx`   | the only sign a held navigation is happening                                           |
+| `src/app/router/RouteFallback.tsx`                    | per-route skeleton for the one hoisted boundary                                        |
 
 One transition for the tree rather than one per link, because the pending state
 has more than one consumer: the bar renders it, and each link asks whether it is

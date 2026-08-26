@@ -1,4 +1,4 @@
-import { ProfileApiError, type ProfileApi, type UserProfile } from "@/lib/profileApi";
+import { ProfileApiError, type ProfileApi, type UserProfile } from "@/entities/user/profileApi";
 
 export interface DeferredProfileApi extends ProfileApi {
   /** Resolves the in-flight request for `id`. */

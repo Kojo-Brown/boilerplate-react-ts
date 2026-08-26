@@ -4,6 +4,7 @@ import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
+import { fsdPlugin } from "./tooling/eslint/fsdBoundaries";
 
 export default defineConfig(
   // eslint.config.ts is excluded from the tsconfig projects (the `globals`
@@ -32,6 +33,7 @@ export default defineConfig(
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
+      fsd: fsdPlugin,
     },
     rules: {
       // The React Compiler's own diagnostics, shipped as lint rules by
@@ -58,6 +60,15 @@ export default defineConfig(
           allowExportNames: ["useToast", "useAuth", "useTheme", "useRouteTransition"],
         },
       ],
+      // The Feature-Sliced Design boundary. Only meaningful under `src/`; the
+      // rule returns immediately for anything outside it, so it costs nothing
+      // to leave on for `e2e/` and the config files.
+      //
+      // It leans on `consistent-type-imports` below: the exemption for
+      // type-only imports is only sound if a type-only import is *spelled* as
+      // one, and that rule is what makes an inline `import { RootState }`
+      // impossible to write.
+      "fsd/layer-imports": "error",
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       // Interpolating a number is safe and universally readable; the default

@@ -1,5 +1,5 @@
-import type { AuthUser } from "@/store/authSlice";
-import type { Post, CreatePostInput } from "@/store/postsApi";
+import type { AuthUser } from "@/entities/session/authSlice";
+import type { Post, CreatePostInput } from "@/entities/post/postsApi";
 
 let _seq = 1;
 const nextId = () => _seq++;

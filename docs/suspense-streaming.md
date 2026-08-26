@@ -151,12 +151,12 @@ sequence, with no timestamps involved.
 
 ## Files
 
-| File                                          | What it is                                               |
-| --------------------------------------------- | -------------------------------------------------------- |
-| `src/lib/sectionCache.ts`                     | Typed multi-section promise cache, and `prefetch`        |
-| `src/lib/reportApi.ts`                        | The demo service, its request timeline, `wereConcurrent` |
-| `src/lib/reportCache.ts`                      | Wires the service to the cache in one place              |
-| `src/components/suspense/SectionBoundary.tsx` | One streaming boundary: Suspense + error boundary        |
-| `src/components/suspense/StreamingReport.tsx` | The report, assembled along both axes                    |
-| `src/pages/StreamingLabPage.tsx`              | `/labs/streaming`, with the live request timeline        |
-| `src/test/reportHarness.ts`                   | Gated service for deterministic tests                    |
+| File                                               | What it is                                               |
+| -------------------------------------------------- | -------------------------------------------------------- |
+| `src/entities/report/sectionCache.ts`              | Typed multi-section promise cache, and `prefetch`        |
+| `src/entities/report/reportApi.ts`                 | The demo service, its request timeline, `wereConcurrent` |
+| `src/entities/report/reportCache.ts`               | Wires the service to the cache in one place              |
+| `src/shared/ui/SectionBoundary.tsx`                | One streaming boundary: Suspense + error boundary        |
+| `src/widgets/streaming-report/StreamingReport.tsx` | The report, assembled along both axes                    |
+| `src/pages/streaming-lab/StreamingLabPage.tsx`     | `/labs/streaming`, with the live request timeline        |
+| `src/test/reportHarness.ts`                        | Gated service for deterministic tests                    |

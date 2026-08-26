@@ -1,6 +1,6 @@
 import { test as base, type Page } from "@playwright/test";
 
-/** Must mirror AUTH_STORAGE_KEYS in src/store/authSlice.ts */
+/** Must mirror AUTH_STORAGE_KEYS in src/entities/session/authSlice.ts */
 const AUTH_STORAGE_KEYS = {
   ACCESS_TOKEN: "auth.accessToken",
   REFRESH_TOKEN: "auth.refreshToken",

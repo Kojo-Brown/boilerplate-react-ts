@@ -26,30 +26,50 @@ export default defineConfig({
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "src/test/**",
-        "src/main.tsx",
-        "src/env.ts",
+        // MSW request handlers — mock definitions, not application logic.
+        // They were excluded before this directory moved out of `src/test/`,
+        // and are excluded on the same grounds now.
+        "src/shared/mocks/**",
+        "src/app/main.tsx",
+        "src/shared/config/env.ts",
         "src/**/*.d.ts",
         "src/**/*.stories.{ts,tsx}",
         "src/types/**",
-        "src/router/**",
-        "src/styles/**",
+        "src/app/router/**",
+        "src/shared/styles/**",
       ],
       thresholds: {
         lines: 80,
         functions: 80,
         branches: 75,
         statements: 80,
-        "src/lib/**": {
+        "src/shared/lib/**": {
           lines: 90,
           functions: 90,
           branches: 85,
           statements: 90,
         },
-        "src/hooks/**": {
+        "src/shared/hooks/**": {
           lines: 85,
           functions: 85,
           branches: 80,
           statements: 85,
+        },
+        // The elevated floor used to be spelled `src/lib/**`, back when every
+        // API module, cache and schema lived in one directory. Feature-Sliced
+        // Design moves each of them into the slice that owns it, so the floor
+        // follows them here rather than quietly reverting to the global one.
+        "src/entities/**": {
+          lines: 90,
+          functions: 90,
+          branches: 85,
+          statements: 90,
+        },
+        "src/features/**": {
+          lines: 90,
+          functions: 90,
+          branches: 85,
+          statements: 90,
         },
       },
     },

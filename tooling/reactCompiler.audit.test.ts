@@ -48,9 +48,9 @@ const SRC = join(REPO_ROOT, "src");
  * it. See `docs/react-compiler.md` for the full checklist.
  */
 const OPTED_IN: readonly { file: string; functions: readonly string[] }[] = [
-  { file: "hooks/useFilteredSortedItems.ts", functions: ["useFilteredSortedItems"] },
-  { file: "context/ThemeContext.tsx", functions: ["ThemeProvider"] },
-  { file: "components/ui/Toast.tsx", functions: ["ToastProvider"] },
+  { file: "shared/hooks/useFilteredSortedItems.ts", functions: ["useFilteredSortedItems"] },
+  { file: "shared/theme/ThemeContext.tsx", functions: ["ThemeProvider"] },
+  { file: "shared/ui/Toast.tsx", functions: ["ToastProvider"] },
 ];
 
 const DIRECTIVE = /(^|\n)\s*["']use memo["'];/;

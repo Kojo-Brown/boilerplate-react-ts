@@ -3,8 +3,8 @@ import { render, type RenderOptions } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { configureStore } from "@reduxjs/toolkit";
-import { authSlice } from "@/store/authSlice";
-import { baseApi } from "@/store/api";
+import { authSlice } from "@/entities/session/authSlice";
+import { baseApi } from "@/shared/api/baseApi";
 
 export function makeStore() {
   return configureStore({

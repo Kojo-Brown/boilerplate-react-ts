@@ -1,6 +1,6 @@
 # Compound components with a typed slot API
 
-`<Tabs>` is the worked example (`src/components/ui/Tabs.tsx`). The pattern it
+`<Tabs>` is the worked example (`src/shared/ui/Tabs.tsx`). The pattern it
 demonstrates is a parent that owns state and a set of named child slots that
 read it through context, rather than a single component driven by a props
 object:
