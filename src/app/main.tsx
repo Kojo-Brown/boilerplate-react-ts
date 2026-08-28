@@ -4,7 +4,9 @@ import { Provider } from "react-redux";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { store } from "@/app/store";
+import { api } from "@/app/api/client";
 import { queryClient } from "@/app/api/queryClient";
+import { ApiClientProvider } from "@/shared/api/ApiClientProvider";
 import { startSilentRefresh } from "@/features/auth/silentRefresh";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { ThemeProvider } from "@/shared/theme/ThemeContext";
@@ -34,9 +36,20 @@ void enableMocking().then(() => {
       <ThemeProvider>
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
+            {/*
+              The composition root's half of the dependency inversion: the one
+              module that knows the concrete client publishes it, and every
+              consumer below reads it from context. Inside the store provider
+              because the client's session port is store-backed — the ordering
+              is not load-bearing at render time (the port reads the store
+              singleton directly, not through context) but keeping it here says
+              which one depends on which.
+            */}
+            <ApiClientProvider client={api}>
+              <AuthProvider>
+                <App />
+              </AuthProvider>
+            </ApiClientProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>
         </Provider>

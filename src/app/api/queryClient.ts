@@ -1,5 +1,5 @@
 import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
-import { ApiError } from "@/app/api/client";
+import { ApiError } from "@/shared/api/apiClient";
 import {
   AUTH_EXPIRED_EVENT,
   QUERY_ERROR_EVENT,

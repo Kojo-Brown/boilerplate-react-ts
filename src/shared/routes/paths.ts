@@ -12,6 +12,7 @@ export const ROUTES = {
   POLYMORPHIC_LAB: "/labs/polymorphic",
   RENDER_PROPS_LAB: "/labs/render-props",
   CHECKOUT_LAB: "/labs/checkout",
+  DEPENDENCY_INVERSION_LAB: "/labs/dependency-inversion",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;
