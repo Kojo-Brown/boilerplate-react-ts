@@ -6,7 +6,7 @@ import {
   AUTH_EXPIRED_EVENT,
   type QueryErrorDetail,
 } from "@/shared/api/queryEvents";
-import { ApiError } from "@/app/api/client";
+import { ApiError } from "@/shared/api/apiClient";
 
 function simulateQueryError(error: Error) {
   queryClient.getQueryCache().config.onError?.(error, {} as never);

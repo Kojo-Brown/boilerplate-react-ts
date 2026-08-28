@@ -74,6 +74,12 @@ const LazyRenderPropsLabPage = lazy(() =>
   })),
 );
 
+const LazyDependencyInversionLabPage = lazy(() =>
+  import("@/pages/dependency-inversion-lab/DependencyInversionLabPage").then((m) => ({
+    default: m.DependencyInversionLabPage,
+  })),
+);
+
 const LazyCheckoutLabPage = lazy(() =>
   import("@/pages/checkout-lab/CheckoutLabPage").then((m) => ({ default: m.CheckoutLabPage })),
 );
@@ -204,6 +210,13 @@ export const routes: RouteObject[] = [
         // lab exhibit, not part of the app shell.
         path: "labs/checkout",
         element: <LazyCheckoutLabPage />,
+      },
+      {
+        // Reference demo for the injected API client. Unlinked from the nav
+        // like the others — a page whose point is that its data is fake is a
+        // lab exhibit, not part of the app shell.
+        path: "labs/dependency-inversion",
+        element: <LazyDependencyInversionLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary

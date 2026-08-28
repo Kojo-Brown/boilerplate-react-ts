@@ -346,6 +346,24 @@ deliberately different: a malformed address never leaves the browser,
 `ada@example.com` is rejected by the server and still lands under the field, and
 the failing server produces a form-level message with no field to blame.
 
+## Swapping the API client
+
+Components take their HTTP client from context (`useApiClient()`), never from an
+import. The contract lives in `shared/api`, the one real instance is built in
+`app/api/client.ts` and published in `app/main.tsx`, and a test or a Storybook
+story puts a different implementation behind the same components:
+
+```tsx
+const apiClient = createStubApiClient({ routes: { "GET /posts": SAMPLE_POSTS } });
+renderWithProviders(<PostFeed />, { apiClient });
+expect(apiClient.calls).toEqual([{ method: "GET", path: "/posts" }]);
+```
+
+`/labs/dependency-inversion` renders one feed against both clients side by side.
+The reasoning — why the context default is `null`, why swapping the client means
+swapping the `QueryClient` with it, and why the global `fetch` is resolved per
+call — is in [docs/dependency-inversion.md](docs/dependency-inversion.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

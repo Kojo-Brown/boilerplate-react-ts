@@ -14,6 +14,7 @@ describe("ROUTES", () => {
     expect(ROUTES.NAVIGATION_LAB).toBe("/labs/navigation");
     expect(ROUTES.HEADLESS_LAB).toBe("/labs/headless");
     expect(ROUTES.RENDER_PROPS_LAB).toBe("/labs/render-props");
+    expect(ROUTES.DEPENDENCY_INVERSION_LAB).toBe("/labs/dependency-inversion");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -31,6 +32,7 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/navigation")).toBe("/labs/navigation");
     expect(typedRoute("/labs/headless")).toBe("/labs/headless");
     expect(typedRoute("/labs/render-props")).toBe("/labs/render-props");
+    expect(typedRoute("/labs/dependency-inversion")).toBe("/labs/dependency-inversion");
     expect(typedRoute("/login")).toBe("/login");
   });
 });
