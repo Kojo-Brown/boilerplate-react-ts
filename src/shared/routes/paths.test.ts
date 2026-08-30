@@ -15,6 +15,7 @@ describe("ROUTES", () => {
     expect(ROUTES.HEADLESS_LAB).toBe("/labs/headless");
     expect(ROUTES.RENDER_PROPS_LAB).toBe("/labs/render-props");
     expect(ROUTES.DEPENDENCY_INVERSION_LAB).toBe("/labs/dependency-inversion");
+    expect(ROUTES.WORKER_LAB).toBe("/labs/workers");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -33,6 +34,7 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/headless")).toBe("/labs/headless");
     expect(typedRoute("/labs/render-props")).toBe("/labs/render-props");
     expect(typedRoute("/labs/dependency-inversion")).toBe("/labs/dependency-inversion");
+    expect(typedRoute("/labs/workers")).toBe("/labs/workers");
     expect(typedRoute("/login")).toBe("/login");
   });
 });
