@@ -13,6 +13,7 @@ export const ROUTES = {
   RENDER_PROPS_LAB: "/labs/render-props",
   CHECKOUT_LAB: "/labs/checkout",
   DEPENDENCY_INVERSION_LAB: "/labs/dependency-inversion",
+  WORKER_LAB: "/labs/workers",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

@@ -84,6 +84,10 @@ const LazyCheckoutLabPage = lazy(() =>
   import("@/pages/checkout-lab/CheckoutLabPage").then((m) => ({ default: m.CheckoutLabPage })),
 );
 
+const LazyWorkerLabPage = lazy(() =>
+  import("@/pages/worker-lab/WorkerLabPage").then((m) => ({ default: m.WorkerLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/oauth-callback/OAuthCallbackPage").then((m) => ({
     default: m.OAuthCallbackPage,
@@ -217,6 +221,13 @@ export const routes: RouteObject[] = [
         // lab exhibit, not part of the app shell.
         path: "labs/dependency-inversion",
         element: <LazyDependencyInversionLabPage />,
+      },
+      {
+        // Reference demo for parsing off the main thread. Unlinked from the
+        // nav like the others — its main-thread arm deliberately freezes the
+        // page for seconds, which is not something to stumble into.
+        path: "labs/workers",
+        element: <LazyWorkerLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary
