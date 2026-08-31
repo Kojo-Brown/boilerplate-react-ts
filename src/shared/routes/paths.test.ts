@@ -16,6 +16,7 @@ describe("ROUTES", () => {
     expect(ROUTES.RENDER_PROPS_LAB).toBe("/labs/render-props");
     expect(ROUTES.DEPENDENCY_INVERSION_LAB).toBe("/labs/dependency-inversion");
     expect(ROUTES.WORKER_LAB).toBe("/labs/workers");
+    expect(ROUTES.INFINITE_SCROLL_LAB).toBe("/labs/infinite-scroll");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -35,6 +36,7 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/render-props")).toBe("/labs/render-props");
     expect(typedRoute("/labs/dependency-inversion")).toBe("/labs/dependency-inversion");
     expect(typedRoute("/labs/workers")).toBe("/labs/workers");
+    expect(typedRoute("/labs/infinite-scroll")).toBe("/labs/infinite-scroll");
     expect(typedRoute("/login")).toBe("/login");
   });
 });

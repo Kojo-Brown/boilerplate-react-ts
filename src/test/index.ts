@@ -15,4 +15,7 @@ export {
 } from "@/test/factories";
 export type { AuthTokenResponse } from "@/test/factories";
 export { server } from "@/shared/mocks/server";
-export { handlers, authHandlers, postHandlers } from "@/shared/mocks/handlers";
+export { handlers, authHandlers, postHandlers, feedHandlers } from "@/shared/mocks/handlers";
+export { installIntersectionObserver } from "@/test/intersection";
+export type { IntersectionHarness, ObserverRecord } from "@/test/intersection";
+export { setVirtualWindow, resetVirtualWindow } from "@/test/virtualizerMock";
