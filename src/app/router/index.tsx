@@ -88,6 +88,12 @@ const LazyWorkerLabPage = lazy(() =>
   import("@/pages/worker-lab/WorkerLabPage").then((m) => ({ default: m.WorkerLabPage })),
 );
 
+const LazyInfiniteScrollLabPage = lazy(() =>
+  import("@/pages/infinite-scroll-lab/InfiniteScrollLabPage").then((m) => ({
+    default: m.InfiniteScrollLabPage,
+  })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   import("@/pages/oauth-callback/OAuthCallbackPage").then((m) => ({
     default: m.OAuthCallbackPage,
@@ -228,6 +234,13 @@ export const routes: RouteObject[] = [
         // page for seconds, which is not something to stumble into.
         path: "labs/workers",
         element: <LazyWorkerLabPage />,
+      },
+      {
+        // Reference demo for windowed infinite scroll. Unlinked from the nav
+        // like the others — it loads 5,000 rows from the mock feed, which is a
+        // demonstration rather than a page the app has a use for.
+        path: "labs/infinite-scroll",
+        element: <LazyInfiniteScrollLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary
