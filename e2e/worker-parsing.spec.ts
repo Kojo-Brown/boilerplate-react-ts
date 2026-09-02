@@ -23,6 +23,8 @@ const LARGE_ROWS = 200_000;
 const SMALL_ROWS = 10_000;
 /** Building and parsing 200k rows is slow, and slower on a CI runner. */
 const RUN_TIMEOUT_MS = 120_000;
+/** 60Hz frame budget, in milliseconds — mirrors `FRAME_BUDGET_MS` in `jankMeter`. */
+const FRAME_BUDGET_MS = 1000 / 60;
 
 interface FrameStats {
   frames: number;
@@ -30,6 +32,12 @@ interface FrameStats {
   p95FrameMs: number;
   droppedFrames: number;
   fps: number;
+}
+
+/** One arm of the comparison: its frame recording and the parse it timed. */
+interface Run {
+  stats: FrameStats;
+  parseMs: number;
 }
 
 async function openLab(page: Page, query: string): Promise<void> {
@@ -51,6 +59,19 @@ async function readFrameStats(page: Page): Promise<FrameStats> {
 async function readRowCount(page: Page): Promise<string> {
   const summary = await page.getByTestId("result-summary").textContent();
   return (summary ?? "").split(" ")[0] ?? "";
+}
+
+/**
+ * The parse time the page itself measured, in ms, read back off the result
+ * summary ("… · 107 ms"). It is what the frame assertions are compared against:
+ * how long this machine took is the only honest scale for how long a frame it
+ * should have cost.
+ */
+async function readParseMs(page: Page): Promise<number> {
+  const summary = await page.getByTestId("result-summary").textContent();
+  const match = /·\s*(\d+)\s*ms/.exec(summary ?? "");
+  expect(match, `no elapsed time in result summary: ${String(summary)}`).not.toBeNull();
+  return Number(match?.[1]);
 }
 
 test.describe("worker parsing", () => {
@@ -119,7 +140,7 @@ test.describe("worker parsing", () => {
   test("the blocking arm loses frames the worker arm keeps", async ({ page }, testInfo) => {
     test.setTimeout(RUN_TIMEOUT_MS);
 
-    const run = async (mode: "worker" | "main"): Promise<FrameStats> => {
+    const run = async (mode: "worker" | "main"): Promise<Run> => {
       await openLab(page, `?rows=${String(LARGE_ROWS)}&mode=${mode}`);
       await buildSample(page, LARGE_ROWS);
       await page.getByTestId("run-parse").click();
@@ -127,7 +148,7 @@ test.describe("worker parsing", () => {
         timeout: RUN_TIMEOUT_MS,
       });
       await expect(page.getByTestId("frame-stats")).toBeVisible();
-      return readFrameStats(page);
+      return { stats: await readFrameStats(page), parseMs: await readParseMs(page) };
     };
 
     const worker = await run("worker");
@@ -138,17 +159,33 @@ test.describe("worker parsing", () => {
     /*
      * The blocking arm cannot produce a frame shorter than its parse, because
      * `requestAnimationFrame` does not fire while the thread is inside the
-     * loop; the worker arm's worst frame is bounded by a chunk instead. The
-     * floor is stated as five frame budgets rather than as a millisecond count
-     * matched to one machine — 200k rows parse in ~150ms here and will take
-     * longer on a CI runner, so a tighter number would be measuring the box.
+     * loop; the worker arm's worst frame is bounded by a chunk instead.
+     *
+     * The floor is the parse *this run* measured, not a constant. It used to be
+     * five frame budgets (83.3ms), on the reasoning that 200k rows take ~150ms
+     * "and will take longer on a CI runner" — the opposite turned out to be
+     * true. A GitHub `ubuntu-latest` runner parses them in 40–80ms, so the same
+     * healthy recording reported worst frames of 50.0, 66.7 and 83.3ms and the
+     * constant failed a claim that held perfectly well. That is precisely the
+     * "measuring the box" the old comment set out to avoid; comparing against
+     * the page's own `performance.now()` timing is what actually avoids it.
+     *
+     * One frame budget of slack, because the two clocks do not start together:
+     * `performance.now()` is read inside the rAF callback, while the recorded
+     * gap runs between frame *timestamps*, which Chromium reports as the
+     * frame's expected display time. The gap therefore lands a few ms under the
+     * parse — 100.0ms against a 107ms parse, reproducibly, on this machine.
      */
-    expect(main.longestFrameMs).toBeGreaterThan(5 * (1000 / 60));
-    expect(worker.longestFrameMs).toBeLessThan(main.longestFrameMs / 2);
+    expect(main.stats.longestFrameMs).toBeGreaterThan(main.parseMs - FRAME_BUDGET_MS);
+    // ...and the parse has to have cost a frame at all, or the line above is
+    // satisfied by a machine fast enough to make the whole comparison vacuous.
+    expect(main.stats.longestFrameMs).toBeGreaterThan(FRAME_BUDGET_MS);
+    expect(main.stats.droppedFrames).toBeGreaterThan(0);
+    expect(worker.stats.longestFrameMs).toBeLessThan(main.stats.longestFrameMs / 2);
     // Both recordings have to contain frames at all, or the comparison above is
     // between two empty measurements that happen to satisfy it.
-    expect(worker.frames).toBeGreaterThan(0);
-    expect(main.frames).toBeGreaterThan(0);
+    expect(worker.stats.frames).toBeGreaterThan(0);
+    expect(main.stats.frames).toBeGreaterThan(0);
   });
 
   test("an AbortSignal cannot cross a postMessage boundary", async ({ page }) => {
@@ -170,10 +207,7 @@ test.describe("worker parsing", () => {
   });
 });
 
-async function attach(
-  testInfo: TestInfo,
-  results: { worker: FrameStats; main: FrameStats },
-): Promise<void> {
+async function attach(testInfo: TestInfo, results: { worker: Run; main: Run }): Promise<void> {
   await testInfo.attach("worker-vs-main-thread-frames.json", {
     body: JSON.stringify(results, null, 2),
     contentType: "application/json",
