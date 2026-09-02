@@ -176,5 +176,22 @@ metric. The split is therefore:
   driven by fixtures in `src/test/vitals.ts` that are typed as the library's own
   metric objects, so a renamed attribution field fails to compile.
 - **E2E** (`e2e/web-vitals.spec.ts`, Chromium only) — the observers really
-  firing, the hide really finalising LCP and CLS, and a real beacon leaving the
-  page with the route attached.
+  firing, hiding the page really finalising the metrics, and a real beacon
+  leaving with the route attached.
+
+Two things about ending a visit in a test are worth knowing before you write
+one, because both produce a green-looking test that asserts the wrong thing:
+
+**LCP needs a trusted event.** `finalizeLCP` checks `event.isTrusted`, so a
+synthetic `visibilitychange` gives you a beacon with the LCP row silently
+missing. The spec's real click is that trusted event — `click` is one of LCP's
+three finalisers, alongside `keydown` and `visibilitychange`.
+
+**Hiding is not the same as unloading.** INP and CLS report through the
+visibility watcher, which only asks whether the document reads hidden — so
+redefining `document.visibilityState` and dispatching the event is enough, and
+the page stays alive. That matters on CI: a beacon sent while the document is
+being torn down is not reliably delivered or observable, and `page.route()`
+handlers stop running for it. Unloading is the real-world path and is covered by
+the `pagehide` unit test; the E2E hides without unloading so the assertion is
+about the pipeline rather than about the runner's teardown timing.

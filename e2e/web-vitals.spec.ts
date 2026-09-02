@@ -8,15 +8,23 @@
  * a real browser:
  *
  * - the observers actually fire, so `web-vitals` produces real values;
- * - the page really being hidden is what finalises LCP, INP and CLS, and the
- *   flush has to happen in that same callback;
- * - the payload leaves as a beacon, which is the code path that survives the
- *   document going away.
+ * - hiding the page is what finalises INP and CLS, and the flush has to happen
+ *   in that same callback;
+ * - the payload leaves as a real beacon.
  *
- * The visit is ended by navigating away rather than by dispatching a
- * `visibilitychange`: `web-vitals` finalises LCP only for a trusted event, so a
- * synthetic one produces a beacon with the LCP row silently missing — which is
- * exactly the bug this test would otherwise be written to miss.
+ * Two details of how the page is hidden are load-bearing, and both were found
+ * by watching this test lie:
+ *
+ * 1. LCP is finalised only by a *trusted* event — `finalizeLCP` checks
+ *    `isTrusted` — so a synthetic `visibilitychange` yields a beacon with the
+ *    LCP row silently missing. The real click below is that trusted event
+ *    (`click` is one of the three LCP finalisers), which is why the click has
+ *    to come first rather than being incidental to the INP assertion.
+ * 2. INP and CLS report through the visibility watcher, which only asks whether
+ *    the document reads hidden — so the page can be hidden *without* being
+ *    unloaded. That matters: a beacon sent while the document is being torn
+ *    down is not reliably deliverable on a CI runner, and this test spent a
+ *    round asserting on a request that never arrived.
  *
  * LCP, INP and CLS are Chromium-only APIs, so this runs there and is skipped
  * elsewhere rather than asserting something Firefox and WebKit cannot do.
@@ -41,34 +49,42 @@ test.skip(
   "LCP, INP and CLS are only implemented in Chromium.",
 );
 
-/**
- * Collects every beacon the page sends.
- *
- * Observed rather than intercepted: these requests are issued while the
- * document is being torn down, and `page.route()` handlers no longer run for
- * them — the beacon simply never appears. Reading the request off the wire is
- * what makes the unload path observable at all. The collector path is not
- * served, so the dev server answers 404, which a beacon neither notices nor
- * retries.
- */
-function captureBeacons(page: Page): VitalsRow[] {
+/** Stands in for the collector, and answers so nothing is left pending. */
+async function captureBeacons(page: Page): Promise<VitalsRow[]> {
   const rows: VitalsRow[] = [];
-  page.on("request", (request) => {
-    if (!request.url().endsWith("/__vitals")) return;
-    const body = request.postData() ?? '{"events":[]}';
+  await page.route("**/__vitals", async (route) => {
+    const body = route.request().postData() ?? '{"events":[]}';
     rows.push(...(JSON.parse(body) as { events: VitalsRow[] }).events);
+    await route.fulfill({ status: 204, body: "" });
   });
   return rows;
 }
 
+/**
+ * Hides the page without unloading it.
+ *
+ * `visibilityState` is read-only, so it is redefined before the event: both
+ * `web-vitals`' visibility watcher and the sink's flush ask the document
+ * whether it is hidden, and an event without the state change is ignored by
+ * both. This is what a user backgrounding the tab looks like to the page — and
+ * unlike a real tab switch, it is something a headless run can do at all.
+ */
+async function hidePage(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+}
+
 test("reports the three Core Web Vitals when the visit ends", async ({ page }) => {
-  const rows = captureBeacons(page);
+  const rows = await captureBeacons(page);
 
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "React TS Boilerplate" })).toBeVisible();
 
-  // A real click, which is what gives INP an interaction to measure, and a
-  // client-side navigation, which is what makes route attribution meaningful.
+  // A real click: trusted, so it finalises LCP, and an interaction, so INP has
+  // something to measure. It is also a client-side navigation, which is what
+  // makes route attribution meaningful.
   await page.getByRole("button", { name: "About" }).click();
   await expect(page).toHaveURL(/\/about$/);
   await expect(page.getByRole("heading", { name: "About" })).toBeVisible();
@@ -87,10 +103,11 @@ test("reports the three Core Web Vitals when the visit ends", async ({ page }) =
   );
 
   // Nothing has been sent yet: these metrics are not final while the page is
-  // still open, so a sink that reported eagerly would report the wrong numbers.
+  // still visible, so a sink that reported eagerly would report the wrong
+  // numbers. LCP is queued by now — queued is not sent.
   expect(rows).toHaveLength(0);
 
-  await page.goto("about:blank");
+  await hidePage(page);
   await expect
     .poll(() => rows.map((row) => row.metric).sort(), { timeout: 10_000 })
     .toEqual(["CLS", "INP", "LCP"]);
