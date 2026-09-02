@@ -49,6 +49,9 @@ importers:
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.6.0
+      web-vitals:
+        specifier: ^6.2.1
+        version: 6.2.1
       xstate:
         specifier: ^5.32.5
         version: 5.32.5
@@ -3729,6 +3732,12 @@ packages:
       }
     engines: { node: ">=18" }
 
+  web-vitals@6.2.1:
+    resolution:
+      {
+        integrity: sha512-rLcLXA2sx6+9dE88NHFubwTtGxpK4yYBLj6qHPdFoCaLr0cXGb4efOqtKLlm4loGA4OEKHIQKMKzZkKyOh5ctw==,
+      }
+
   webidl-conversions@8.0.1:
     resolution:
       {
@@ -5785,6 +5794,8 @@ snapshots:
   w3c-xmlserializer@5.0.0:
     dependencies:
       xml-name-validator: 5.0.0
+
+  web-vitals@6.2.1: {}
 
   webidl-conversions@8.0.1: {}
 

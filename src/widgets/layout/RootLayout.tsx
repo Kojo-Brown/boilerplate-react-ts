@@ -4,6 +4,7 @@ import { Navbar } from "@/widgets/layout/Navbar";
 import { Sidebar } from "@/widgets/layout/Sidebar";
 import { RoutePendingBar } from "@/features/route-transition/RoutePendingBar";
 import { RouteTransitionProvider } from "@/features/route-transition/routeTransition";
+import { WebVitalsReporter } from "@/shared/analytics/WebVitalsReporter";
 
 export interface RootLayoutProps {
   /**
@@ -23,6 +24,15 @@ export function RootLayout({ fallback }: RootLayoutProps) {
   return (
     <RouteTransitionProvider>
       <div className="flex min-h-screen flex-col bg-[var(--color-bg)]">
+        {/*
+          Renders nothing; it is here rather than in `main.tsx` because the
+          collector attributes each metric to the route showing when the metric
+          was reported, and that needs router context. Inside the shell rather
+          than around a page so it outlives every navigation — LCP and CLS
+          belong to the page *load*, and a reporter that remounted per route
+          would start a new visit on every link click.
+        */}
+        <WebVitalsReporter />
         <ScrollRestoration />
         <RoutePendingBar />
         <Navbar />

@@ -19,3 +19,4 @@ export { handlers, authHandlers, postHandlers, feedHandlers } from "@/shared/moc
 export { installIntersectionObserver } from "@/test/intersection";
 export type { IntersectionHarness, ObserverRecord } from "@/test/intersection";
 export { setVirtualWindow, resetVirtualWindow } from "@/test/virtualizerMock";
+export { makeLcpMetric, makeInpMetric, makeClsMetric } from "@/test/vitals";
