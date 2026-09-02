@@ -31,7 +31,13 @@ export default defineConfig({
     // MSW's service worker would intercept requests before page.route() —
     // disable it so each test fully controls the network.
     command: "pnpm dev",
-    env: { VITE_DISABLE_MSW: "true" },
+    env: {
+      VITE_DISABLE_MSW: "true",
+      // Turns the vitals reporter on with a same-origin collector that
+      // `web-vitals.spec.ts` intercepts. Without an endpoint the reporter
+      // subscribes to nothing, so the beacon could never be observed.
+      VITE_ANALYTICS_URL: "http://localhost:3000/__vitals",
+    },
     url: "http://localhost:3000",
     reuseExistingServer: !process.env["CI"],
     stdout: "pipe",
