@@ -57,7 +57,13 @@ export default defineConfig(
         "warn",
         {
           allowConstantExport: true,
-          allowExportNames: ["useToast", "useAuth", "useTheme", "useRouteTransition"],
+          allowExportNames: [
+            "useToast",
+            "useAuth",
+            "useTheme",
+            "useRouteTransition",
+            "useRoutePrefetch",
+          ],
         },
       ],
       // The Feature-Sliced Design boundary. Only meaningful under `src/`; the

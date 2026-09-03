@@ -7,97 +7,93 @@ import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 import ErrorPage from "@/pages/error/ErrorPage";
 import { LoginPageSkeleton } from "@/pages/login/LoginPageSkeleton";
 import { PageLoader } from "@/shared/ui/PageLoader";
+import { routeChunks, SLOW_ROUTE_PATH } from "@/app/router/routeChunks";
+import { ROUTES } from "@/shared/routes/paths";
 
-const LazyHomePage = lazy(() =>
-  import("@/pages/home/HomePage").then((m) => ({ default: m.HomePage })),
-);
+/*
+ * Every one of these is built from `routeChunks`, not from an `import()`
+ * written here. `React.lazy` has no `preload`, so the prefetcher has to issue
+ * its own dynamic import — sharing one thunk is what makes it provably the
+ * same chunk. See `routeChunks.ts`.
+ */
+const LazyHomePage = lazy(() => routeChunks[ROUTES.HOME]().then((m) => ({ default: m.HomePage })));
 
 const LazyDashboardPage = lazy(() =>
-  import("@/pages/dashboard/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+  routeChunks[ROUTES.DASHBOARD]().then((m) => ({ default: m.DashboardPage })),
 );
 
 const LazyAboutPage = lazy(() =>
-  import("@/pages/about/AboutPage").then((m) => ({ default: m.AboutPage })),
+  routeChunks[ROUTES.ABOUT]().then((m) => ({ default: m.AboutPage })),
 );
 
 const LazyLoginPage = lazy(() =>
-  import("@/pages/login/LoginPage").then((m) => ({ default: m.LoginPage })),
+  routeChunks[ROUTES.LOGIN]().then((m) => ({ default: m.LoginPage })),
 );
 
 const LazyConcurrencyLabPage = lazy(() =>
-  import("@/pages/concurrency-lab/ConcurrencyLabPage").then((m) => ({
-    default: m.ConcurrencyLabPage,
-  })),
+  routeChunks[ROUTES.CONCURRENCY_LAB]().then((m) => ({ default: m.ConcurrencyLabPage })),
 );
 
 const LazyOptimisticLabPage = lazy(() =>
-  import("@/pages/optimistic-lab/OptimisticLabPage").then((m) => ({
-    default: m.OptimisticLabPage,
-  })),
+  routeChunks[ROUTES.OPTIMISTIC_LAB]().then((m) => ({ default: m.OptimisticLabPage })),
 );
 
 const LazyUseApiLabPage = lazy(() =>
-  import("@/pages/use-api-lab/UseApiLabPage").then((m) => ({ default: m.UseApiLabPage })),
+  routeChunks[ROUTES.USE_API_LAB]().then((m) => ({ default: m.UseApiLabPage })),
 );
 
 const LazyActionsLabPage = lazy(() =>
-  import("@/pages/actions-lab/ActionsLabPage").then((m) => ({ default: m.ActionsLabPage })),
+  routeChunks[ROUTES.ACTIONS_LAB]().then((m) => ({ default: m.ActionsLabPage })),
 );
 
 const LazyStreamingLabPage = lazy(() =>
-  import("@/pages/streaming-lab/StreamingLabPage").then((m) => ({ default: m.StreamingLabPage })),
+  routeChunks[ROUTES.STREAMING_LAB]().then((m) => ({ default: m.StreamingLabPage })),
 );
 
 const LazyNavigationLabPage = lazy(() =>
-  import("@/pages/navigation-lab/NavigationLabPage").then((m) => ({
-    default: m.NavigationLabPage,
-  })),
+  routeChunks[ROUTES.NAVIGATION_LAB]().then((m) => ({ default: m.NavigationLabPage })),
 );
 
 const LazySlowRouteLabRoute = lazy(() =>
-  import("@/pages/navigation-lab/SlowRouteLabPage").then((m) => ({ default: m.SlowRouteLabRoute })),
+  routeChunks[SLOW_ROUTE_PATH]().then((m) => ({ default: m.SlowRouteLabRoute })),
 );
 
 const LazyPolymorphicLabPage = lazy(() =>
-  import("@/pages/polymorphic-lab/PolymorphicLabPage").then((m) => ({
-    default: m.PolymorphicLabPage,
-  })),
+  routeChunks[ROUTES.POLYMORPHIC_LAB]().then((m) => ({ default: m.PolymorphicLabPage })),
 );
 
 const LazyHeadlessLabPage = lazy(() =>
-  import("@/pages/headless-lab/HeadlessLabPage").then((m) => ({ default: m.HeadlessLabPage })),
+  routeChunks[ROUTES.HEADLESS_LAB]().then((m) => ({ default: m.HeadlessLabPage })),
 );
 
 const LazyRenderPropsLabPage = lazy(() =>
-  import("@/pages/render-props-lab/RenderPropsLabPage").then((m) => ({
-    default: m.RenderPropsLabPage,
-  })),
+  routeChunks[ROUTES.RENDER_PROPS_LAB]().then((m) => ({ default: m.RenderPropsLabPage })),
 );
 
 const LazyDependencyInversionLabPage = lazy(() =>
-  import("@/pages/dependency-inversion-lab/DependencyInversionLabPage").then((m) => ({
+  routeChunks[ROUTES.DEPENDENCY_INVERSION_LAB]().then((m) => ({
     default: m.DependencyInversionLabPage,
   })),
 );
 
 const LazyCheckoutLabPage = lazy(() =>
-  import("@/pages/checkout-lab/CheckoutLabPage").then((m) => ({ default: m.CheckoutLabPage })),
+  routeChunks[ROUTES.CHECKOUT_LAB]().then((m) => ({ default: m.CheckoutLabPage })),
 );
 
 const LazyWorkerLabPage = lazy(() =>
-  import("@/pages/worker-lab/WorkerLabPage").then((m) => ({ default: m.WorkerLabPage })),
+  routeChunks[ROUTES.WORKER_LAB]().then((m) => ({ default: m.WorkerLabPage })),
 );
 
 const LazyInfiniteScrollLabPage = lazy(() =>
-  import("@/pages/infinite-scroll-lab/InfiniteScrollLabPage").then((m) => ({
-    default: m.InfiniteScrollLabPage,
-  })),
+  routeChunks[ROUTES.INFINITE_SCROLL_LAB]().then((m) => ({ default: m.InfiniteScrollLabPage })),
+);
+
+const LazyPrefetchLabPage = lazy(() =>
+  routeChunks[ROUTES.PREFETCH_LAB]().then((m) => ({ default: m.PrefetchLabPage })),
 );
 
 const LazyOAuthCallbackPage = lazy(() =>
-  import("@/pages/oauth-callback/OAuthCallbackPage").then((m) => ({
-    default: m.OAuthCallbackPage,
-  })),
+  routeChunks[ROUTES.OAUTH_CALLBACK]().then((m) => ({ default: m.OAuthCallbackPage })),
 );
 
 /*
@@ -132,7 +128,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: "/",
-    element: <RootLayout fallback={<RouteFallback />} />,
+    element: <RootLayout fallback={<RouteFallback />} prefetchRegistry={routeChunks} />,
     errorElement: <ErrorPage />,
     children: [
       {
@@ -241,6 +237,13 @@ export const routes: RouteObject[] = [
         // demonstration rather than a page the app has a use for.
         path: "labs/infinite-scroll",
         element: <LazyInfiniteScrollLabPage />,
+      },
+      {
+        // Reference demo for idle-budgeted route prefetching. Unlinked from
+        // the nav like the others — most of what it shows is a queue that is
+        // deliberately empty until you interact with it.
+        path: "labs/prefetch",
+        element: <LazyPrefetchLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary

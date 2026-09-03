@@ -1,5 +1,5 @@
 import { TransitionLink } from "@/features/route-transition/TransitionLink";
-import { TransitionNavLink } from "@/features/route-transition/TransitionNavLink";
+import { PrefetchNavLink } from "@/widgets/layout/PrefetchNavLink";
 import { cn } from "@/shared/lib/cn";
 import { useUi } from "@/shared/store/zustand";
 import { ROUTES } from "@/shared/routes/paths";
@@ -51,7 +51,7 @@ export function Navbar() {
 
       <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main navigation">
         {NAV_ITEMS.map((item) => (
-          <TransitionNavLink
+          <PrefetchNavLink
             key={item.to}
             to={item.to}
             end={item.to === ROUTES.HOME}
@@ -70,7 +70,7 @@ export function Navbar() {
             }
           >
             {item.label}
-          </TransitionNavLink>
+          </PrefetchNavLink>
         ))}
       </nav>
     </header>

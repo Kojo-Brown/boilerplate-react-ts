@@ -15,6 +15,7 @@ export const ROUTES = {
   DEPENDENCY_INVERSION_LAB: "/labs/dependency-inversion",
   WORKER_LAB: "/labs/workers",
   INFINITE_SCROLL_LAB: "/labs/infinite-scroll",
+  PREFETCH_LAB: "/labs/prefetch",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;
