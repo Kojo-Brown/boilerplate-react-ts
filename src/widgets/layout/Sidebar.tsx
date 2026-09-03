@@ -1,4 +1,4 @@
-import { TransitionNavLink } from "@/features/route-transition/TransitionNavLink";
+import { PrefetchNavLink } from "@/widgets/layout/PrefetchNavLink";
 import { cn } from "@/shared/lib/cn";
 import { useUi } from "@/shared/store/zustand";
 import { ROUTES } from "@/shared/routes/paths";
@@ -44,7 +44,7 @@ export function Sidebar() {
             navigation region that assistive tech announces and queries by name. */}
         <nav className="flex flex-col gap-1 px-3" aria-label="Sidebar navigation">
           {SIDEBAR_ITEMS.map((item) => (
-            <TransitionNavLink
+            <PrefetchNavLink
               key={item.to}
               to={item.to}
               end={item.to === ROUTES.HOME}
@@ -60,7 +60,7 @@ export function Sidebar() {
               }
             >
               {item.label}
-            </TransitionNavLink>
+            </PrefetchNavLink>
           ))}
         </nav>
       </aside>

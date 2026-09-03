@@ -2,6 +2,11 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { RootLayout } from "@/widgets/layout/RootLayout";
+import type { ChunkRegistry } from "@/shared/lib/idlePrefetchQueue";
+
+// Nothing in this file asserts on prefetching; an empty registry is what the
+// layout looks like with no lazy routes registered.
+const NO_CHUNKS: ChunkRegistry = {};
 
 vi.mock("@/shared/store/zustand", () => ({
   useUi: () => ({
@@ -16,7 +21,7 @@ function renderLayout() {
     [
       {
         path: "/",
-        element: <RootLayout fallback={<div>Loading page</div>} />,
+        element: <RootLayout fallback={<div>Loading page</div>} prefetchRegistry={NO_CHUNKS} />,
         children: [
           {
             index: true,
