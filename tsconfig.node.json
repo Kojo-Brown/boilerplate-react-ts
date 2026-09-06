@@ -2,12 +2,28 @@
   "compilerOptions": {
     "composite": true,
     "outDir": ".tsbuildinfo/node",
+    // `tooling/bundleBudget/` is executed by Node's own type stripping
+    // (`node tooling/bundleBudget/cli.ts`), which resolves specifiers the way
+    // ESM does: no extension search, so a relative import must name the file
+    // it means, and the file it means is a `.ts`. `emitDeclarationOnly` is the
+    // price — `allowImportingTsExtensions` is refused otherwise, since the
+    // rewrite from `.ts` to `.js` is exactly what an emitting compiler would
+    // have to do. Nothing consumes the JS this project used to emit; it is a
+    // type-check pass whose output lands in a gitignored directory.
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
     "strict": true,
+    // Matches `tsconfig.json`. Without it, `manifest[key]` in
+    // `tooling/bundleBudget/` types as a present entry, every guard against a
+    // truncated or hand-written manifest reads to the linter as dead code, and
+    // the first missing key is a `TypeError` at the point where the gate is
+    // supposed to be explaining a build failure.
+    "noUncheckedIndexedAccess": true,
     "paths": {
       "@/*": ["./src/*"]
     }

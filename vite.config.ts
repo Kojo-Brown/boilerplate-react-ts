@@ -39,6 +39,12 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: true,
+    // Emits `dist/.vite/manifest.json`, which `pnpm bundle:budget` reads.
+    // Nothing at runtime consumes it — this app has no server rendering the
+    // HTML — but it is the only artefact that still knows which imports were
+    // static and which were `import()`, and that distinction is the whole
+    // difference between "what the browser blocks on" and "what is in dist/".
+    manifest: true,
     rollupOptions: {
       output: {
         manualChunks: {
