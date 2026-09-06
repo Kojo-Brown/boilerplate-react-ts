@@ -364,6 +364,32 @@ The reasoning — why the context default is `null`, why swapping the client mea
 swapping the `QueryClient` with it, and why the global `fetch` is resolved per
 call — is in [docs/dependency-inversion.md](docs/dependency-inversion.md).
 
+## Bundle Budget
+
+`pnpm bundle:budget` measures a build against the ceilings in
+`bundle-budget.json` and fails if it is over. CI runs it as a step of the
+**Build** job, so a pull request that grows the bundle is red before the
+artefact is uploaded, and the table lands in the job summary either way.
+
+```
+  id            size       budget     vs budget
+  initial.js    176.06 kB  184.90 kB  -8.84 kB (-4.8%)  5 chunks
+  chunk.router  31.70 kB   33.30 kB   -1.60 kB (-4.8%)  assets/router-ChavgIu3.js
+  lazy.largest  22.13 kB   23.30 kB   -1.17 kB (-5.0%)  CheckoutLabPage
+```
+
+The number budgeted is the entry chunk **plus the transitive closure of its
+static imports** — what the browser blocks on before the first route renders —
+read from Vite's build manifest, which is the only artefact that still knows
+which imports were `import()` and which were not. Sizes are gzip. Sourcemaps are
+four fifths of `dist/` and are not counted; a worker chunk and `public/` are
+counted even though the manifest cannot see them.
+
+When growth is intended, `pnpm bundle:budget:update` rewrites the ceilings —
+commit that diff in the same pull request and say what the bytes bought. The
+reasoning, and the two failures that are not "too big", are in
+[docs/bundle-budget.md](docs/bundle-budget.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

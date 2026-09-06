@@ -15,7 +15,9 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "analyze": "vite build --mode analyze"
+    "analyze": "vite build --mode analyze",
+    "bundle:budget": "node tooling/bundleBudget/cli.ts",
+    "bundle:budget:update": "node tooling/bundleBudget/cli.ts --update"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.0",

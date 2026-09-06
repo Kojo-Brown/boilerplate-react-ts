@@ -228,7 +228,9 @@ describe("fsd/layer-imports", () => {
     );
 
     expect(messages).toHaveLength(1);
-    const [message] = messages;
+    // `noUncheckedIndexedAccess` reached `tooling/` with the bundle-budget
+    // gate; the length assertion above is what makes this safe.
+    const message = messages[0]!;
     expect(message.ruleId).toBe("fsd/layer-imports");
     expect(message.message).toContain(
       "`entities/user/profileApi.ts` may not import from `app/store`",

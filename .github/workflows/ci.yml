@@ -127,6 +127,17 @@ jobs:
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL || 'https://api.example.com' }}
 
+      # A step of this job rather than a job of its own, because a job of its
+      # own would have to build again to have something to measure — three
+      # minutes to learn what the artefact sitting in this runner's `dist/`
+      # already knows. It runs before the upload so a build that blows the
+      # budget does not publish an artefact that looks deployable.
+      #
+      # The table lands in the job summary either way; only the exit code is
+      # conditional. Reading it does not require expanding a log.
+      - name: Bundle budget
+        run: pnpm bundle:budget --summary "$GITHUB_STEP_SUMMARY"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
