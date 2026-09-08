@@ -92,6 +92,10 @@ const LazyPrefetchLabPage = lazy(() =>
   routeChunks[ROUTES.PREFETCH_LAB]().then((m) => ({ default: m.PrefetchLabPage })),
 );
 
+const LazyImageLabPage = lazy(() =>
+  routeChunks[ROUTES.IMAGE_LAB]().then((m) => ({ default: m.ImageLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   routeChunks[ROUTES.OAUTH_CALLBACK]().then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -244,6 +248,13 @@ export const routes: RouteObject[] = [
         // deliberately empty until you interact with it.
         path: "labs/prefetch",
         element: <LazyPrefetchLabPage />,
+      },
+      {
+        // Reference demo for the image pipeline. Unlinked from the nav like
+        // the others — its point is a fixture that answers slowly and an arm
+        // that deliberately reflows the page.
+        path: "labs/images",
+        element: <LazyImageLabPage />,
       },
       {
         // The lab's destination. Its element decides where its own boundary

@@ -16,6 +16,7 @@ export const ROUTES = {
   WORKER_LAB: "/labs/workers",
   INFINITE_SCROLL_LAB: "/labs/infinite-scroll",
   PREFETCH_LAB: "/labs/prefetch",
+  IMAGE_LAB: "/labs/images",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

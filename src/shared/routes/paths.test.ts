@@ -17,6 +17,8 @@ describe("ROUTES", () => {
     expect(ROUTES.DEPENDENCY_INVERSION_LAB).toBe("/labs/dependency-inversion");
     expect(ROUTES.WORKER_LAB).toBe("/labs/workers");
     expect(ROUTES.INFINITE_SCROLL_LAB).toBe("/labs/infinite-scroll");
+    expect(ROUTES.PREFETCH_LAB).toBe("/labs/prefetch");
+    expect(ROUTES.IMAGE_LAB).toBe("/labs/images");
     expect(ROUTES.LOGIN).toBe("/login");
   });
 });
@@ -37,6 +39,8 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/dependency-inversion")).toBe("/labs/dependency-inversion");
     expect(typedRoute("/labs/workers")).toBe("/labs/workers");
     expect(typedRoute("/labs/infinite-scroll")).toBe("/labs/infinite-scroll");
+    expect(typedRoute("/labs/prefetch")).toBe("/labs/prefetch");
+    expect(typedRoute("/labs/images")).toBe("/labs/images");
     expect(typedRoute("/login")).toBe("/login");
   });
 });
