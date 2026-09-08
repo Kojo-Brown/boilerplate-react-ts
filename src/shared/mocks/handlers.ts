@@ -1,4 +1,9 @@
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse, delay } from "msw";
+import {
+  DEMO_IMAGE_DELAY_MS,
+  DEMO_IMAGE_PNG_BASE64,
+  DEMO_MEDIA_PREFIX,
+} from "@/shared/lib/demoImages";
 // Type-only, and so exempt from the import-boundary rule's layer order: it is
 // erased before a module graph exists. The point of naming the real type here
 // is that a change to `Post` fails the type check in the mock that claims to
@@ -104,4 +109,27 @@ export const feedHandlers = [
   }),
 ];
 
-export const handlers = [...authHandlers, ...postHandlers, ...feedHandlers];
+/**
+ * Every candidate URL behind `/labs/images`, answered by one small PNG.
+ *
+ * Deliberately format-blind: the same bytes come back for `.avif`, `.webp` and
+ * `.jpeg`. Selection is decided from the `<source type>` attribute before this
+ * handler is reached, so serving one image exercises the real algorithm — see
+ * the note in `demoImages.ts` about what that does and does not demonstrate.
+ *
+ * The `Content-Type` is `image/png` regardless of the extension asked for,
+ * because a header claiming a format the bytes are not is a lie the browser
+ * would be right to act on, and browsers sniff raster images anyway.
+ */
+export const mediaHandlers = [
+  http.get(`${DEMO_MEDIA_PREFIX}/:file`, async () => {
+    await delay(DEMO_IMAGE_DELAY_MS);
+    const binary = atob(DEMO_IMAGE_PNG_BASE64);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    return new HttpResponse(bytes, {
+      headers: { "Content-Type": "image/png", "Cache-Control": "no-store" },
+    });
+  }),
+];
+
+export const handlers = [...authHandlers, ...postHandlers, ...feedHandlers, ...mediaHandlers];
