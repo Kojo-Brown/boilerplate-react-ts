@@ -19,6 +19,14 @@
  *
  * The unit of the threshold is therefore *nodes per iteration*, and a sensible
  * value for it is a small integer rather than a percentage of anything.
+ *
+ * **Except where the measurement's quantum is bigger than the rate.** Some
+ * journeys strand a whole subtree behind a bounded one-off retainer, and
+ * whether one or two such retainers are populated at a given sample is not
+ * something the journey controls — so the count steps by tens of nodes between
+ * two samples that are both correct. There a rate ceiling measures the
+ * browser's bookkeeping and fails at random; see
+ * {@link LeakPolicy.maxDetachedNodesPerIteration}.
  */
 
 /** One measurement of the page, taken after a forced collection. */
@@ -36,8 +44,29 @@ export interface LeakSample {
 export interface LeakPolicy {
   /** Journey repetitions between the two samples. Must be at least 1. */
   readonly iterations: number;
-  /** Detached nodes one iteration may add. */
-  readonly maxDetachedNodesPerIteration: number;
+  /**
+   * Detached nodes one iteration may add, or `null` not to judge a rate.
+   *
+   * `null` is for a journey whose detached-node measurement has a *quantum*
+   * larger than any rate worth asserting. Closing a popup, for example, leaves
+   * its ~26-node subtree behind a bounded one-off retainer — React's alternate
+   * fiber, or V8's cache of the last event object — and whether one or two of
+   * those retainers happen to be populated at a given sample is not something
+   * the journey controls. That is ±26 nodes of quantisation on a ten-iteration
+   * window, i.e. ±2.6 per iteration, against a leak that would be 26 per
+   * iteration. Asserting a rate there measures the browser's bookkeeping.
+   * {@link maxDetachedNodes} asserts what such a journey can actually claim:
+   * that the population is *bounded*, at a ceiling far under what one stranded
+   * subtree per iteration would produce.
+   */
+  readonly maxDetachedNodesPerIteration: number | null;
+  /**
+   * Absolute ceiling on detached nodes at the second sample.
+   *
+   * Set it in units of whatever the journey's quantum is, with room for a few
+   * of them, and leave a wide gap to the number a real leak would reach.
+   */
+  readonly maxDetachedNodes?: number | null;
   /** Listener registrations one iteration may add. */
   readonly maxListenersPerIteration: number;
   /**
@@ -55,7 +84,7 @@ export type LeakStatus = "ok" | "over";
 
 export interface LeakFinding {
   /** Stable id, so a failure message can be grepped for. */
-  readonly metric: "detachedNodes" | "liveListeners" | "detachedListeners";
+  readonly metric: "detachedNodes" | "detachedNodesTotal" | "liveListeners" | "detachedListeners";
   readonly label: string;
   readonly before: number;
   readonly after: number;
@@ -92,6 +121,15 @@ export function evaluateLeakSample(input: {
   if (!Number.isInteger(policy.iterations) || policy.iterations < 1) {
     throw new Error(`Leak policy needs at least 1 iteration, got ${String(policy.iterations)}.`);
   }
+  const rateLimit = policy.maxDetachedNodesPerIteration;
+  const totalLimit = policy.maxDetachedNodes ?? null;
+  if (rateLimit === null && totalLimit === null) {
+    // Switching both off leaves the detached count unjudged while the report
+    // still prints it, which reads exactly like a passing gate.
+    throw new Error(
+      "Leak policy must judge detached nodes by a rate, an absolute ceiling, or both.",
+    );
+  }
 
   const perIterationFinding = (
     metric: "detachedNodes" | "liveListeners",
@@ -116,14 +154,34 @@ export function evaluateLeakSample(input: {
 
   const detachedListenerLimit = policy.maxDetachedListeners ?? 0;
 
-  const findings: LeakFinding[] = [
-    perIterationFinding(
-      "detachedNodes",
-      "Detached DOM nodes",
-      baseline.detachedNodes,
-      after.detachedNodes,
-      policy.maxDetachedNodesPerIteration,
-    ),
+  const findings: LeakFinding[] = [];
+
+  if (rateLimit !== null) {
+    findings.push(
+      perIterationFinding(
+        "detachedNodes",
+        "Detached DOM nodes",
+        baseline.detachedNodes,
+        after.detachedNodes,
+        rateLimit,
+      ),
+    );
+  }
+
+  if (totalLimit !== null) {
+    findings.push({
+      metric: "detachedNodesTotal",
+      label: "Detached DOM nodes (total)",
+      before: baseline.detachedNodes,
+      after: after.detachedNodes,
+      growth: after.detachedNodes - baseline.detachedNodes,
+      perIteration: null,
+      allowed: totalLimit,
+      status: after.detachedNodes > totalLimit ? "over" : "ok",
+    });
+  }
+
+  findings.push(
     perIterationFinding(
       "liveListeners",
       "Live event listeners",
@@ -131,17 +189,18 @@ export function evaluateLeakSample(input: {
       after.liveListeners,
       policy.maxListenersPerIteration,
     ),
-    {
-      metric: "detachedListeners",
-      label: "Listeners on detached nodes",
-      before: baseline.detachedListeners,
-      after: after.detachedListeners,
-      growth: after.detachedListeners - baseline.detachedListeners,
-      perIteration: null,
-      allowed: detachedListenerLimit,
-      status: after.detachedListeners > detachedListenerLimit ? "over" : "ok",
-    },
-  ];
+  );
+
+  findings.push({
+    metric: "detachedListeners",
+    label: "Listeners on detached nodes",
+    before: baseline.detachedListeners,
+    after: after.detachedListeners,
+    growth: after.detachedListeners - baseline.detachedListeners,
+    perIteration: null,
+    allowed: detachedListenerLimit,
+    status: after.detachedListeners > detachedListenerLimit ? "over" : "ok",
+  });
 
   return {
     iterations: policy.iterations,

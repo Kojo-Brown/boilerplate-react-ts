@@ -67,6 +67,17 @@ growth per iteration = (after − baseline) / iterations
 Everything one-off cancels out, and what is left is the thing a leak actually
 is. See `tooling/memoryAudit/leakVerdict.ts`.
 
+**Unless the journey's measurement has a quantum bigger than the rate.** Some
+journeys strand a whole subtree behind a bounded one-off retainer, and whether
+one or two such retainers are populated at a given sample is not something the
+test controls — so the count steps by tens of nodes between samples that are
+both correct. A rate ceiling there measures the browser's bookkeeping and fails
+at random. Those journeys set `maxDetachedNodesPerIteration: null` and a
+`maxDetachedNodes` ceiling instead, which asserts what they can actually claim:
+the population is bounded, far below what one stranded subtree per iteration
+would reach. The popup journey is the worked example — see
+[what the first run found](#which-is-why-the-popup-journey-is-judged-by-an-absolute-ceiling).
+
 ### 5. Count listeners directly, rather than inferring them
 
 A heap snapshot tells you _that_ nodes are detached. It is much worse at
@@ -172,17 +183,18 @@ full name on the node for the report.
 
 ## What the first run found
 
-Both journeys are flat: **zero growth over ten iterations**, on detached nodes
-and on listeners alike, with no listener left bound to a detached node. Nothing
-in this application leaks across navigation or across opening and closing a
-popup.
+**Nothing accumulates.** Zero listener growth on both journeys, nothing left
+bound to a detached node, and zero detached-node growth across navigation.
+Nothing in this application leaks across navigation or across opening and
+closing a popup.
 
-Two constant, non-growing retentions turned up and are worth writing down,
-because the next person to run this will see them and wonder:
+Three things turned up that are worth writing down, because the next person to
+run this will see them and wonder.
 
-**One detached listbox subtree per mounted `SelectMenu`** (29 nodes: a `<ul>`,
-12 `<li>`, 13 `<span>`). Closing the popup unmounts it, and it stays reachable
-through the trigger's fiber:
+### One detached listbox subtree per mounted `SelectMenu`
+
+26 nodes: a `<ul>`, 12 `<li>`, 13 `<span>`. Closing the popup unmounts it, and
+it stays reachable through the trigger's fiber:
 
 ```
 <button aria-haspopup="listbox"> --property __reactFiber$…-->
@@ -194,13 +206,54 @@ through the trigger's fiber:
 React double-buffers its fiber tree, and the alternate fiber holds the previous
 render's props. Those props include the trigger's `onClick`, whose closure scope
 is that render — and that render's `listElement` was the open popup's `<ul>`.
-It is bounded (the alternate is reused, so the _next_ render overwrites it,
-which is why ten cycles leave the same 29 nodes as one) and there is nothing
-the component can do about it: nulling the state out on close does not reach a
+It is bounded: the alternate is reused, so the _next_ render overwrites it, and
+ten cycles leave the same one subtree as one cycle does. Nothing the component
+can do reaches it either — nulling the state out on close does not touch a
 closure that already captured the old value. Recorded, not fixed.
 
-**Two `<div>`s and an `SVGSVGElement` behind the TanStack Query devtools
-button.** Development-only — the devtools are not in a production build — and
+### The last event object retains its target
+
+Dismissing the popup with Escape leaves V8 holding that `KeyboardEvent` in an
+internal cache, and its `target` is the `<ul>` that has just been unmounted:
+
+```
+system / NativeContext --internal slow_template_instantiations_cache-->
+ … --internal getter--> get [closure] --internal context-->
+  system / Context --context e--> KeyboardEvent --property target-->
+   <ul role="listbox">
+```
+
+Also bounded — there is only ever one last event — and also nothing the
+application can influence.
+
+### Which is why the popup journey is judged by an absolute ceiling
+
+Those two retainers are each one popup subtree, and **whether they point at the
+same subtree or two different ones is not something the journey controls**. So
+the detached count on that journey steps between one and two quanta of 26
+nodes, i.e. ±2.6 per iteration over a ten-iteration window — against a rate
+ceiling of 1.
+
+The first CI run of this gate failed on exactly that, at 29 → 55 nodes, and it
+was right to: a per-iteration rate is not a claim that journey can make. What it
+_can_ claim is that the population is **bounded**, so it is judged against an
+absolute ceiling of four subtrees, against the eleven (~290 nodes) that one
+stranded popup per open would produce. `maxDetachedNodesPerIteration: null` plus
+`maxDetachedNodes` is how a policy says so.
+
+The listener half of that journey needs no such allowance and gets none:
+`SelectMenu` binds `pointerdown` on `document` for exactly as long as it is
+open, so a missing cleanup is +1 listener per iteration. Checked by deleting
+that cleanup and re-running — `Live event listeners` goes 168 → 178 over ten
+iterations, 1.00 per iteration against a ceiling of 0, and the gate is red,
+while **the detached-node row does not move at all**, because the stranded
+listeners sit on `document`, which is attached. That is the assertion doing the
+work on this journey, and it is the whole argument for counting registrations
+rather than inferring them from the heap.
+
+### Two `<div>`s and an `SVGSVGElement` behind the TanStack Query devtools button
+
+Development-only — the devtools are not in a production build — and
 third-party. Recorded, not fixed.
 
 ---

@@ -17,7 +17,7 @@ const sample = (overrides: Partial<LeakSample> = {}): LeakSample => ({
 
 const finding = (
   verdict: ReturnType<typeof evaluateLeakSample>,
-  metric: "detachedNodes" | "liveListeners" | "detachedListeners",
+  metric: "detachedNodes" | "detachedNodesTotal" | "liveListeners" | "detachedListeners",
 ) => verdict.findings.find((entry) => entry.metric === metric);
 
 describe("evaluateLeakSample", () => {
@@ -109,6 +109,63 @@ describe("evaluateLeakSample", () => {
     });
 
     expect(verdict.failed).toBe(false);
+  });
+
+  it("judges an absolute ceiling on the after sample, ignoring the rate", () => {
+    // The popup journey's shape: a large, bounded quantum that steps up and
+    // down between samples. 29 → 55 is +2.6/iter, which a rate ceiling of 1
+    // fails and which says nothing about whether anything is accumulating.
+    const policy = {
+      ...POLICY,
+      maxDetachedNodesPerIteration: null,
+      maxDetachedNodes: 104,
+    };
+
+    const bounded = evaluateLeakSample({
+      baseline: sample({ detachedNodes: 29 }),
+      after: sample({ detachedNodes: 55 }),
+      policy,
+    });
+    const leaking = evaluateLeakSample({
+      baseline: sample({ detachedNodes: 29 }),
+      after: sample({ detachedNodes: 290 }),
+      policy,
+    });
+
+    expect(bounded.failed).toBe(false);
+    expect(leaking.failed).toBe(true);
+    expect(finding(bounded, "detachedNodes")).toBeUndefined();
+    expect(finding(bounded, "detachedNodesTotal")).toMatchObject({
+      after: 55,
+      growth: 26,
+      perIteration: null,
+      allowed: 104,
+      status: "ok",
+    });
+  });
+
+  it("can judge both a rate and an absolute ceiling at once", () => {
+    const verdict = evaluateLeakSample({
+      baseline: sample({ detachedNodes: 40 }),
+      after: sample({ detachedNodes: 44 }),
+      policy: { ...POLICY, maxDetachedNodes: 42 },
+    });
+
+    expect(finding(verdict, "detachedNodes")?.status).toBe("ok");
+    expect(finding(verdict, "detachedNodesTotal")?.status).toBe("over");
+    expect(verdict.failed).toBe(true);
+  });
+
+  it("refuses a policy that judges the detached count by nothing at all", () => {
+    // Both ceilings off leaves the count unjudged while the report still
+    // prints it, which reads exactly like a passing gate.
+    expect(() =>
+      evaluateLeakSample({
+        baseline: sample(),
+        after: sample(),
+        policy: { ...POLICY, maxDetachedNodesPerIteration: null },
+      }),
+    ).toThrow(/rate, an absolute ceiling, or both/);
   });
 
   it("reports every metric, including the passing ones", () => {
