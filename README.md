@@ -390,6 +390,33 @@ commit that diff in the same pull request and say what the bytes bought. The
 reasoning, and the two failures that are not "too big", are in
 [docs/bundle-budget.md](docs/bundle-budget.md).
 
+## Memory-leak audit
+
+A single-page application never reloads, so a listener that outlives its
+component or a subtree nothing lets go of is paid for by the user's next hour.
+`e2e/memory-leak.spec.ts` runs a journey eleven times, takes a Chrome heap
+snapshot either side of the last ten, and fails if anything accumulated:
+
+```
+  label                        before  after  growth
+  Detached DOM nodes           3       3      0       0.00/iter (max 1)
+  Live event listeners         167     167    0       0.00/iter (max 0)
+  Listeners on detached nodes  0       0      0       limit 0
+```
+
+It judges **growth per iteration**, never the absolute count — a page with a
+few detached nodes in it is normal, a page that gains one per navigation is
+not. Listener registrations are counted directly, by a probe installed at
+document start, because the retainer path for a leaked closure names nothing
+you can grep for. A failure prints the detached population, the listener
+registrations that moved, and the shortest retaining path from a GC root to one
+of the leaked nodes.
+
+The gate runs in CI as part of the **E2E Tests** job; locally it is
+`pnpm test:e2e --project=chromium memory-leak`. The method, the heap-snapshot
+format notes, and what the first run found are in
+[docs/memory-leaks.md](docs/memory-leaks.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.
