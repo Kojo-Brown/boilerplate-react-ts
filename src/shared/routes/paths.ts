@@ -17,6 +17,7 @@ export const ROUTES = {
   INFINITE_SCROLL_LAB: "/labs/infinite-scroll",
   PREFETCH_LAB: "/labs/prefetch",
   IMAGE_LAB: "/labs/images",
+  ERROR_LAB: "/labs/errors",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

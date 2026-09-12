@@ -37,6 +37,12 @@ export default defineConfig({
       // `web-vitals.spec.ts` intercepts. Without an endpoint the reporter
       // subscribes to nothing, so the beacon could never be observed.
       VITE_ANALYTICS_URL: "http://localhost:3000/__vitals",
+      // Same arrangement for errors: with no endpoint the reporter uses the
+      // console transport, and `route-error-boundary.spec.ts` would have no
+      // request to intercept — so the one thing only a real browser can prove,
+      // that an event leaves as a beacon, would go untested.
+      VITE_ERROR_REPORT_URL: "http://localhost:3000/__errors",
+      VITE_RELEASE: "e2e-test-build",
     },
     url: "http://localhost:3000",
     reuseExistingServer: !process.env["CI"],
