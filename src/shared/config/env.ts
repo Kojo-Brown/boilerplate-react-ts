@@ -27,6 +27,16 @@ const envSchema = z.object({
     .refine((rate) => Number.isFinite(rate) && rate >= 0 && rate <= 1, {
       message: "VITE_VITALS_SAMPLE_RATE must be a number between 0 and 1",
     }),
+  // Where caught and uncaught errors are POSTed, one request per event. Empty
+  // means "shape events but send nothing", which is what a development build
+  // without a collector gets — see `app/observability/reporter.ts`. Validated
+  // as a URL for the same reason as `VITE_ANALYTICS_URL`: a typo should fail
+  // at boot, not produce a build that reports nowhere.
+  VITE_ERROR_REPORT_URL: z.union([z.literal(""), z.url()]).default(""),
+  // Stamped on every error event as the `release` tag. Grouping is per-issue;
+  // the release is what turns "this issue exists" into "this issue started in
+  // build 4c1f0". Blank when the build system does not supply one.
+  VITE_RELEASE: z.string().default(""),
 });
 
 export const env = envSchema.parse(import.meta.env);

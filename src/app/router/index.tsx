@@ -4,6 +4,7 @@ import { RootLayout } from "@/widgets/layout/RootLayout";
 import { RouteFallback } from "@/app/router/RouteFallback";
 import { NotFoundPage } from "@/pages/not-found/NotFoundPage";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
+import { RouteErrorBoundary } from "@/features/route-errors/RouteErrorBoundary";
 import ErrorPage from "@/pages/error/ErrorPage";
 import { LoginPageSkeleton } from "@/pages/login/LoginPageSkeleton";
 import { PageLoader } from "@/shared/ui/PageLoader";
@@ -96,6 +97,10 @@ const LazyImageLabPage = lazy(() =>
   routeChunks[ROUTES.IMAGE_LAB]().then((m) => ({ default: m.ImageLabPage })),
 );
 
+const LazyErrorLabPage = lazy(() =>
+  routeChunks[ROUTES.ERROR_LAB]().then((m) => ({ default: m.ErrorLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   routeChunks[ROUTES.OAUTH_CALLBACK]().then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -112,22 +117,44 @@ const LazyOAuthCallbackPage = lazy(() =>
  * `/login` and `/auth/callback` are outside the layout and so keep theirs:
  * with no shared parent boundary there is no previous page to hold, and their
  * skeleton is the only thing that can be shown.
+ *
+ * Every route element *does* carry its own `<RouteErrorBoundary>`, and the
+ * asymmetry with Suspense is the point. Hoisting the Suspense boundary buys
+ * shared revealed content, which is what a held transition needs. Hoisting the
+ * error boundary would buy shared *blast radius*: one route's throw would
+ * replace every route, and the boundary would have nothing to name in the
+ * report but the layout. Errors want the opposite of what suspensions want, so
+ * they are placed the opposite way.
+ *
+ * The `route` tag is the path rather than the component, because it is what a
+ * dashboard facets on and what a bug report quotes. `<ErrorPage>` stays as the
+ * router's `errorElement` for what a per-route boundary cannot see: a throw in
+ * the layout itself, above all of them.
  */
 export const routes: RouteObject[] = [
   {
     path: "/login",
     element: (
-      <Suspense fallback={<LoginPageSkeleton />}>
-        <LazyLoginPage />
-      </Suspense>
+      // Outside the Suspense boundary here, unlike the routes under `/` whose
+      // boundary the layout owns. Either nesting catches a rejected
+      // `React.lazy`, but this order also catches a throw from the fallback
+      // itself — and `LoginPageSkeleton` is the only fallback in the app that
+      // is a real component rather than a spinner.
+      <RouteErrorBoundary route={ROUTES.LOGIN}>
+        <Suspense fallback={<LoginPageSkeleton />}>
+          <LazyLoginPage />
+        </Suspense>
+      </RouteErrorBoundary>
     ),
   },
   {
     path: "/auth/callback",
     element: (
-      <Suspense fallback={<PageLoader />}>
-        <LazyOAuthCallbackPage />
-      </Suspense>
+      <RouteErrorBoundary route={ROUTES.OAUTH_CALLBACK}>
+        <Suspense fallback={<PageLoader />}>
+          <LazyOAuthCallbackPage />
+        </Suspense>
+      </RouteErrorBoundary>
     ),
   },
   {
@@ -137,134 +164,225 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <LazyHomePage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.HOME}>
+            <LazyHomePage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         element: <ProtectedRoute />,
         children: [
           {
             path: "dashboard",
-            element: <LazyDashboardPage />,
+            element: (
+              <RouteErrorBoundary route={ROUTES.DASHBOARD}>
+                <LazyDashboardPage />
+              </RouteErrorBoundary>
+            ),
           },
         ],
       },
       {
         path: "about",
-        element: <LazyAboutPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.ABOUT}>
+            <LazyAboutPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the React 19 concurrency pattern. Deliberately
         // unlinked from the nav — it is a lab, not part of the app shell.
         path: "labs/concurrency",
-        element: <LazyConcurrencyLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.CONCURRENCY_LAB}>
+            <LazyConcurrencyLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the React 19 optimistic-mutation pattern. Also
         // unlinked from the nav — the failing-server mode is not something to
         // stumble into from the app shell.
         path: "labs/optimistic",
-        element: <LazyOptimisticLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.OPTIMISTIC_LAB}>
+            <LazyOptimisticLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the React 19 `use()` pattern. Unlinked from the
         // nav for the same reason as the others — the failing-server mode is
         // not something to stumble into from the app shell.
         path: "labs/use",
-        element: <LazyUseApiLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.USE_API_LAB}>
+            <LazyUseApiLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the React 19 Actions API. Unlinked from the nav
         // for the same reason as the others — the failing-server mode is not
         // something to stumble into from the app shell.
         path: "labs/actions",
-        element: <LazyActionsLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.ACTIONS_LAB}>
+            <LazyActionsLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for streaming Suspense boundaries. Unlinked from the
         // nav for the same reason as the others — the broken-section mode is
         // not something to stumble into from the app shell.
         path: "labs/streaming",
-        element: <LazyStreamingLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.STREAMING_LAB}>
+            <LazyStreamingLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for held route transitions. Unlinked from the nav for
         // the same reason as the others — its slow-route mode is deliberately
         // unpleasant to navigate.
         path: "labs/navigation",
-        element: <LazyNavigationLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.NAVIGATION_LAB}>
+            <LazyNavigationLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the headless component pattern. Unlinked from the
         // nav like the others — three renderings of one list is a lab exhibit,
         // not something the app shell needs.
         path: "labs/headless",
-        element: <LazyHeadlessLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.HEADLESS_LAB}>
+            <LazyHeadlessLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the polymorphic `as` prop. Unlinked from the nav
         // like the others — an element picker over one paragraph is a lab
         // exhibit, not something the app shell needs.
         path: "labs/polymorphic",
-        element: <LazyPolymorphicLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.POLYMORPHIC_LAB}>
+            <LazyPolymorphicLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for render props and HOCs against the hook that
         // replaced them. Unlinked from the nav like the others — a row of
         // three cards reporting the same boolean is a lab exhibit.
         path: "labs/render-props",
-        element: <LazyRenderPropsLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.RENDER_PROPS_LAB}>
+            <LazyRenderPropsLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the XState checkout machine. Unlinked from the
         // nav like the others — a basket that cannot actually be bought is a
         // lab exhibit, not part of the app shell.
         path: "labs/checkout",
-        element: <LazyCheckoutLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.CHECKOUT_LAB}>
+            <LazyCheckoutLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the injected API client. Unlinked from the nav
         // like the others — a page whose point is that its data is fake is a
         // lab exhibit, not part of the app shell.
         path: "labs/dependency-inversion",
-        element: <LazyDependencyInversionLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.DEPENDENCY_INVERSION_LAB}>
+            <LazyDependencyInversionLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for parsing off the main thread. Unlinked from the
         // nav like the others — its main-thread arm deliberately freezes the
         // page for seconds, which is not something to stumble into.
         path: "labs/workers",
-        element: <LazyWorkerLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.WORKER_LAB}>
+            <LazyWorkerLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for windowed infinite scroll. Unlinked from the nav
         // like the others — it loads 5,000 rows from the mock feed, which is a
         // demonstration rather than a page the app has a use for.
         path: "labs/infinite-scroll",
-        element: <LazyInfiniteScrollLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.INFINITE_SCROLL_LAB}>
+            <LazyInfiniteScrollLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for idle-budgeted route prefetching. Unlinked from
         // the nav like the others — most of what it shows is a queue that is
         // deliberately empty until you interact with it.
         path: "labs/prefetch",
-        element: <LazyPrefetchLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.PREFETCH_LAB}>
+            <LazyPrefetchLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // Reference demo for the image pipeline. Unlinked from the nav like
         // the others — its point is a fixture that answers slowly and an arm
         // that deliberately reflows the page.
         path: "labs/images",
-        element: <LazyImageLabPage />,
+        element: (
+          <RouteErrorBoundary route={ROUTES.IMAGE_LAB}>
+            <LazyImageLabPage />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        // Reference demo for per-route error boundaries. Unlinked from the nav
+        // like the others — every arm of it is a page that deliberately
+        // throws, which is not something to stumble into from the app shell.
+        path: "labs/errors",
+        element: (
+          <RouteErrorBoundary route={ROUTES.ERROR_LAB}>
+            <LazyErrorLabPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         // The lab's destination. Its element decides where its own boundary
         // goes, which is the one thing a route config cannot express twice.
         path: "labs/navigation/slow",
-        element: <LazySlowRouteLabRoute />,
+        element: (
+          <RouteErrorBoundary route={SLOW_ROUTE_PATH}>
+            <LazySlowRouteLabRoute />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "*",
-        element: <NotFoundPage />,
+        element: (
+          <RouteErrorBoundary route="*">
+            <NotFoundPage />
+          </RouteErrorBoundary>
+        ),
       },
     ],
   },

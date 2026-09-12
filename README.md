@@ -417,6 +417,40 @@ The gate runs in CI as part of the **E2E Tests** job; locally it is
 format notes, and what the first run found are in
 [docs/memory-leaks.md](docs/memory-leaks.md).
 
+## Error boundaries per route
+
+Every route renders inside its own `<RouteErrorBoundary>`. A route that throws
+is replaced by a fallback; the shell, the navigation and every sibling route
+keep working, and the error is reported with the route, the error kind, the
+retry attempt and a breadcrumb trail.
+
+Three things the implementation does that a first version would not:
+
+- **Reset keys tied to `location.key`.** Every route's boundary is rendered at
+  the same `<Outlet>` slot, so React reconciles them onto _one instance_ whose
+  state survives navigation. Without reset keys, a route that threw keeps
+  showing its error after the user has navigated somewhere else, and the
+  destination never renders — the link looks broken.
+- **"Try again" is withheld where it cannot work.** A failed dynamic import —
+  a stale deploy against an open tab, the commonest route error in production
+  — cannot be retried at all: `React.lazy` memoises its rejected promise, so a
+  reset rethrows the identical error in the same frame. That case is offered a
+  guarded reload instead, and ordinary render errors get a budget of two
+  retries before the fallback admits the failure is not transient.
+- **One reporter, wired once.** React 19 calls `onCaughtError` _and_ the
+  boundary's `componentDidCatch` for a single caught error, so reporting from
+  both doubles every count; the boundary reports, and the root handles only
+  what no boundary caught.
+
+Events are Sentry-shaped — exception chain, root-cause fingerprint, tags,
+breadcrumbs, mechanism — with no SDK dependency; `VITE_ERROR_REPORT_URL` picks
+the transport. Credentials are redacted out of messages, stacks and
+breadcrumbs before anything leaves the page.
+
+`/labs/errors` reaches each failure mode on demand and lists the events it
+produced. The full account is in
+[docs/error-boundaries.md](docs/error-boundaries.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

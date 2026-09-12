@@ -6,6 +6,7 @@ import { RoutePendingBar } from "@/features/route-transition/RoutePendingBar";
 import { RouteTransitionProvider } from "@/features/route-transition/routeTransition";
 import { RoutePrefetchProvider } from "@/features/route-prefetch/routePrefetch";
 import { WebVitalsReporter } from "@/shared/analytics/WebVitalsReporter";
+import { ErrorBreadcrumbs } from "@/features/route-errors/ErrorBreadcrumbs";
 import type { ChunkRegistry } from "@/shared/lib/idlePrefetchQueue";
 
 export interface RootLayoutProps {
@@ -51,6 +52,13 @@ export function RootLayout({ fallback, prefetchRegistry }: RootLayoutProps) {
             remounted per route would start a new visit on every link click.
           */}
           <WebVitalsReporter />
+          {/*
+            Also renders nothing, and here for the same two reasons: a
+            navigation crumb needs router context, and a recorder remounted per
+            route would hand every error an empty trail — the head of which is
+            the part worth having.
+          */}
+          <ErrorBreadcrumbs />
           <ScrollRestoration />
           <RoutePendingBar />
           <Navbar />
