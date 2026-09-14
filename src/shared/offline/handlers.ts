@@ -111,13 +111,17 @@ export async function handleWrite(env: WorkerEnvironment, request: Request): Pro
  * `sw.ts`, where a non-empty queue is signalled to the browser by rejecting the
  * event, which is how Background Sync is asked to try again later.
  */
-export async function replayAndNotify(env: WorkerEnvironment): Promise<ReplayReport> {
+export async function replayAndNotify(
+  env: WorkerEnvironment,
+  options: { readonly ignoreBackoff?: boolean } = {},
+): Promise<ReplayReport> {
   const store = await env.store();
   const report = await replayQueue({
     store,
     fetch: env.fetch,
     now: env.now(),
     ...(env.policy !== undefined ? { policy: env.policy } : {}),
+    ...(options.ignoreBackoff === true ? { ignoreBackoff: true } : {}),
   });
   await env.notify(summariseReplay(report));
   return report;
@@ -147,6 +151,10 @@ export async function handleMessage(
     return "handled";
   }
 
-  await replayAndNotify(env);
+  // `REPLAY_QUEUE` is sent by a page that has just seen `online` fire, so it
+  // carries information the backoff schedule does not have: the network is
+  // back. Waiting out a backoff step in front of a user who is watching, on a
+  // connection that works, is the schedule being wrong rather than careful.
+  await replayAndNotify(env, { ignoreBackoff: true });
   return "handled";
 }

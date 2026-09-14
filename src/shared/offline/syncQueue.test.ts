@@ -168,6 +168,47 @@ describe("replayQueue", () => {
     ]);
   });
 
+  it("attempts a deferred entry anyway when told the network is back", async () => {
+    // The backoff was set because the network was presumed down. A page that
+    // has just seen `online` fire has contradicted that, and holding the write
+    // for another five minutes in front of a user who is watching is the
+    // schedule being wrong rather than careful.
+    const store = createMemoryQueueStore();
+    await seed(store, 1);
+    await replayQueue({ store, now: NOW, fetch: () => Promise.reject(new Error("offline")) });
+
+    const report = await replayQueue({
+      store,
+      now: NOW + 1_000,
+      fetch: ok,
+      ignoreBackoff: true,
+    });
+
+    expect(report.outcomes).toEqual([{ kind: "sent", id: 1, status: 204 }]);
+    expect(report.remaining).toBe(0);
+  });
+
+  it("still counts an attempt when the backoff is ignored", async () => {
+    // Otherwise a flapping connection — `online` firing every few seconds —
+    // would retry a permanently failing write forever, and the attempt limit
+    // that bounds it would never be reached.
+    const policy: ReplayPolicy = { ...DEFAULT_REPLAY_POLICY, maxAttempts: 2 };
+    const store = createMemoryQueueStore();
+    await seed(store, 1);
+    const offline = (): Promise<Response> => Promise.reject(new Error("offline"));
+
+    await replayQueue({ store, now: NOW, fetch: offline, policy, ignoreBackoff: true });
+    const second = await replayQueue({
+      store,
+      now: NOW + 100,
+      fetch: offline,
+      policy,
+      ignoreBackoff: true,
+    });
+
+    expect(second.outcomes).toEqual([{ kind: "dropped", id: 1, reason: "exhausted" }]);
+  });
+
   it("backs off further on each failure", async () => {
     const store = createMemoryQueueStore();
     await seed(store, 1);

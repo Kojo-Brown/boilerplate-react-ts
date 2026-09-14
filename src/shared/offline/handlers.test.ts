@@ -245,6 +245,27 @@ describe("handleMessage", () => {
     expect(notified.at(-1)).toMatchObject({ type: "QUEUE_REPLAYED", sent: 1 });
   });
 
+  it("does not make a page that has just come online wait out a backoff", async () => {
+    /*
+      The sequence this covers happened in CI and not locally: Background Sync
+      fired while the browser still believed it had a network, the replay
+      failed, and the entry was parked behind a five-second backoff — so the
+      `REPLAY_QUEUE` that followed the page coming back online found it
+      deferred and the queue sat there with the user watching.
+    */
+    const { env, store } = harness({ fetch: () => Promise.reject(new Error("offline")) });
+    await handleWrite(
+      env,
+      new Request("https://app.test/api/posts", { method: "POST", body: "{}" }),
+    );
+    await replayAndNotify(env); // a `sync` that fired too early, burning one attempt
+
+    const online = { ...env, fetch: () => Promise.resolve(new Response(null, { status: 204 })) };
+    await handleMessage(online, { type: "REPLAY_QUEUE" }, () => undefined);
+
+    expect(await store.count()).toBe(0);
+  });
+
   it("ignores a message it does not recognise", async () => {
     const { env } = harness({ fetch: () => Promise.reject(new Error("unused")) });
     await expect(handleMessage(env, { type: "workbox-window" }, () => undefined)).resolves.toBe(

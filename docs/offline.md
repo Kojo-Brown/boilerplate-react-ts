@@ -209,6 +209,16 @@ Where it does not, the queue drains because **the page asks**: `offlineClient`
 listens for `online` and posts `REPLAY_QUEUE`. That path exists in every browser
 and is the one `e2e/offline.spec.ts` drives.
 
+That request also **ignores the backoff**, and the `sync` event does not. The
+asymmetry is the information each carries. A page that has just seen `online`
+fire has contradicted the assumption the backoff was made under — the network is
+back — so holding its write for another five-minute step, in front of a user who
+is watching, is the schedule being wrong rather than careful. The `sync` event is
+the browser's _own_ retry schedule and can fire repeatedly, so letting each
+firing skip the backoff is how five attempts are spent in a few seconds.
+`attempts` is counted either way, which is what stops a flapping connection from
+retrying a doomed write forever.
+
 ## Updates
 
 A new worker installs while the old one still controls every open tab, and stays

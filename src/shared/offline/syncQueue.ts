@@ -175,6 +175,22 @@ export async function replayQueue(options: {
   readonly fetch: FetchLike;
   readonly now: number;
   readonly policy?: ReplayPolicy;
+  /**
+   * Attempt entries whose backoff has not elapsed.
+   *
+   * For the one caller that knows something the schedule does not: a page that
+   * has just seen `online` fire. The backoff exists because the network was
+   * presumed down, and that presumption has been contradicted — waiting out a
+   * five-minute step in front of a user who is watching, on a connection that
+   * demonstrably works, is the schedule being wrong rather than careful.
+   *
+   * `attempts` is still counted and the attempt limit still applies, so a
+   * flapping connection cannot turn this into an unbounded retry loop. The
+   * `sync` event deliberately does *not* use it: that is the browser's own
+   * retry schedule, it can fire repeatedly, and letting each firing skip the
+   * backoff is how five attempts are spent in a few seconds.
+   */
+  readonly ignoreBackoff?: boolean;
 }): Promise<ReplayReport> {
   const { store, fetch, now } = options;
   const policy = options.policy ?? DEFAULT_REPLAY_POLICY;
@@ -186,7 +202,7 @@ export async function replayQueue(options: {
       outcomes.push({ kind: "dropped", id: entry.id, reason: "expired" });
       continue;
     }
-    if (entry.nextAttemptAt > now) {
+    if (entry.nextAttemptAt > now && options.ignoreBackoff !== true) {
       outcomes.push({ kind: "deferred", id: entry.id, nextAttemptAt: entry.nextAttemptAt });
       break;
     }

@@ -76,6 +76,23 @@ test.describe("offline support", () => {
     // The shell rendered with no network at all — script, stylesheet and HTML
     // all out of the precache.
     await expect(page.locator("#root")).not.toBeEmpty();
+
+    /*
+      The banner is driven by the `offline` event, and this dispatches it
+      rather than trusting the emulation to.
+
+      `context.setOffline(true)` reliably cuts the network — that is what the
+      assertion above just proved — but whether it also updates
+      `navigator.onLine` and fires `offline` in the page varies by Chromium
+      build: it does in the full browser and did not in the headless shell CI
+      runs on, where this assertion failed three times against a page that was
+      demonstrably offline. Dispatching the event is what a browser does when
+      connectivity changes, so the wiring under test — event to client, client
+      to hook, hook to component — is exercised either way.
+    */
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
     await expect(page.getByText("Offline — showing saved data")).toBeVisible();
   });
 
@@ -140,15 +157,22 @@ test.describe("offline support", () => {
     await context.setOffline(false);
     // The page asks the worker to replay the moment it sees the network back,
     // rather than waiting for a Background Sync event that Safari and Firefox
-    // will never fire.
+    // will never fire. Dispatched rather than waited for, for the reason given
+    // in the test above.
     await page.evaluate(() => {
       window.dispatchEvent(new Event("online"));
     });
 
-    // `e2e/offlineApiServer.ts` answers the replayed write with a 204, so the
-    // entry leaves the queue for the reason it should: it was delivered.
-    // Nothing the page can do would prove that — the request is the worker's,
-    // and `page.route` does not see it — which is why that server exists.
-    await expect(page.getByTestId("offline-pending")).toHaveCount(0);
+    /*
+      `e2e/offlineApiServer.ts` answers the replayed write with a 204, so the
+      entry leaves the queue for the reason it should: it was delivered.
+      Nothing the page can do would prove that — the request is the worker's,
+      and `page.route` does not see it — which is why that server exists.
+
+      The timeout is generous because a replay crosses three processes on a
+      shared CI runner (page → worker → preview proxy → API server), not
+      because anything here is expected to be slow.
+    */
+    await expect(page.getByTestId("offline-pending")).toHaveCount(0, { timeout: 15_000 });
   });
 });
