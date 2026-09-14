@@ -31,6 +31,13 @@ export default defineConfig({
         // and are excluded on the same grounds now.
         "src/shared/mocks/**",
         "src/app/main.tsx",
+        // The service worker's entry point, excluded on the same grounds as
+        // `main.tsx`: it can only run inside a `ServiceWorkerGlobalScope`,
+        // which jsdom does not provide. It earns the exclusion by holding no
+        // decisions — every strategy and policy it wires together lives under
+        // `src/shared/offline/`, where the tests are, and the wiring itself is
+        // covered by `e2e/offline.spec.ts` in a real browser.
+        "src/app/sw/**",
         "src/shared/config/env.ts",
         "src/**/*.d.ts",
         "src/**/*.stories.{ts,tsx}",

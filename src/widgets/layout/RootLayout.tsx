@@ -7,6 +7,7 @@ import { RouteTransitionProvider } from "@/features/route-transition/routeTransi
 import { RoutePrefetchProvider } from "@/features/route-prefetch/routePrefetch";
 import { WebVitalsReporter } from "@/shared/analytics/WebVitalsReporter";
 import { ErrorBreadcrumbs } from "@/features/route-errors/ErrorBreadcrumbs";
+import { OfflineStatus } from "@/features/offline/OfflineStatus";
 import type { ChunkRegistry } from "@/shared/lib/idlePrefetchQueue";
 
 export interface RootLayoutProps {
@@ -62,6 +63,13 @@ export function RootLayout({ fallback, prefetchRegistry }: RootLayoutProps) {
           <ScrollRestoration />
           <RoutePendingBar />
           <Navbar />
+          {/*
+            Renders nothing while the connection is up and the write queue is
+            empty, which is why it can sit in the shell rather than on a page:
+            offline state belongs to the session, not to the route the user
+            happens to be on when the network drops.
+          */}
+          <OfflineStatus className="mx-4 mt-3" />
           <div className="flex flex-1">
             <Sidebar />
             <div className="flex-1 overflow-y-auto">
