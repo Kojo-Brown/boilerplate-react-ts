@@ -451,6 +451,38 @@ breadcrumbs before anything leaves the page.
 produced. The full account is in
 [docs/error-boundaries.md](docs/error-boundaries.md).
 
+## Offline-first
+
+A service worker serves the application with no network, and holds writes made
+while there was none until there is one again. It is registered only in a
+production build — `/sw.js` comes from a second Vite build, and in development
+MSW's worker owns the same scope.
+
+- **The shell opens offline.** The initial graph — entry chunk, its static
+  imports, the stylesheet, `index.html` — is precached at install, computed from
+  the build manifest by the same graph walk the bundle budget uses. Lazy routes
+  are not precached: a route the user has visited works offline, one they have
+  not does not.
+- **Reads are stale-while-revalidate.** The cached response returns immediately
+  and the network updates the cache behind it. That is the right trade for a
+  feed and the wrong one for a balance — the routing table is where an endpoint
+  opts out.
+- **Writes are queued.** A `POST`/`PUT`/`PATCH`/`DELETE` that fails for lack of
+  a network is stored in IndexedDB and answered `202 Accepted`, with an
+  idempotency key stamped once so a replay cannot duplicate it. Replay is FIFO
+  and stops at the first failure, because a rename and a delete do not commute.
+  Background Sync triggers it where it exists; where it does not, the page asks
+  the moment it sees the network return.
+- **Updates are offered, not applied.** A new build announces itself; reloading
+  into it is the user's decision, because a reload can discard what they were
+  typing.
+
+`OfflineStatus` renders nothing until there is something to say, then says which
+of the three it is: offline, _n_ changes waiting to sync, or a new version ready.
+The full account — what is cached where, why `202`, what to change for an API
+that does not honour idempotency keys, and the known gaps — is in
+[docs/offline.md](docs/offline.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

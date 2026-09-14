@@ -12,6 +12,8 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import { ThemeProvider } from "@/shared/theme/ThemeContext";
 import { ErrorReporterProvider } from "@/shared/observability/ErrorReporterProvider";
 import { reporter } from "@/app/observability/reporter";
+import { offlineClient } from "@/shared/offline/offlineClient";
+import { getServiceWorkerContainer } from "@/shared/offline/registerServiceWorker";
 import { App } from "@/app/App";
 import "@/shared/styles/globals.css";
 
@@ -27,7 +29,46 @@ async function enableMocking(): Promise<void> {
   }
 }
 
+/**
+ * Starts offline support: registration, update detection, and the state the
+ * `OfflineStatus` banner reads.
+ *
+ * Production only, and not because development does not deserve it. Two
+ * reasons, either of which is sufficient:
+ *
+ * - `/sw.js` is emitted by a second build (`vite.sw.config.ts`) and does not
+ *   exist under `vite dev`, so registering there is a guaranteed 404.
+ * - MSW's worker is registered at the same scope in development. A scope holds
+ *   one worker: registering ours would replace the one answering every mocked
+ *   request, and the failure would look like the API mocks breaking.
+ *
+ * `VITE_DISABLE_SW` turns it off in a production build — for a preview
+ * deployment where a stale worker would outlive the branch it came from, and
+ * for the Playwright specs that own the network themselves.
+ */
+function enableOfflineSupport(): void {
+  if (!import.meta.env.PROD || import.meta.env["VITE_DISABLE_SW"] === "true") return;
+  void offlineClient
+    .start({
+      container: getServiceWorkerContainer(),
+      isOnline: () => navigator.onLine,
+      listen: (type, listener) => {
+        window.addEventListener(type, listener);
+      },
+      reload: () => {
+        window.location.reload();
+      },
+    })
+    .catch((error: unknown) => {
+      reporter.captureException(error, {
+        level: "warning",
+        mechanism: { type: "serviceWorker.register", handled: true },
+      });
+    });
+}
+
 startSilentRefresh(store);
+enableOfflineSupport();
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
