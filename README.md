@@ -483,6 +483,37 @@ The full account — what is cached where, why `202`, what to change for an API
 that does not honour idempotency keys, and the known gaps — is in
 [docs/offline.md](docs/offline.md).
 
+## Request resilience
+
+The application's `ApiClient` is `withDedupe(withRetry(createFetchApiClient(…)))`
+— two decorators over the five-verb interface every caller already depends on,
+so nothing below `app/` changes.
+
+- **Concurrent identical `GET`s become one request.** Three components mounting
+  together and each asking for `/api/user` share a promise, not a cache entry:
+  at the moment the second one asks there is nothing cached yet. The entry lives
+  exactly as long as the request.
+- **One caller's cancellation is not everyone's.** The shared request runs on
+  its own `AbortController` with its subscribers counted. A caller that aborts
+  is detached and rejected; the underlying `fetch` is cancelled only when the
+  last one leaves, and a caller that passed no signal never leaves. The naive
+  in-flight map gets this backwards and kills the request under the components
+  still waiting on it.
+- **Retries are jittered, not just spaced.** Full jitter — a uniform draw from
+  `[0, min(cap, base × 2^attempt))` — because plain exponential backoff
+  preserves the correlation that takes a server down: every client failed in the
+  same instant, so every client retries in the same instant. Idempotent verbs
+  only, `Retry-After` overrides the local schedule, and a `Retry-After` longer
+  than 30 s means "stop", not "hold a spinner for an hour".
+- **The backoff is abortable.** A cancelled request does not sit through four
+  seconds of politeness before noticing.
+
+TanStack Query's own `retry` is off as a result: two retry layers multiply
+rather than add, and only the transport can see the response headers. The full
+account — the decorator order and why it is not the other way round, what is
+retried and what is not, and the known gaps — is in
+[docs/request-resilience.md](docs/request-resilience.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

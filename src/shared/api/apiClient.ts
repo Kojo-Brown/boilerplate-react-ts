@@ -22,6 +22,22 @@ export class ApiError extends Error {
     public readonly status: number,
     public readonly statusText: string,
     public readonly body?: unknown,
+    /**
+     * The response headers, where the error came from a real response.
+     *
+     * Optional because not every `ApiError` has a response behind it — the
+     * client synthesises one when a refresh fails, and a stub throws one with
+     * no transport at all. Present for anything `createFetchApiClient` raises
+     * from a live response.
+     *
+     * It exists for `Retry-After`: a 429 that says when to come back is the one
+     * case where the server, not the client, decides the schedule, and the
+     * status alone cannot carry that. Passing the whole `Headers` rather than a
+     * parsed `retryAfterMs` keeps the decision in the policy layer — `Warning`,
+     * `X-RateLimit-Reset` and a correlation id are all things a caller may want
+     * and none of them belong in this constructor's signature.
+     */
+    public readonly headers?: Headers,
   ) {
     super(`Request failed: ${status} ${statusText}`);
     this.name = "ApiError";

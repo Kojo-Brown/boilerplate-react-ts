@@ -115,7 +115,7 @@ export function createFetchApiClient(options: FetchApiClientOptions): ApiClient 
       // An error body is caller-defined JSON; `unknown` keeps it honest rather
       // than letting `any` leak into ApiError's payload.
       const body: unknown = await res.json().catch(() => undefined);
-      throw new ApiError(res.status, res.statusText, body);
+      throw new ApiError(res.status, res.statusText, body, res.headers);
     }
     return readBody<T>(res);
   }
