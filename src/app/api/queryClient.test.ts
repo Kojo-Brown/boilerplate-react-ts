@@ -29,29 +29,14 @@ describe("queryClient — configuration", () => {
     expect(queryClient.getDefaultOptions().queries?.gcTime).toBe(1000 * 60 * 10);
   });
 
-  it("does not retry on 4xx ApiErrors", () => {
-    const retry = queryClient.getDefaultOptions().queries?.retry;
-    if (typeof retry !== "function") throw new Error("retry must be a function");
-    expect(retry(0, new ApiError(400, "Bad Request"))).toBe(false);
-    expect(retry(0, new ApiError(404, "Not Found"))).toBe(false);
-    expect(retry(0, new ApiError(422, "Unprocessable Entity"))).toBe(false);
-  });
-
-  it("retries up to 2 times on 5xx ApiErrors", () => {
-    const retry = queryClient.getDefaultOptions().queries?.retry;
-    if (typeof retry !== "function") throw new Error("retry must be a function");
-    const serverError = new ApiError(500, "Internal Server Error");
-    expect(retry(0, serverError)).toBe(true);
-    expect(retry(1, serverError)).toBe(true);
-    expect(retry(2, serverError)).toBe(false);
-  });
-
-  it("retries on generic Error (not ApiError)", () => {
-    const retry = queryClient.getDefaultOptions().queries?.retry;
-    if (typeof retry !== "function") throw new Error("retry must be a function");
-    expect(retry(0, new Error("Network failure"))).toBe(true);
-    expect(retry(1, new Error("Network failure"))).toBe(true);
-    expect(retry(2, new Error("Network failure"))).toBe(false);
+  // Retrying moved into the transport (`shared/api/withRetry.ts`), which is the
+  // only layer that can read `Retry-After` and the only one every caller goes
+  // through. This assertion is what keeps the two layers from both being on:
+  // a `retry` that quietly came back here would multiply the transport's
+  // attempts rather than replace them, and nothing about a green suite would
+  // say so — the requests all succeed, there are just twelve of them.
+  it("leaves retrying to the ApiClient", () => {
+    expect(queryClient.getDefaultOptions().queries?.retry).toBe(false);
   });
 });
 

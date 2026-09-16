@@ -1,4 +1,5 @@
 import { IDEMPOTENCY_HEADER, QUEUED_HEADER } from "@/shared/offline/config";
+import { parseRetryAfterMs } from "@/shared/lib/retrySchedule";
 import type { FetchLike } from "@/shared/offline/strategies";
 import type { NewQueuedRequest, QueuedRequest, QueueStore } from "@/shared/offline/queueStore";
 
@@ -274,19 +275,16 @@ export function isRetryable(status: number): boolean {
 /**
  * `Retry-After`, in milliseconds from now, or `undefined`.
  *
- * Both spellings are accepted because both are used: a rate limiter emits
- * delta-seconds, and a maintenance window emits an HTTP date. A server that
- * says when to come back is more informed than any local schedule, so this
- * overrides the backoff rather than being combined with it — but only upward
- * of zero; a date in the past means "now", not "immediately and also
- * negatively".
+ * A server that says when to come back is more informed than any local
+ * schedule, so this overrides the backoff rather than being combined with it.
+ *
+ * The parsing itself is {@link parseRetryAfterMs}, shared with the foreground
+ * retry decorator in `shared/api/withRetry.ts`. Two copies of "both
+ * delta-seconds and an HTTP date, never negative" is one copy too many: the
+ * header is defined by RFC 9110, not by whichever layer happens to be reading
+ * it, and the queue and the client disagreeing about a malformed value would be
+ * a difference nobody chose.
  */
 export function retryAfterMs(response: Response, now: number): number | undefined {
-  const header = response.headers.get("retry-after");
-  if (header === null) return undefined;
-  const seconds = Number(header);
-  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1_000);
-  const date = Date.parse(header);
-  if (Number.isNaN(date)) return undefined;
-  return Math.max(0, date - now);
+  return parseRetryAfterMs(response.headers.get("retry-after"), now);
 }
