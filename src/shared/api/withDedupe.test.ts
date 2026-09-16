@@ -10,6 +10,7 @@ interface PendingCall {
   readonly path: string;
   readonly body?: unknown;
   readonly signal: AbortSignal | undefined;
+  readonly headers: HeadersInit | undefined;
   resolve(value: unknown): void;
   reject(error: unknown): void;
 }
@@ -36,6 +37,7 @@ function manualClient() {
         path,
         body,
         signal: options?.signal,
+        headers: options?.headers,
         resolve: (value) => {
           resolve(value as T);
         },
@@ -198,7 +200,34 @@ describe("withDedupe", () => {
       expect(calls).toHaveLength(2);
       // And the headers reach the client, rather than being dropped along with
       // the sharing.
+      expect(calls[0]!.headers).toBe(headers);
       expect(calls[0]!.signal).toBeUndefined();
+    });
+
+    it("keeps the first caller's headers on a request a custom keyOf shares", async () => {
+      const { client, calls } = manualClient();
+      // A `keyOf` that decides headers are part of the key — the extension
+      // point `defaultDedupeKey` refuses to guess at.
+      const deduped = withDedupe(client, {
+        keyOf: (method, path, options) =>
+          `${method} ${path} ${String(new Headers(options?.headers).get("accept-language"))}`,
+      });
+      const headers = { "Accept-Language": "fr" };
+
+      const first = deduped.get<{ ok: boolean }>("/posts", { headers });
+      const second = deduped.get<{ ok: boolean }>("/posts", { headers });
+
+      expect(calls).toHaveLength(1);
+      // The request that is actually made has to be the one that was asked
+      // for. Sending it without the headers would answer in the wrong language
+      // with nothing to indicate why.
+      expect(calls[0]!.headers).toBe(headers);
+      // The signal, and only the signal, is replaced — with the shared
+      // controller's, since no one caller owns a request the others are on.
+      expect(calls[0]!.signal).toBeInstanceOf(AbortSignal);
+
+      calls[0]!.resolve({ ok: true });
+      await expect(Promise.all([first, second])).resolves.toEqual([{ ok: true }, { ok: true }]);
     });
 
     it("shares the verbs it is told to and no others", async () => {

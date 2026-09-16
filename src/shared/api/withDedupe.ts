@@ -205,11 +205,15 @@ export function withDedupe(client: ApiClient, dedupeOptions: DedupeOptions = {})
     };
     inFlight.set(key, shared);
 
-    // The caller's own `headers` are deliberately not forwarded: `keyOf`
-    // returned a key for this request, which under the default means there were
-    // none. A custom `keyOf` that decides otherwise is taking responsibility
-    // for the headers being part of its key.
-    const started = start({ signal: controller.signal }).finally(() => {
+    // Everything the first caller asked for, with the shared controller's
+    // signal in place of theirs. Under the default `keyOf` there is nothing to
+    // carry — a request with headers is never given a key — but a custom
+    // `keyOf` may well return one for a headered request, and dropping the
+    // headers there would send something other than what was asked for, with
+    // nothing to indicate it. The first caller's headers are what the shared
+    // request carries; a later subscriber's are, by definition of the key its
+    // `keyOf` chose, equivalent.
+    const started = start({ ...options, signal: controller.signal }).finally(() => {
       // Guarded so a later request under the same key — started after this one
       // settled — is not evicted by this one's cleanup.
       if (inFlight.get(key) === shared) inFlight.delete(key);
