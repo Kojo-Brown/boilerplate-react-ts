@@ -26,6 +26,35 @@ export interface TaskApi {
   remove(id: string): Promise<void>;
 }
 
+/** Which rows a list request asks for. */
+export type TaskFilter = "all" | "open" | "done";
+
+/** Counts the server holds, over every row — not only the ones this client has read. */
+export interface TaskStats {
+  readonly total: number;
+  readonly open: number;
+  readonly done: number;
+}
+
+/**
+ * The read surface the TanStack Query demo adds on top of {@link TaskApi}.
+ *
+ * Split from `TaskApi` rather than merged into it because the two patterns need
+ * different halves: `useOptimistic` keeps the list in component state and needs
+ * no read endpoint at all, while a query cache is nothing but reads. Anything
+ * typed `TaskApi` keeps working.
+ */
+export interface TaskQueryApi extends TaskApi {
+  list(filter: TaskFilter): Promise<readonly Task[]>;
+  stats(): Promise<TaskStats>;
+}
+
+/** Does this filter admit that row? The one definition both sides of the demo use. */
+export function matchesFilter(task: Task, filter: TaskFilter): boolean {
+  if (filter === "all") return true;
+  return filter === "done" ? task.done : !task.done;
+}
+
 /** A single call against the fake server, as seen by `failWhen`. */
 export type TaskApiCall =
   | { readonly type: "create"; readonly title: string }
@@ -72,7 +101,7 @@ const delay = (ms: number): Promise<void> =>
  *     failWhen: (call) => (call.type === "create" ? "Server rejected the task" : null),
  *   });
  */
-export function createInMemoryTaskApi(options: InMemoryTaskApiOptions = {}): TaskApi {
+export function createInMemoryTaskApi(options: InMemoryTaskApiOptions = {}): TaskQueryApi {
   const { initialTasks = [], latencyMs = 0, failWhen } = options;
 
   const tasks = new Map<string, Task>(initialTasks.map((task) => [task.id, task]));
@@ -104,6 +133,27 @@ export function createInMemoryTaskApi(options: InMemoryTaskApiOptions = {}): Tas
     async remove(id) {
       await settle({ type: "remove", id });
       if (!tasks.delete(id)) throw new TaskApiError(`No task with id ${id}`);
+    },
+
+    /**
+     * Reads take the latency but never `failWhen`.
+     *
+     * `failWhen` is documented as "make that *change* fail", and the existing
+     * harness passes `() => "message"` to fail every write. Routing reads
+     * through the same predicate would turn that into a server which cannot be
+     * read either, and a list that will not load has nothing to be optimistic
+     * about.
+     */
+    async list(filter) {
+      await delay(latencyMs);
+      return [...tasks.values()].filter((task) => matchesFilter(task, filter));
+    },
+
+    async stats() {
+      await delay(latencyMs);
+      const all = [...tasks.values()];
+      const done = all.filter((task) => task.done).length;
+      return { total: all.length, open: all.length - done, done };
     },
   };
 }

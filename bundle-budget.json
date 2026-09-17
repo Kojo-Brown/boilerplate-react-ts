@@ -2,7 +2,7 @@
   "compression": "gzip",
   "budgets": {
     "chunk.index": 130300,
-    "chunk.query": 11300,
+    "chunk.query": 11900,
     "chunk.redux": 16000,
     "chunk.router": 33300,
     "chunk.vendor": 1500,
