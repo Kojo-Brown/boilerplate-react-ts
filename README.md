@@ -190,6 +190,37 @@ it — an automatic rollback with no message is a bug report waiting to happen.
 from the URL (`?server=failing&latency=1500`), so the failure path — the half of
 the pattern that is hard to reach on a healthy backend — is one click away.
 
+## Optimistic cache updates
+
+`useOptimistic` above owns a list that one component renders. When the same
+rows are read by several components through the TanStack Query cache, the guess
+has to go into the cache instead — and something has to take it back out.
+`useOptimisticMutation` (`src/shared/api/`) is that: it cancels in-flight
+fetches, patches every cached entry under a key, rolls back on failure and
+invalidates once the scope is quiet.
+
+The part that is not the standard recipe is how it rolls back. It does not
+restore a snapshot, because a snapshot is a photograph of a moment that a
+concurrent mutation has since overwritten — rolling A back would drop B's row
+while B is still in flight. It keeps the server's last word per entry plus an
+ordered list of the guesses in flight, and re-derives:
+
+```
+cache = patches.reduce(apply, base)
+```
+
+A rollback removes one patch and re-runs the rest; a refetch that lands
+mid-flight replaces `base` and the guesses re-apply on top of it. Both are the
+same line of code.
+
+The other decision worth copying is the split between patching and
+invalidating: patch what this client can compute, invalidate what only the
+server can answer. `/labs/query-cache` shows both — three filtered lists that
+move the instant you click, and a server-side count that deliberately does not.
+
+Full write-up, including the four ways the usual recipe breaks:
+[docs/optimistic-cache.md](docs/optimistic-cache.md).
+
 ## Reading Promises with `use()`
 
 `<UserProfileCard>` (`src/entities/report/`, `src/entities/user/`, `src/widgets/streaming-report/`) renders data that has not

@@ -35,6 +35,7 @@ export const routeChunks = {
   [ROUTES.OAUTH_CALLBACK]: () => import("@/pages/oauth-callback/OAuthCallbackPage"),
   [ROUTES.CONCURRENCY_LAB]: () => import("@/pages/concurrency-lab/ConcurrencyLabPage"),
   [ROUTES.OPTIMISTIC_LAB]: () => import("@/pages/optimistic-lab/OptimisticLabPage"),
+  [ROUTES.QUERY_CACHE_LAB]: () => import("@/pages/query-cache-lab/QueryCacheLabPage"),
   [ROUTES.USE_API_LAB]: () => import("@/pages/use-api-lab/UseApiLabPage"),
   [ROUTES.ACTIONS_LAB]: () => import("@/pages/actions-lab/ActionsLabPage"),
   [ROUTES.STREAMING_LAB]: () => import("@/pages/streaming-lab/StreamingLabPage"),

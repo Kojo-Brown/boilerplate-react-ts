@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   createInMemoryTaskApi,
+  matchesFilter,
   TaskApiError,
   type Task,
   type TaskApiCall,
@@ -110,5 +111,62 @@ describe("createInMemoryTaskApi", () => {
     await api.create("Slow");
 
     expect(performance.now() - start).toBeGreaterThanOrEqual(30);
+  });
+});
+
+describe("reads", () => {
+  const rows: readonly Task[] = [
+    { id: "server-seed-1", title: "Open", done: false },
+    { id: "server-seed-2", title: "Done", done: true },
+  ];
+
+  it("filters the list the way matchesFilter says", async () => {
+    const api = createInMemoryTaskApi({ initialTasks: rows });
+
+    expect(await api.list("all")).toHaveLength(2);
+    expect((await api.list("open")).map((task) => task.id)).toEqual(["server-seed-1"]);
+    expect((await api.list("done")).map((task) => task.id)).toEqual(["server-seed-2"]);
+  });
+
+  it("counts every row, including ones no filtered list returned", async () => {
+    const api = createInMemoryTaskApi({ initialTasks: rows });
+
+    expect(await api.stats()).toEqual({ total: 2, open: 1, done: 1 });
+  });
+
+  it("reflects a write immediately", async () => {
+    const api = createInMemoryTaskApi({ initialTasks: rows });
+
+    await api.setDone("server-seed-1", true);
+
+    expect(await api.stats()).toEqual({ total: 2, open: 0, done: 2 });
+    expect(await api.list("open")).toEqual([]);
+  });
+
+  it("never consults failWhen, so a server that rejects writes can still be read", async () => {
+    // The existing harness passes `() => "message"`, which fails every call it
+    // is asked about. Routing reads through it would make the list unloadable,
+    // and a list that will not load has nothing to be optimistic about.
+    const api = createInMemoryTaskApi({ initialTasks: rows, failWhen: () => "Everything is down" });
+
+    await expect(api.list("all")).resolves.toHaveLength(2);
+    await expect(api.stats()).resolves.toEqual({ total: 2, open: 1, done: 1 });
+    await expect(api.create("Nope")).rejects.toThrow(TaskApiError);
+  });
+});
+
+describe("matchesFilter", () => {
+  const task: Task = { id: "1", title: "t", done: false };
+
+  it("admits everything under 'all'", () => {
+    expect(matchesFilter(task, "all")).toBe(true);
+    expect(matchesFilter({ ...task, done: true }, "all")).toBe(true);
+  });
+
+  it("splits on done", () => {
+    expect(matchesFilter(task, "open")).toBe(true);
+    expect(matchesFilter(task, "done")).toBe(false);
+    expect(matchesFilter({ ...task, done: true }, "done")).toBe(true);
+    expect(matchesFilter({ ...task, done: true }, "open")).toBe(false);
   });
 });

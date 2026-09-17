@@ -39,6 +39,10 @@ const LazyOptimisticLabPage = lazy(() =>
   routeChunks[ROUTES.OPTIMISTIC_LAB]().then((m) => ({ default: m.OptimisticLabPage })),
 );
 
+const LazyQueryCacheLabPage = lazy(() =>
+  routeChunks[ROUTES.QUERY_CACHE_LAB]().then((m) => ({ default: m.QueryCacheLabPage })),
+);
+
 const LazyUseApiLabPage = lazy(() =>
   routeChunks[ROUTES.USE_API_LAB]().then((m) => ({ default: m.UseApiLabPage })),
 );
@@ -209,6 +213,17 @@ export const routes: RouteObject[] = [
         element: (
           <RouteErrorBoundary route={ROUTES.OPTIMISTIC_LAB}>
             <LazyOptimisticLabPage />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        // Reference demo for optimistic writes into the TanStack Query cache.
+        // Unlinked from the nav for the same reason as its neighbours — the
+        // rejecting-server modes are not something to stumble into.
+        path: "labs/query-cache",
+        element: (
+          <RouteErrorBoundary route={ROUTES.QUERY_CACHE_LAB}>
+            <LazyQueryCacheLabPage />
           </RouteErrorBoundary>
         ),
       },

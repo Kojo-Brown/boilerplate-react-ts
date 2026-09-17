@@ -4,6 +4,7 @@ export const ROUTES = {
   ABOUT: "/about",
   CONCURRENCY_LAB: "/labs/concurrency",
   OPTIMISTIC_LAB: "/labs/optimistic",
+  QUERY_CACHE_LAB: "/labs/query-cache",
   USE_API_LAB: "/labs/use",
   ACTIONS_LAB: "/labs/actions",
   STREAMING_LAB: "/labs/streaming",
