@@ -105,15 +105,62 @@ export async function handleWrite(env: WorkerEnvironment, request: Request): Pro
 }
 
 /**
+ * One replay chain per worker environment.
+ *
+ * A `WeakMap` rather than a module-level variable so two environments — a test
+ * running several, a worker that somehow built two — cannot serialise against
+ * each other, and so nothing has to be reset between tests.
+ */
+const replayChain = new WeakMap<WorkerEnvironment, Promise<unknown>>();
+
+/**
  * Drains the queue and tells every open page what happened.
+ *
+ * **Passes are serialised, and that is a correctness fix rather than a
+ * politeness.** Coming back online produces more triggers than one: the
+ * browser's own `online` event and the page's `REPLAY_QUEUE` that follows it,
+ * a Background Sync firing around the same moment, a second tab doing the same.
+ * Run concurrently, each pass reads the queue before any of them has removed
+ * anything, so a single queued write is fetched several times and — the part a
+ * user sees — reported as several. An `e2e` run against a server that refuses
+ * the write showed one lost change announced as three.
+ *
+ * The idempotency key means the duplicate *sends* were always safe at the
+ * server; nothing made the duplicate *reports* safe, and "3 changes could not
+ * be saved" for one change is the kind of wrong that costs a user an afternoon
+ * looking for the other two.
+ *
+ * Serialised rather than coalesced: a later caller's pass still runs, it just
+ * runs after the one in flight, so the `ignoreBackoff` a page asked for is
+ * honoured exactly as asked rather than being folded into somebody else's
+ * options. The redundant passes are cheap — an empty queue is one count — and
+ * the chain is bounded by the number of connectivity events, not by the size
+ * of the queue.
  *
  * Returns the report so the `sync` handler can decide whether to reject — see
  * `sw.ts`, where a non-empty queue is signalled to the browser by rejecting the
  * event, which is how Background Sync is asked to try again later.
  */
-export async function replayAndNotify(
+export function replayAndNotify(
   env: WorkerEnvironment,
   options: { readonly ignoreBackoff?: boolean } = {},
+): Promise<ReplayReport> {
+  const previous = replayChain.get(env) ?? Promise.resolve();
+  const pass = previous.then(() => runReplayPass(env, options));
+  // The link stored for the *next* caller swallows failures. Chaining the raw
+  // promise would let one rejected pass reject every replay that ever followed
+  // it on this worker, which is a queue that stops draining for the lifetime of
+  // the worker with nothing to say why.
+  replayChain.set(
+    env,
+    pass.catch(() => undefined),
+  );
+  return pass;
+}
+
+async function runReplayPass(
+  env: WorkerEnvironment,
+  options: { readonly ignoreBackoff?: boolean },
 ): Promise<ReplayReport> {
   const store = await env.store();
   const report = await replayQueue({

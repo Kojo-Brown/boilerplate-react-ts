@@ -26,6 +26,9 @@ test.use({ baseURL: "http://localhost:3100" });
 /** The API path the worker queues writes to. Nothing serves it — see `queues a write`. */
 const WRITE_URL = "/api/e2e-offline-write";
 
+/** A path `e2e/offlineApiServer.ts` answers with a 422, so a replay can be made to fail. */
+const REJECTED_URL = "/api/e2e-offline-reject";
+
 /** Resolves once a worker is controlling the page. */
 async function waitForController(page: Page): Promise<void> {
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, undefined, {
@@ -174,5 +177,84 @@ test.describe("offline support", () => {
       because anything here is expected to be slow.
     */
     await expect(page.getByTestId("offline-pending")).toHaveCount(0, { timeout: 15_000 });
+  });
+
+  test("says a replay is in flight while it is happening", async ({ page, context }) => {
+    await installWorker(page);
+    await page.reload();
+    await waitForController(page);
+    await context.setOffline(true);
+
+    await page.evaluate(async (url) => {
+      await fetch(url, { method: "POST", body: "{}" });
+    }, WRITE_URL);
+    await expect(page.getByTestId("offline-pending")).toBeVisible();
+
+    await context.setOffline(false);
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+
+    /*
+      "Sending" and "waiting" are two different states and only one of them is
+      a state where the right thing for a user to do is wait. Asserted with
+      `or()` because the race is real and unavoidable: the replay crosses three
+      processes, but on a fast runner it can also finish before the assertion
+      first evaluates, and a test that demanded to catch the intermediate frame
+      would be flaky by construction. What is actually under test is that the
+      page leaves the "N changes waiting" state — either through "Sending…" or
+      straight past it to nothing — rather than sitting on a stale count.
+    */
+    await expect(
+      page.getByTestId("offline-syncing").or(page.getByTestId("offline-pending")),
+    ).toHaveCount(0, { timeout: 15_000 });
+  });
+
+  test("tells the user about a write the server refused, and keeps telling them", async ({
+    page,
+    context,
+  }) => {
+    /*
+      The one offline state that is a loss rather than a delay, driven against
+      a real server that really refuses.
+
+      A 422 is not retryable, so the queue drops the entry instead of backing
+      off — and that is the only case in the whole design where a user believes
+      something was saved and nothing was. Every unit test around this uses a
+      fake queue; this is the only thing that proves the chain from an HTTP
+      status, through the worker's replay policy, through `postMessage`, to a
+      notice on the screen.
+    */
+    await installWorker(page);
+    await page.reload();
+    await waitForController(page);
+    await context.setOffline(true);
+
+    await page.evaluate(async (url) => {
+      await fetch(url, { method: "POST", body: "{}" });
+    }, REJECTED_URL);
+    await expect(page.getByTestId("offline-pending")).toBeVisible();
+
+    await context.setOffline(false);
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+
+    const alert = page.getByTestId("offline-unsent");
+    await expect(alert).toBeVisible({ timeout: 15_000 });
+    await expect(alert).toContainText("1 change could not be saved");
+    await expect(alert).toContainText(`POST ${REJECTED_URL} was refused by the server (422)`);
+    // Assertive, because "the thing you saved was not saved" is worth saying
+    // over the top of whatever a screen reader is in the middle of.
+    await expect(alert).toHaveAttribute("role", "alert");
+
+    // The queue is empty and the connection is fine, so the status banner has
+    // nothing left to say — and the loss notice is still there, because the
+    // write is still lost.
+    await expect(page.getByTestId("offline-pending")).toHaveCount(0);
+    await expect(alert).toBeVisible();
+
+    await page.getByRole("button", { name: "Dismiss" }).click();
+    await expect(alert).toHaveCount(0);
   });
 });

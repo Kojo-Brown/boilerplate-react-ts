@@ -204,7 +204,89 @@ describe("replayAndNotify", () => {
 
     expect(report.remaining).toBe(0);
     expect(await store.count()).toBe(0);
-    expect(notified.at(-1)).toEqual({ type: "QUEUE_REPLAYED", sent: 1, dropped: 0, pending: 0 });
+    // The target travels with the summary so the page can invalidate the
+    // cache entries this write disturbed, rather than being told only that
+    // "one write finished".
+    expect(notified.at(-1)).toEqual({
+      type: "QUEUE_REPLAYED",
+      sent: 1,
+      dropped: 0,
+      pending: 0,
+      writes: [{ method: "POST", url: "https://app.test/api/posts", fate: "sent", status: 204 }],
+    });
+  });
+  it("serialises concurrent passes so one queued write is reported once", async () => {
+    /*
+      The bug an E2E run found, and the reason `replayAndNotify` has a chain.
+
+      Coming back online produces more triggers than one — the browser's own
+      `online` event, the `REPLAY_QUEUE` the page sends after it, a Background
+      Sync firing around the same moment, a second tab doing the same. Run
+      concurrently, every pass reads the queue before any of them has removed
+      anything, so one write is fetched three times and, worse, *reported*
+      three times: "3 changes could not be saved" for one change.
+    */
+    let inFlight = 0;
+    let peak = 0;
+    const { env, store } = harness({
+      fetch: async () => {
+        inFlight += 1;
+        peak = Math.max(peak, inFlight);
+        await Promise.resolve();
+        inFlight -= 1;
+        // A 422 is not retryable, so this entry leaves the queue as a loss —
+        // the outcome a user is told about, and the one that must be told
+        // about once.
+        return new Response("no", { status: 422 });
+      },
+    });
+    await handleWrite(
+      { ...env, fetch: () => Promise.reject(new Error("offline")) },
+      new Request("https://app.test/api/posts", { method: "POST", body: "{}" }),
+    );
+
+    const reports = await Promise.all([
+      replayAndNotify(env, { ignoreBackoff: true }),
+      replayAndNotify(env, { ignoreBackoff: true }),
+      replayAndNotify(env),
+    ]);
+
+    expect(peak).toBe(1);
+    const dropped = reports.flatMap((report) =>
+      report.outcomes.filter((outcome) => outcome.kind === "dropped"),
+    );
+    expect(dropped).toHaveLength(1);
+    expect(await store.count()).toBe(0);
+  });
+
+  it("keeps draining after a pass throws", async () => {
+    /*
+      The chain stored for the next caller swallows failures. Chaining the raw
+      promise instead would let one rejected pass reject every replay that
+      followed it for the lifetime of the worker — a queue that silently stops
+      draining, with nothing anywhere to say why.
+    */
+    const { env } = harness({ fetch: () => Promise.resolve(new Response(null, { status: 204 })) });
+    const broken: WorkerEnvironment = {
+      ...env,
+      store: () => Promise.reject(new Error("IndexedDB unavailable")),
+    };
+
+    await expect(replayAndNotify(broken)).rejects.toThrow("IndexedDB unavailable");
+    await expect(replayAndNotify(broken)).rejects.toThrow("IndexedDB unavailable");
+  });
+
+  it("does not serialise two environments against each other", async () => {
+    // The chain is per environment, so a test running several — or a worker
+    // that somehow built two — never has one waiting on the other, and nothing
+    // has to be reset between tests.
+    const first = harness({ fetch: () => Promise.resolve(new Response(null, { status: 204 })) });
+    const second = harness({ fetch: () => Promise.resolve(new Response(null, { status: 204 })) });
+
+    await Promise.all([replayAndNotify(first.env), replayAndNotify(second.env)]);
+
+    expect(first.notified.at(-1)).toMatchObject({ type: "QUEUE_REPLAYED" });
+    expect(second.notified.at(-1)).toMatchObject({ type: "QUEUE_REPLAYED" });
   });
 });
 

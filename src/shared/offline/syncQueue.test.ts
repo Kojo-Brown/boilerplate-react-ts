@@ -184,7 +184,9 @@ describe("replayQueue", () => {
       ignoreBackoff: true,
     });
 
-    expect(report.outcomes).toEqual([{ kind: "sent", id: 1, status: 204 }]);
+    expect(report.outcomes).toEqual([
+      { kind: "sent", id: 1, status: 204, method: "POST", url: "https://app.test/api/posts/0" },
+    ]);
     expect(report.remaining).toBe(0);
   });
 
@@ -206,7 +208,15 @@ describe("replayQueue", () => {
       ignoreBackoff: true,
     });
 
-    expect(second.outcomes).toEqual([{ kind: "dropped", id: 1, reason: "exhausted" }]);
+    expect(second.outcomes).toEqual([
+      {
+        kind: "dropped",
+        id: 1,
+        reason: "exhausted",
+        method: "POST",
+        url: "https://app.test/api/posts/0",
+      },
+    ]);
   });
 
   it("backs off further on each failure", async () => {
@@ -236,7 +246,19 @@ describe("replayQueue", () => {
 
     // The user believed this was saved and it never was, which is why
     // `messages.ts` reports dropped writes separately from sent ones.
-    expect(second.outcomes).toEqual([{ kind: "dropped", id: 1, reason: "exhausted" }]);
+    // The target travels with the outcome, which is what lets the page
+    // reconcile the cache entry this write was optimistically patched into —
+    // see `app/api/offlineReconcile.ts`. An abandoned write needs it more than
+    // a delivered one: nothing else in the system will ever correct it.
+    expect(second.outcomes).toEqual([
+      {
+        kind: "dropped",
+        id: 1,
+        reason: "exhausted",
+        method: "POST",
+        url: "https://app.test/api/posts/0",
+      },
+    ]);
     expect(second.remaining).toBe(0);
   });
 
@@ -256,8 +278,15 @@ describe("replayQueue", () => {
     // A 422 is not a connectivity problem. Retrying it is only a way to take
     // longer to tell the user the same thing.
     expect(report.outcomes).toEqual([
-      { kind: "dropped", id: 1, reason: "rejected", status: 422 },
-      { kind: "sent", id: 2, status: 204 },
+      {
+        kind: "dropped",
+        id: 1,
+        reason: "rejected",
+        status: 422,
+        method: "POST",
+        url: "https://app.test/api/posts/0",
+      },
+      { kind: "sent", id: 2, status: 204, method: "POST", url: "https://app.test/api/posts/1" },
     ]);
     expect(report.remaining).toBe(0);
   });
@@ -303,7 +332,15 @@ describe("replayQueue", () => {
     // Sending a day-old write is its own failure mode: the token has expired,
     // the thread it belongs to may be gone, and the user has forgotten it.
     expect(fetchFn).not.toHaveBeenCalled();
-    expect(report.outcomes).toEqual([{ kind: "dropped", id: 1, reason: "expired" }]);
+    expect(report.outcomes).toEqual([
+      {
+        kind: "dropped",
+        id: 1,
+        reason: "expired",
+        method: "POST",
+        url: "https://app.test/api/posts/0",
+      },
+    ]);
   });
 
   it("reports an empty queue without calling the network", async () => {

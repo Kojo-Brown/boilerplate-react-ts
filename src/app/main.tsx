@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { store } from "@/app/store";
 import { api } from "@/app/api/client";
 import { queryClient } from "@/app/api/queryClient";
+import { startOfflineReconciliation } from "@/app/api/offlineReconcile";
 import { ApiClientProvider } from "@/shared/api/ApiClientProvider";
 import { startSilentRefresh } from "@/features/auth/silentRefresh";
 import { AuthProvider } from "@/features/auth/AuthContext";
@@ -30,8 +31,9 @@ async function enableMocking(): Promise<void> {
 }
 
 /**
- * Starts offline support: registration, update detection, and the state the
- * `OfflineStatus` banner reads.
+ * Starts offline support: registration, update detection, the state the
+ * `OfflineStatus` banner reads, and the cache reconciliation that runs when
+ * the write queue drains.
  *
  * Production only, and not because development does not deserve it. Two
  * reasons, either of which is sufficient:
@@ -48,6 +50,23 @@ async function enableMocking(): Promise<void> {
  */
 function enableOfflineSupport(): void {
   if (!import.meta.env.PROD || import.meta.env["VITE_DISABLE_SW"] === "true") return;
+
+  /*
+    Attached before `start()`, not after.
+
+    `start()` is async only because `register()` is, but the `message`
+    listener it installs can fire the moment it is attached — a worker from a
+    previous visit is already controlling this page and may answer the
+    `QUEUE_STATUS` probe with a replay it had in flight. Subscribing after the
+    promise settles is a window in which the one event that matters is
+    delivered to nobody, and it is the window that opens on exactly the visit
+    where a queue already exists.
+  */
+  startOfflineReconciliation(offlineClient, {
+    queryClient,
+    dispatch: (action) => store.dispatch(action),
+  });
+
   void offlineClient
     .start({
       container: getServiceWorkerContainer(),
