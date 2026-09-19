@@ -42,14 +42,29 @@ export const DEFAULT_REPLAY_POLICY: ReplayPolicy = {
   maxAgeMs: 24 * 60 * 60 * 1_000,
 };
 
+/**
+ * What a terminal outcome says about the request it describes.
+ *
+ * `method` and `url` are carried on the two outcomes that *end* an entry, and
+ * on neither of the two that leave it in the queue. They are here because the
+ * page cannot reconcile its own cache without them: a write that has left the
+ * queue — delivered or abandoned — has made the entries it touched wrong, and
+ * "three writes finished" does not say which three. `retry` and `deferred`
+ * change nothing a cache can see, so they carry nothing extra.
+ */
+export interface ReplayTarget {
+  readonly method: string;
+  readonly url: string;
+}
+
 export type ReplayOutcome =
-  | { readonly kind: "sent"; readonly id: number; readonly status: number }
-  | {
+  | ({ readonly kind: "sent"; readonly id: number; readonly status: number } & ReplayTarget)
+  | ({
       readonly kind: "dropped";
       readonly id: number;
       readonly reason: "expired" | "exhausted" | "rejected";
       readonly status?: number;
-    }
+    } & ReplayTarget)
   | {
       readonly kind: "retry";
       readonly id: number;
@@ -57,6 +72,11 @@ export type ReplayOutcome =
       readonly nextAttemptAt: number;
     }
   | { readonly kind: "deferred"; readonly id: number; readonly nextAttemptAt: number };
+
+/** The two fields every terminal outcome repeats, read off the stored row. */
+function targetOf(entry: QueuedRequest): ReplayTarget {
+  return { method: entry.method, url: entry.url };
+}
 
 export interface ReplayReport {
   readonly outcomes: readonly ReplayOutcome[];
@@ -200,7 +220,7 @@ export async function replayQueue(options: {
   for (const entry of await store.list()) {
     if (now - entry.queuedAt > policy.maxAgeMs) {
       await store.remove(entry.id);
-      outcomes.push({ kind: "dropped", id: entry.id, reason: "expired" });
+      outcomes.push({ kind: "dropped", id: entry.id, reason: "expired", ...targetOf(entry) });
       continue;
     }
     if (entry.nextAttemptAt > now && options.ignoreBackoff !== true) {
@@ -220,7 +240,7 @@ export async function replayQueue(options: {
 
     if (response.ok) {
       await store.remove(entry.id);
-      outcomes.push({ kind: "sent", id: entry.id, status: response.status });
+      outcomes.push({ kind: "sent", id: entry.id, status: response.status, ...targetOf(entry) });
       continue;
     }
 
@@ -230,7 +250,13 @@ export async function replayQueue(options: {
     }
 
     await store.remove(entry.id);
-    outcomes.push({ kind: "dropped", id: entry.id, reason: "rejected", status: response.status });
+    outcomes.push({
+      kind: "dropped",
+      id: entry.id,
+      reason: "rejected",
+      status: response.status,
+      ...targetOf(entry),
+    });
   }
 
   return { outcomes, remaining: await store.count() };
@@ -246,7 +272,7 @@ async function recordFailure(
   const attempts = entry.attempts + 1;
   if (attempts >= policy.maxAttempts) {
     await store.remove(entry.id);
-    return { kind: "dropped", id: entry.id, reason: "exhausted" };
+    return { kind: "dropped", id: entry.id, reason: "exhausted", ...targetOf(entry) };
   }
   const nextAttemptAt = now + (serverDelayMs ?? backoffMs(attempts, policy));
   await store.update({ ...entry, attempts, nextAttemptAt });

@@ -10,7 +10,8 @@ parts of it you will have to change for an application that is not this one.
 - `src/shared/offline/` — every strategy, policy and decision, with the tests
 - `vite.sw.config.ts` + `tooling/serviceWorker/` — the second build that emits
   `/sw.js` and the precache list it carries
-- `src/features/offline/` — what the user sees
+- `src/features/offline/` — what the user sees, from one store subscription
+- `src/app/api/offlineReconcile.ts` — this application's cache-invalidation table
 - `e2e/offline.spec.ts` — the half only a real browser can prove
 
 ## What a user gets
@@ -22,7 +23,9 @@ parts of it you will have to change for an application that is not this one.
 | Offline, navigating to a new route     | The shell renders; the route chunk is missing and its boundary reports it.                            |
 | Offline, reading data                  | The last response for that URL, immediately. Nothing stored means a `503` the application can handle. |
 | Offline, writing                       | Queued, with a `202` and a visible count. Sent when the network returns.                              |
-| Back online                            | The page tells the worker to replay, oldest write first.                                              |
+| Back online                            | The page tells the worker to replay, oldest write first, and says it is doing so.                     |
+| A queued write that never lands        | Named, with the reason, in a notice that stays until the user acknowledges it.                        |
+| A replay that finishes                 | Both caches are invalidated for what the writes touched; the banner disappears.                       |
 | A new build deployed                   | Announced, not applied: "a new version is ready — reload".                                            |
 
 ## Registration, and where it does not happen
@@ -306,6 +309,116 @@ against the platform, so if the subset is wrong the type checker will agree with
 it. That is why it stays a subset, and why `e2e/offline.spec.ts` runs the result
 in a real browser.
 
+## Coming back: what the user sees, and what the caches do
+
+A replay is two separate problems, and conflating them is how an offline
+feature ends up honest about the network and dishonest about the data.
+
+### The interface
+
+Three states, two live regions — and **one subscription**.
+
+`<OfflineIndicators>` is the only thing that reads the offline store, and the
+two indicators below it are presentational. That is not tidiness. Reading an
+external store during a concurrent render is the thing React cannot time-slice:
+every subscribed snapshot has to be re-read before the commit, so a store read
+in the shell is paid for by every deferred update beneath it. The first version
+had each indicator subscribe for itself, and
+`e2e/concurrency-benchmark.spec.ts` — which measures worst keypress-to-paint
+while a deferred 15,000-row list re-filters — went from ~96ms to ~250ms and
+failed. The shell is above every route, which makes it the most expensive place
+in the tree to put a second store read.
+
+`<OfflineStatus>` is `role="status"`, `aria-live="polite"`, and renders nothing
+unless there is something to act on. It says **offline**, it counts **queued
+writes**, and it says **"Sending your changes…"** while a replay it asked for is
+in flight. That last one is not derivable from the count: "three changes
+waiting" is equally true inside the tunnel and in the ten seconds after it, and
+only one of those is a state where the right thing for the user to do is wait.
+It also offers a **"Try now"** button when the connection is up and the queue is
+not moving — the replay policy backs off for up to five minutes after a failure,
+and a user looking at a stalled count on a connection that visibly works knows
+something the schedule does not.
+
+**Success is not announced.** When the queue drains the banner disappears and
+the reconciled data arrives underneath it; that is the feedback. A "3 changes
+synced" toast on top of it is a second notification for an outcome the user can
+already see, and it trains people to dismiss the banner that matters.
+
+`<UnsentWritesNotice>` is the banner that matters. Every other state in this feature
+resolves on its own — offline becomes online, queued becomes sent — and a write
+that left the queue undelivered resolves into nothing. So it is `role="alert"`
+rather than `role="status"` (assertive, because "the thing you saved was not
+saved" is worth interrupting for), it has no timeout, and it names each write
+and why it was given up on:
+
+```
+2 changes could not be saved. Your work is still on this device only.
+  POST /api/posts        could not reach the server
+  PUT /api/posts/7       was refused by the server (409)
+```
+
+The method and path are the honest floor: the queue stores a method, a URL and
+some bytes, and knowing that `POST /api/posts` means "a new post" would mean the
+worker knowing what every endpoint means. The query string is dropped — it is
+the part of a URL that routinely carries a token, and this string is rendered
+into the DOM and read aloud.
+
+### The caches
+
+`QUEUE_REPLAYED` carries _which_ writes left the queue, not only how many, and
+`src/app/api/offlineReconcile.ts` turns each one into the cache entries it
+disturbed — TanStack Query keys and RTK Query tags, because this application
+caches posts in both.
+
+Two things about that are worth stating plainly.
+
+**Abandoned writes are invalidated too, and they need it more.** A delivered
+write leaves the cache _stale_: it holds the optimistic guess and the server now
+has the real row. An abandoned write leaves it _wrong_: the guess is for
+something that never happened and never will, and nothing else in the system
+will ever correct it.
+
+**An unrecognised path invalidates nothing.** The alternative — a bare
+`invalidateQueries()` for anything the table does not name — refetches every
+active query in the application on behalf of a write nobody modelled, which is
+a thundering herd at exactly the moment a user's connection has just come back,
+and it lets the table stay wrong without anyone noticing. There is one
+exception, and it is the version-skew case: when `writes` is `null`, a worker
+from a _previous build_ has answered with counts and no detail, and there
+invalidating everything is right rather than lazy — a write demonstrably
+finished, nothing says which, and it lasts only as long as it takes the new
+worker to claim the tab. That is the whole reason the field is
+`readonly ReplayedWrite[] | null` and not `readonly ReplayedWrite[]`: an empty
+array and "the worker did not say" are opposite instructions, and a consumer
+must not be able to confuse them.
+
+The same skew is why `UnsentWritesNotice` carries a `count` alongside its list
+rather than rendering `writes.length`. The old worker reports how many it abandoned and
+not which, and a component that counted the rows would report a confident zero
+in precisely the case where something was lost.
+
+### One pass at a time
+
+Replay passes are serialised per worker. Coming back online produces more
+triggers than one — the browser's `online` event, the `REPLAY_QUEUE` the page
+sends after it, a Background Sync firing around the same moment, a second tab
+doing the same — and run concurrently, every pass reads the queue before any of
+them has removed anything. One queued write is then fetched several times and,
+worse, _reported_ several times.
+
+That is not hypothetical: the E2E that drives a refused write end to end showed
+one lost change announced as "3 changes could not be saved". The idempotency key
+always made the duplicate sends safe at the server; nothing made the duplicate
+reports safe, and over-reporting a loss costs a user an afternoon looking for
+changes that were never made.
+
+`replayAndNotify` therefore chains each pass onto the last. Serialised rather
+than coalesced, so a caller's `ignoreBackoff` is honoured as asked rather than
+folded into somebody else's options — and the chain stored for the next caller
+swallows failures, because chaining the raw promise would let one rejected pass
+reject every replay that followed it for the life of the worker.
+
 ## Testing
 
 Unit tests cover every strategy, the routing table, the replay policy and the
@@ -321,6 +434,14 @@ drains that queue when the network returns. The replayed write is answered by
 `e2e/offlineApiServer.ts` — a real server, because a replayed write is issued by
 the worker after the page may be gone, and `page.route` never sees it.
 
+That server also refuses everything under `/api/e2e-offline-reject` with a 422,
+which is the only way to drive the abandoned-write path end to end: a 422 is not
+retryable, so the queue drops the entry immediately, where an exhausted entry
+would need five real failures spread across the backoff and an expired one a
+queue a day old. The spec then asserts the chain the unit tests each cover one
+link of — HTTP status, replay policy, `postMessage`, notice on the screen — and
+that the notice outlives the connectivity state that produced it.
+
 ## Known gaps
 
 - **A route the user has not visited does not work offline.** Discussed above;
@@ -329,12 +450,12 @@ the worker after the page may be gone, and `page.route` never sees it.
 - **The queue is not bound in size.** Only in age and attempts. A user who
   writes continuously for an hour offline will accumulate an hour of writes, and
   a per-user cap belongs here if your writes are large.
-- **Nothing reconciles a dropped write with the user's own view.** The banner
-  says how many were abandoned; it does not say which, and the application's
-  cache still shows the optimistic result. Wiring `QUEUE_REPLAYED`'s dropped
-  count into a TanStack Query invalidation is the obvious next step and is
-  deliberately not done here, because what it should invalidate depends on the
-  application.
+- **The invalidation table is this application's, not a general rule.**
+  `src/app/api/offlineReconcile.ts` maps `/api/posts` and `/api/posts/:id` to
+  the two feeds and the `Post` tags, and maps everything else to nothing. A new
+  write endpoint needs a row there or its replay reconciles nothing — which is
+  deliberate (see below) and is a thing to remember rather than a thing that
+  will announce itself.
 - **Bodies are stored as bytes, headers as pairs.** A `Request` carrying a
   `ReadableStream` body cannot be queued; nothing in this application makes one.
 - **`sync` rejection semantics are the browser's.** When Background Sync does

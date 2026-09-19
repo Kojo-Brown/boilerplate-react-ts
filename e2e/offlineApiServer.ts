@@ -32,6 +32,19 @@ const server = createServer((request, response) => {
     return;
   }
 
+  /*
+    One path refuses what it is sent, so the abandoned-write path can be driven
+    end to end.
+
+    A 422 is not retryable — the server understood the request and said no —
+    so the queue drops the entry rather than backing off, reports it as
+    `rejected`, and the page turns that into the notice in `<UnsentWrites>`.
+    Nothing else can produce that state in a test: an exhausted entry needs
+    five real failures spread over the backoff, and an expired one needs a
+    queue a day old.
+  */
+  const rejects = url.startsWith("/api/e2e-offline-reject");
+
   // Everything else is a write the queue replayed. A 204 is the plainest
   // possible "accepted": no body to parse, nothing for the assertion to depend
   // on but the status the queue reads.
@@ -41,7 +54,7 @@ const server = createServer((request, response) => {
   // it — which reads, from the test, as the replay hanging.
   request.resume();
   request.on("end", () => {
-    response.writeHead(204).end();
+    response.writeHead(rejects ? 422 : 204).end();
   });
 });
 
