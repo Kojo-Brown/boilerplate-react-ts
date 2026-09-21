@@ -1,7 +1,7 @@
+import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 import type { Result } from "axe-core";
-import { ROUTES, type AppRoute } from "@/shared/routes/paths";
 
 /**
  * The rule set the gate runs, and why it is spelled out rather than defaulted.
@@ -27,14 +27,15 @@ export interface AuditTarget {
   /** How the failure reads. */
   readonly name: string;
   /**
-   * The registered route this exercises.
+   * The registered route this exercises, exactly as `ROUTES` spells it.
    *
    * Separate from `url` because the URL may carry a query string the route
-   * does not, and because this is what the coverage check compares against
-   * `ROUTES` — a route reachable in the app but absent here is a route nothing
-   * audits.
+   * does not, and because this is what {@link readRegisteredRoutes} is
+   * compared against — in both directions, so a route the app registers and
+   * this list omits fails, and so does a typo here that matches nothing the
+   * app registers.
    */
-  readonly route: AppRoute;
+  readonly route: string;
   /** What the browser navigates to. Defaults to {@link AuditTarget.route}. */
   readonly url?: string;
   /** True for routes behind `ProtectedRoute`. */
@@ -47,18 +48,18 @@ export interface AuditTarget {
  * Every route in the application, in the state a first-time visitor sees.
  *
  * The list is exhaustive by construction rather than by diligence: the
- * coverage test in `a11y.spec.ts` compares it against `ROUTES` and fails on
- * anything missing, so adding a route to the app without adding it here is a
- * red build rather than a page that quietly goes unaudited.
+ * coverage test in `a11y.spec.ts` compares it against the registry and fails
+ * on anything missing, so adding a route to the app without adding it here is
+ * a red build rather than a page that quietly goes unaudited.
  */
 export const AUDIT_TARGETS: readonly AuditTarget[] = [
-  { name: "home", route: ROUTES.HOME, ready: "h1" },
-  { name: "about", route: ROUTES.ABOUT, ready: "h1" },
-  { name: "dashboard", route: ROUTES.DASHBOARD, authenticated: true, ready: "h1" },
-  { name: "login", route: ROUTES.LOGIN, ready: "form" },
+  { name: "home", route: "/", ready: "h1" },
+  { name: "about", route: "/about", ready: "h1" },
+  { name: "dashboard", route: "/dashboard", authenticated: true, ready: "h1" },
+  { name: "login", route: "/login", ready: "form" },
   {
     name: "oauth callback",
-    route: ROUTES.OAUTH_CALLBACK,
+    route: "/auth/callback",
     // No `code` parameter, so the page renders its failure state. That is the
     // state worth auditing: the success path is a redirect nobody reads, and
     // an error message is exactly the content a screen-reader user needs.
@@ -66,7 +67,7 @@ export const AUDIT_TARGETS: readonly AuditTarget[] = [
   },
   {
     name: "concurrency lab",
-    route: ROUTES.CONCURRENCY_LAB,
+    route: "/labs/concurrency",
     /*
      * `?n=50` rather than the page's default 15,000 rows, and this is about
      * the gate's runtime, not its coverage. axe walks the accessibility tree
@@ -76,33 +77,33 @@ export const AUDIT_TARGETS: readonly AuditTarget[] = [
      * accessibility this page has is in its markup, and fifty rows contain all
      * of it.
      */
-    url: `${ROUTES.CONCURRENCY_LAB}?n=50`,
+    url: "/labs/concurrency?n=50",
     ready: "[data-testid='filter-results']",
   },
-  { name: "optimistic lab", route: ROUTES.OPTIMISTIC_LAB, ready: "h1" },
-  { name: "query cache lab", route: ROUTES.QUERY_CACHE_LAB, ready: "h1" },
-  { name: "use() lab", route: ROUTES.USE_API_LAB, ready: "h1" },
-  { name: "actions lab", route: ROUTES.ACTIONS_LAB, ready: "h1" },
-  { name: "streaming lab", route: ROUTES.STREAMING_LAB, ready: "h1" },
-  { name: "navigation lab", route: ROUTES.NAVIGATION_LAB, ready: "h1" },
-  { name: "headless lab", route: ROUTES.HEADLESS_LAB, ready: "h1" },
-  { name: "polymorphic lab", route: ROUTES.POLYMORPHIC_LAB, ready: "h1" },
-  { name: "render props lab", route: ROUTES.RENDER_PROPS_LAB, ready: "h1" },
-  { name: "checkout lab", route: ROUTES.CHECKOUT_LAB, ready: "h1" },
+  { name: "optimistic lab", route: "/labs/optimistic", ready: "h1" },
+  { name: "query cache lab", route: "/labs/query-cache", ready: "h1" },
+  { name: "use() lab", route: "/labs/use", ready: "h1" },
+  { name: "actions lab", route: "/labs/actions", ready: "h1" },
+  { name: "streaming lab", route: "/labs/streaming", ready: "h1" },
+  { name: "navigation lab", route: "/labs/navigation", ready: "h1" },
+  { name: "headless lab", route: "/labs/headless", ready: "h1" },
+  { name: "polymorphic lab", route: "/labs/polymorphic", ready: "h1" },
+  { name: "render props lab", route: "/labs/render-props", ready: "h1" },
+  { name: "checkout lab", route: "/labs/checkout", ready: "h1" },
   {
     name: "dependency inversion lab",
-    route: ROUTES.DEPENDENCY_INVERSION_LAB,
+    route: "/labs/dependency-inversion",
     ready: "h1",
   },
-  { name: "worker lab", route: ROUTES.WORKER_LAB, ready: "h1" },
+  { name: "worker lab", route: "/labs/workers", ready: "h1" },
   {
     name: "infinite scroll lab",
-    route: ROUTES.INFINITE_SCROLL_LAB,
+    route: "/labs/infinite-scroll",
     ready: "[data-testid='virtual-scroll-container']",
   },
-  { name: "prefetch lab", route: ROUTES.PREFETCH_LAB, ready: "h1" },
-  { name: "image lab", route: ROUTES.IMAGE_LAB, ready: "h1" },
-  { name: "error lab", route: ROUTES.ERROR_LAB, ready: "h1" },
+  { name: "prefetch lab", route: "/labs/prefetch", ready: "h1" },
+  { name: "image lab", route: "/labs/images", ready: "h1" },
+  { name: "error lab", route: "/labs/errors", ready: "h1" },
 ];
 
 /**
@@ -188,4 +189,43 @@ export async function expectNoViolations(page: Page, what: string): Promise<void
     violations.map((violation) => violation.id),
     `${what} has accessibility violations:\n\n${formatViolations(violations)}\n`,
   ).toEqual([]);
+}
+
+/**
+ * The route paths `src/shared/routes/paths.ts` declares, read as text.
+ *
+ * Importing `ROUTES` would be the obvious thing and is the one thing this file
+ * may not do. `tsconfig.node.json` is a composite project that owns `e2e/` and
+ * `tooling/`, `tsconfig.json` owns `src/` and references it; a file imported
+ * across that line joins both programs, and `tsc --noEmit` then fails with
+ * TS6305 on a clean checkout because the referenced project's declaration
+ * output does not exist yet. Reading the source is what keeps the check
+ * honest without moving a source file into two projects — and it is the same
+ * move `tooling/a11y/tokenContrast.test.ts` makes on `globals.css`, for the
+ * same reason: the file on disk is the fact, and parsing it cannot drift from
+ * it the way a copied list can.
+ *
+ * The parse is deliberately brittle. `ROUTES` is a flat object of string
+ * literals, and if it ever stops being one this throws rather than quietly
+ * returning fewer routes than the app has — which would turn the coverage
+ * check green by finding nothing to check.
+ */
+export function readRegisteredRoutes(): readonly string[] {
+  const source = readFileSync(new URL("../src/shared/routes/paths.ts", import.meta.url), "utf8");
+  const body = /export const ROUTES = \{([\s\S]*?)\n\} as const;/.exec(source)?.[1];
+  if (body === undefined) {
+    throw new Error("Could not find the `ROUTES` object in src/shared/routes/paths.ts");
+  }
+
+  const routes = [...body.matchAll(/^\s+[A-Z][A-Z0-9_]*:\s*"([^"]+)",$/gm)].map(
+    (match) => match[1] as string,
+  );
+  const entries = body.split("\n").filter((line) => line.trim().length > 0).length;
+  if (routes.length !== entries) {
+    throw new Error(
+      `Parsed ${String(routes.length)} of ${String(entries)} lines in \`ROUTES\`; ` +
+        "it is no longer a flat map of string literals and this parser needs updating",
+    );
+  }
+  return routes;
 }

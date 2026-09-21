@@ -29,19 +29,6 @@
     }
   },
   "include": [
-    /*
-      The route registry, and nothing else from `src`.
-
-      `e2e/a11y.spec.ts` checks its audit inventory against `ROUTES` so that a
-      new route cannot be added without being audited, and that check is only
-      worth anything if it reads the real registry rather than a copy of it.
-      Under `composite`, every file a project type-checks has to be listed, so
-      the import needs this line. It is one file, it is plain TypeScript with
-      no JSX and no `import.meta`, and it declares an object of string
-      literals — which is why it can sit in both projects' file lists without
-      the node project needing the app's `lib`, `jsx` or `vite/client` types.
-    */
-    "src/shared/routes/paths.ts",
     "vite.config.ts",
     "vite.sw.config.ts",
     "vitest.config.ts",

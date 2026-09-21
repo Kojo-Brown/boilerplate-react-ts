@@ -112,9 +112,19 @@ dark mode is every surface there is.
 ## Adding a route
 
 Add it to `AUDIT_TARGETS` in `e2e/a11yAudit.ts`. You do not have to remember
-to: the sweep compares its inventory against `ROUTES` and fails on anything
-missing, so a route added to the app without an entry here is a red build in
-the pull request that adds it, rather than a page that quietly goes unaudited.
+to: the sweep compares its inventory against the paths `ROUTES` declares and
+fails in both directions — a route added to the app without an entry here is a
+red build in the pull request that adds it, and an entry here matching nothing
+the app registers is a red build too, which is what catches a typo pretending
+to be coverage.
+
+It compares against the _file_, parsed, rather than an imported `ROUTES`.
+`e2e/` belongs to `tsconfig.node.json` and `src/` to `tsconfig.json`, which
+references it; a module imported across that line joins both programs and
+`tsc --noEmit` then fails on a clean checkout with TS6305, before the
+referenced project has emitted anything. Reading the source keeps the check
+against the real registry without moving a file into two projects — the same
+move the token gate makes on `globals.css`.
 
 Each entry names a `ready` selector — something that proves the page finished
 rendering. Auditing a skeleton passes trivially and means nothing, which is

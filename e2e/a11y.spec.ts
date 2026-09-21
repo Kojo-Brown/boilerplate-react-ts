@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { ROUTES } from "@/shared/routes/paths";
 import {
   AUDIT_TARGETS,
   UNREGISTERED_TARGETS,
   expectNoViolations,
+  readRegisteredRoutes,
   seedSession,
 } from "./a11yAudit.ts";
 
@@ -44,9 +44,26 @@ test.describe("WCAG 2.2 AA", () => {
        * request that adds the route.
        */
       const audited = new Set(AUDIT_TARGETS.map((target) => target.route));
-      const missing = Object.values(ROUTES).filter((route) => !audited.has(route));
+      const missing = readRegisteredRoutes().filter((route) => !audited.has(route));
 
       expect(missing, "routes with no entry in AUDIT_TARGETS").toEqual([]);
+    });
+
+    test("audits nothing the application does not register", () => {
+      // The other direction, which is what catches a typo: a `route` that
+      // matches no registered path would otherwise sit in the list looking
+      // like coverage while the real route went unaudited.
+      //
+      // It is also what stops the test above from passing vacuously. If the
+      // registry parser ever read zero routes, "nothing is missing" would be
+      // trivially true; here the same empty result makes every audited path
+      // unknown, and the pair fails loudly rather than going quiet.
+      const registered = new Set(readRegisteredRoutes());
+      const unknown = AUDIT_TARGETS.map((target) => target.route).filter(
+        (route) => !registered.has(route),
+      );
+
+      expect(unknown, "audited paths the route registry does not declare").toEqual([]);
     });
 
     test("names each audited route once", () => {
@@ -101,7 +118,7 @@ test.describe("WCAG 2.2 AA", () => {
    */
   test.describe("interactive states", () => {
     test("the select menu with its popover open", async ({ page }) => {
-      await page.goto(ROUTES.HEADLESS_LAB);
+      await page.goto("/labs/headless");
 
       // The popover is the part of this page the sweep never sees: closed, its
       // options are not in the DOM at all, so the roles, the `aria-activedescendant`
@@ -113,7 +130,7 @@ test.describe("WCAG 2.2 AA", () => {
     });
 
     test("the checkout form at the payment step", async ({ page }) => {
-      await page.goto(`${ROUTES.CHECKOUT_LAB}?latency=0`);
+      await page.goto("/labs/checkout?latency=0");
 
       await page.getByRole("button", { name: /continue to delivery/i }).click();
       await page.getByLabel(/Full name/).fill("Grace Hopper");
