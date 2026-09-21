@@ -101,6 +101,11 @@ describe("ErrorLabPage", () => {
 
   it("says nothing has been reported before anything throws", () => {
     renderLab();
-    expect(screen.getByTestId("event-list")).toHaveTextContent("Nothing reported yet.");
+    expect(screen.getByTestId("event-list-empty")).toHaveTextContent("Nothing reported yet.");
+    // Not merely "the list says nothing yet": there is no list at all until
+    // there is an event to put in it, because the empty state is a paragraph
+    // and a `<ul>` may not contain one. `e2e/a11y.spec.ts` audits the rendered
+    // page for the same thing from the other side.
+    expect(screen.queryByTestId("event-list")).not.toBeInTheDocument();
   });
 });

@@ -52,11 +52,27 @@ export interface ButtonOwnProps {
   className?: string | undefined;
 }
 
+/*
+ * The filled variants darken on hover rather than fading, which is what the
+ * `--color-*-hover` tokens were always for — they were declared and then never
+ * used, while the buttons reached for `opacity-90` instead.
+ *
+ * The difference is a WCAG failure rather than a preference. Fading a filled
+ * button composites *both* the fill and its label toward the page behind them,
+ * and the label loses more than the fill does: white on `--color-primary` is
+ * 4.74:1 at rest and 4.06:1 under `opacity-90`, so the label fell below AA for
+ * exactly as long as the pointer was over it. The audit caught it on the
+ * checkout lab's submit button, where a click had left the cursor sitting on
+ * the next step's button. Darkening the fill moves the ratio the other way:
+ * white on `--color-primary-hover` is 6.62:1.
+ */
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90",
+  primary:
+    "bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:bg-[var(--color-primary-hover)]",
   secondary: "bg-[var(--color-muted)] text-[var(--color-fg)] hover:bg-[var(--color-border)]",
   ghost: "bg-transparent hover:bg-[var(--color-muted)] text-[var(--color-fg)]",
-  danger: "bg-[var(--color-danger)] text-white hover:opacity-90",
+  danger:
+    "bg-[var(--color-danger)] text-[var(--color-danger-fg)] hover:bg-[var(--color-danger-hover)]",
 };
 
 const sizeClasses: Record<Size, string> = {
@@ -141,7 +157,7 @@ export function Button<TElement extends ElementType = "button">({
   return (
     <Component
       className={cn(
-        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-opacity",
+        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] font-medium transition-colors",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]",
         "aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
         "disabled:cursor-not-allowed disabled:opacity-50",

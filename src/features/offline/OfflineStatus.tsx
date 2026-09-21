@@ -66,7 +66,7 @@ export function OfflineStatus({
         "flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border px-3 py-2 text-sm",
         online
           ? "border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-fg)]"
-          : "border-[var(--color-warning)] bg-[var(--color-warning-subtle)] text-[var(--color-warning-fg)]",
+          : "border-[var(--color-warning-strong)] bg-[var(--color-warning-subtle)] text-[var(--color-warning-fg)]",
         className,
       )}
     >

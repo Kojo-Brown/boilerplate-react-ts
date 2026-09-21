@@ -95,21 +95,30 @@ export const color = {
   surfaceRaised: "var(--color-surface-raised)",
 
   primary: "var(--color-primary)",
+  /**
+   * Brand blue as a foreground — text, an icon glyph, a border that carries
+   * meaning — rather than as a fill. See the note on the `-strong` family in
+   * `globals.css`; the other three semantic colours have the same pair.
+   */
+  primaryStrong: "var(--color-primary-strong)",
   primaryHover: "var(--color-primary-hover)",
   primarySubtle: "var(--color-primary-subtle)",
   primaryFg: "var(--color-primary-fg)",
 
   danger: "var(--color-danger)",
+  dangerStrong: "var(--color-danger-strong)",
   dangerHover: "var(--color-danger-hover)",
   dangerSubtle: "var(--color-danger-subtle)",
   dangerFg: "var(--color-danger-fg)",
 
   success: "var(--color-success)",
+  successStrong: "var(--color-success-strong)",
   successHover: "var(--color-success-hover)",
   successSubtle: "var(--color-success-subtle)",
   successFg: "var(--color-success-fg)",
 
   warning: "var(--color-warning)",
+  warningStrong: "var(--color-warning-strong)",
   warningHover: "var(--color-warning-hover)",
   warningSubtle: "var(--color-warning-subtle)",
   warningFg: "var(--color-warning-fg)",

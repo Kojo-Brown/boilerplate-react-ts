@@ -15,6 +15,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test --config=playwright.a11y.config.ts",
     "analyze": "vite build --mode analyze",
     "bundle:budget": "node tooling/bundleBudget/cli.ts",
     "bundle:budget:update": "node tooling/bundleBudget/cli.ts --update"
@@ -40,6 +41,7 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@babel/core": "^7.29.7",
     "@eslint/js": "^9.30.0",
     "@playwright/test": "^1.52.0",
@@ -54,6 +56,7 @@
     "@vitejs/plugin-react": "^4.4.2",
     "@vitest/coverage-v8": "^4.1.10",
     "@vitest/ui": "^4.1.10",
+    "axe-core": "4.13.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.30.0",
     "eslint-plugin-react-hooks": "^7.1.1",

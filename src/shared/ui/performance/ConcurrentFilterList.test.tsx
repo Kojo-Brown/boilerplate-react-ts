@@ -162,4 +162,14 @@ describe("ConcurrentFilterList", () => {
     render(<ConcurrentFilterList items={items} className="custom-class" />);
     expect(screen.getByTestId("concurrent-filter-list")).toHaveClass("custom-class");
   });
+
+  it("puts a named tab stop on the scrolling list", () => {
+    render(<ConcurrentFilterList items={items} />);
+    // Nothing inside the list is focusable, so without this a keyboard user
+    // cannot scroll past the first screenful (WCAG 2.1.1) — axe reports it as
+    // `scrollable-region-focusable`. The label is what the stop announces.
+    const list = screen.getByTestId("filter-results");
+    expect(list).toHaveAttribute("tabindex", "0");
+    expect(list).toHaveAttribute("aria-label", "Filtered items");
+  });
 });

@@ -56,7 +56,7 @@ export function OptionList<TValue extends string>(props: OptionListProps<TValue>
           >
             <span>{option.label}</span>
             {isSelected ? (
-              <span aria-hidden="true" className="text-[var(--color-primary)]">
+              <span aria-hidden="true" className="text-[var(--color-primary-strong)]">
                 ✓
               </span>
             ) : null}

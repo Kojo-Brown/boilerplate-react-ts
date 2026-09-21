@@ -46,7 +46,7 @@ export function SlowRouteLabPage({ cache = defaultCache }: SlowRouteLabPageProps
       </p>
       <TransitionLink
         to={ROUTES.NAVIGATION_LAB}
-        className="text-[var(--color-primary)] underline underline-offset-4"
+        className="text-[var(--color-primary-strong)] underline underline-offset-4"
       >
         Back to the lab
       </TransitionLink>

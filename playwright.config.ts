@@ -2,6 +2,14 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
+  /*
+    The accessibility sweep is excluded here and run by
+    `playwright.a11y.config.ts` instead. It needs the opposite server to every
+    spec in this file — MSW answering rather than disabled — so running it
+    against the server below would audit pages with no content in them and
+    report a clean bill of health for it.
+  */
+  testIgnore: /a11y\.spec\.ts/,
   fullyParallel: true,
   forbidOnly: !!process.env["CI"],
   retries: process.env["CI"] ? 2 : 0,

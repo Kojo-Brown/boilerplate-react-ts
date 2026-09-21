@@ -96,6 +96,25 @@ describe("VirtualInfiniteList rendering", () => {
     renderList({ className: "custom" });
     expect(screen.getByTestId("virtual-scroll-container")).toHaveClass("custom");
   });
+
+  it("puts a tab stop on the scroll container so a keyboard can reach the rows", () => {
+    renderList({ items: rows(100) });
+    // The rows hold no control of their own, so this tab stop is the only way
+    // to scroll the list without a pointer (WCAG 2.1.1). axe reports its
+    // absence as `scrollable-region-focusable`; `e2e/a11y.spec.ts` is what
+    // runs that rule against the rendered page.
+    expect(screen.getByTestId("virtual-scroll-container")).toHaveAttribute("tabindex", "0");
+  });
+
+  it("leaves the list semantics on the sizer rather than the scroll container", () => {
+    renderList({ items: rows(10) });
+    // `aria-label` is prohibited on a generic element, and a `role="list"`
+    // here would separate the list from its rows by a non-`listitem`.
+    const container = screen.getByTestId("virtual-scroll-container");
+    expect(container).not.toHaveAttribute("role");
+    expect(container).not.toHaveAttribute("aria-label");
+    expect(screen.getByRole("list")).toHaveAttribute("aria-label");
+  });
 });
 
 describe("VirtualInfiniteList sentinel", () => {

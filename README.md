@@ -74,15 +74,24 @@ src/
 All design tokens are CSS custom properties on `:root`. Override in `.dark` for dark mode:
 
 ```css
---color-primary   /* brand colour */
---color-bg        /* page background */
---color-fg        /* default text */
---color-muted     /* subtle backgrounds */
---color-border    /* borders and dividers */
---color-danger    /* error/destructive */
---color-success   /* success states */
---radius-sm/md/lg /* border radius scale */
+--color-primary        /* brand colour, as a fill: buttons, focus rings */
+--color-primary-strong /* the same brand colour as text or an icon glyph */
+--color-bg             /* page background */
+--color-fg             /* default text */
+--color-muted          /* subtle backgrounds */
+--color-border         /* borders and dividers */
+--color-danger         /* error/destructive fill */
+--color-success        /* success fill */
+--radius-sm/md/lg      /* border radius scale */
 ```
+
+Each semantic colour comes as a pair, and the split is a contrast requirement
+rather than a stylistic one: a fill answers to 3:1 where it identifies a
+control and 4.5:1 for the label on it, while the same value used as text
+answers to 4.5:1 against the surface behind it. `primary-500` carries white at
+4.74:1 as a button and fails at 4.48:1 as text, so text takes
+`--color-*-strong`. `tooling/a11y/` scores every pairing in both themes as part
+of `pnpm test`; [docs/accessibility.md](docs/accessibility.md) has the table.
 
 ## React 19 Concurrency
 
@@ -544,6 +553,19 @@ rather than add, and only the transport can see the response headers. The full
 account — the decorator order and why it is not the other way round, what is
 retried and what is not, and the known gaps — is in
 [docs/request-resilience.md](docs/request-resilience.md).
+
+## Accessibility
+
+`pnpm test:a11y` loads every route in a real browser, in light mode and dark,
+and runs axe-core against WCAG 2.2 AA. Zero violations, no allow-list, no
+excused route; CI runs it as the **Accessibility** job. A second gate in
+`pnpm test` reads `globals.css` and scores every colour pairing the design
+system declares, which catches a token regression before a page renders it.
+
+The route inventory is checked against `ROUTES`, so adding a route without
+adding it to the audit fails in the same pull request. What automated rules
+cannot judge — whether alt text is accurate, whether a focus order makes
+sense — is listed in [docs/accessibility.md](docs/accessibility.md).
 
 ## Spec Progress
 

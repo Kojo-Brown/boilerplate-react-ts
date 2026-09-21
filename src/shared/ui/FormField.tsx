@@ -17,7 +17,7 @@ export function FormField({ label, error, hint, required, children, className }:
         <span className="text-sm leading-none font-medium text-[var(--color-fg)]">
           {label}
           {required && (
-            <span className="ml-0.5 text-[var(--color-danger)]" aria-hidden="true">
+            <span className="ml-0.5 text-[var(--color-danger-strong)]" aria-hidden="true">
               *
             </span>
           )}
@@ -26,7 +26,7 @@ export function FormField({ label, error, hint, required, children, className }:
       </label>
       {hint && !error && <p className="text-xs text-[var(--color-muted-fg)]">{hint}</p>}
       {error && (
-        <p className="text-xs text-[var(--color-danger)]" role="alert">
+        <p className="text-xs text-[var(--color-danger-strong)]" role="alert">
           {error}
         </p>
       )}
