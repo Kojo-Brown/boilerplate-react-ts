@@ -65,7 +65,7 @@ describe("Text", () => {
       </Text>,
     );
     const el = screen.getByText("Warning");
-    expect(el).toHaveClass("text-[var(--color-danger)]", "text-lg", "font-bold");
+    expect(el).toHaveClass("text-[var(--color-danger-strong)]", "text-lg", "font-bold");
   });
 
   it("truncates only when asked", () => {

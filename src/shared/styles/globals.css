@@ -79,9 +79,32 @@
     --color-fg: var(--color-neutral-900);
     --color-fg-subtle: var(--color-neutral-600);
     --color-muted: var(--color-neutral-100);
-    --color-muted-fg: var(--color-neutral-500);
+    /*
+      `neutral-500` until the WCAG 2.2 AA audit measured it: 3.71:1 against
+      every light surface in this system (`bg` 98%, `muted` 95%, `surface`
+      100%), where body text needs 4.5:1. It is the app's most-used foreground
+      token, so that one step was most of the audit's findings on its own.
+
+      `neutral-600` is the first step of this ramp that clears 4.5:1 on all
+      three (5.66 / 5.19 / 6.00), which is why it collides with
+      `--color-fg-subtle` here rather than sitting one step below it. The two
+      stay distinct in dark mode, where 500 is a *lighter* foreground and
+      clears the bar comfortably. `neutral-500` remains correct for borders and
+      icon glyphs, which answer to 3:1.
+    */
+    --color-muted-fg: var(--color-neutral-600);
     --color-border: var(--color-neutral-200);
-    --color-border-strong: var(--color-neutral-400);
+    /*
+      `neutral-400` until the audit: 2.52:1 on `bg` and 2.31:1 on `muted`,
+      where this token's whole job is to be the border you can see — it draws
+      the outline of the buttons in the offline banner, and 1.4.11 asks 3:1 of
+      a boundary that identifies a control. `neutral-500` is the first step
+      that clears it on every light surface (3.41:1 at worst). It is the step
+      `--color-muted-fg` just vacated, and for the complementary reason: too
+      light to be read as text at 4.5:1, dark enough to be seen as a line at
+      3:1.
+    */
+    --color-border-strong: var(--color-neutral-500);
     --color-surface: oklch(100% 0 0);
     --color-surface-raised: var(--color-neutral-50);
 
@@ -89,21 +112,58 @@
     --color-primary-hover: var(--color-primary-600);
     --color-primary-subtle: var(--color-primary-50);
     --color-primary-fg: oklch(100% 0 0);
+    /*
+      The `-strong` variants are each colour *as a foreground* — text, an icon
+      glyph, a border that carries meaning — as opposed to the bare token,
+      which is the fill a badge paints and the stroke a focus ring draws.
+
+      One colour cannot do both jobs, and the audit is what made that concrete
+      rather than theoretical. A fill answers to 1.4.11 at 3:1 against what
+      surrounds it, and to 4.5:1 for the label printed *on* it. The same value
+      used as a glyph answers to 4.5:1 against the surface *behind* it, which
+      is a different comparison and, for every colour in this palette, a
+      stricter one. `primary-500` as text on a light surface is 4.48:1 — under
+      the bar by two hundredths, and the one contrast failure axe found outside
+      the neutral ramp. The warning ramp misses it by much more: `warning-500`
+      as a toast's icon on `warning-subtle` is 2.12:1.
+
+      Hence 600 here and 700 for warning: amber's lightness runs a step ahead
+      of the other hues at the same index, so the first step that clears 4.5:1
+      on every light surface is one further down. In dark mode they all invert
+      to 300, where the comparison is against near-black and every ramp clears
+      8:1.
+    */
+    --color-primary-strong: var(--color-primary-600);
 
     --color-danger: var(--color-danger-500);
     --color-danger-hover: var(--color-danger-600);
     --color-danger-subtle: var(--color-danger-50);
     --color-danger-fg: oklch(100% 0 0);
+    --color-danger-strong: var(--color-danger-600);
 
-    --color-success: var(--color-success-500);
-    --color-success-hover: var(--color-success-600);
+    /*
+      One step darker than the other fills, and it is the audit's finding
+      rather than a preference: white on `success-500` is 4.48:1, the same two
+      hundredths short that `primary-500` came up as text — which every
+      `<Badge variant="success">` was printing its label against. `success-600`
+      reads 6.16:1. The hover step follows it down so the pair keeps its
+      relationship.
+
+      Green is the only ramp that needs this. White clears 4.5:1 on the 500
+      step of primary (4.74) and danger (5.15); warning is the ramp that takes
+      dark text rather than white, at 8.03:1.
+    */
+    --color-success: var(--color-success-600);
+    --color-success-hover: var(--color-success-700);
     --color-success-subtle: var(--color-success-50);
     --color-success-fg: oklch(100% 0 0);
+    --color-success-strong: var(--color-success-600);
 
     --color-warning: var(--color-warning-400);
     --color-warning-hover: var(--color-warning-500);
     --color-warning-subtle: var(--color-warning-50);
     --color-warning-fg: var(--color-neutral-900);
+    --color-warning-strong: var(--color-warning-700);
 
     /* ── Spacing scale ── */
     --spacing-px: 1px;
@@ -233,6 +293,20 @@
     --color-border-strong: var(--color-neutral-600);
     --color-surface: var(--color-neutral-950);
     --color-surface-raised: var(--color-neutral-900);
+
+    /*
+      The `-strong` variants invert: lighter than their light-mode values
+      rather than darker, because here the colour is read against near-black.
+      `primary-500` as text is 4.34:1 on this `bg` — the same stepper failing
+      the same way from the other side — and `primary-300` is 9.55:1. The bare
+      fills are not overridden: as fills they still carry their `-fg` at the
+      ratios the light theme measured, since neither the fill nor the label on
+      it changes with the surface behind them.
+    */
+    --color-primary-strong: var(--color-primary-300);
+    --color-danger-strong: var(--color-danger-300);
+    --color-success-strong: var(--color-success-300);
+    --color-warning-strong: var(--color-warning-300);
 
     --color-primary-subtle: var(--color-primary-950);
     --color-danger-subtle: var(--color-danger-950);

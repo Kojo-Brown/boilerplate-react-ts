@@ -145,6 +145,19 @@ export function VirtualInfiniteList<TItem>({
     <div
       ref={setScrollElement}
       data-testid="virtual-scroll-container"
+      /*
+        Focusable because it scrolls, not because it does anything on focus.
+
+        Everything inside is text: there is no link or control to tab to, so
+        without this the only way to reach rows past the first screenful is a
+        pointer, and a keyboard user cannot read the list at all (WCAG 2.1.1).
+        A tab stop is what gives them the arrow keys. It carries no `role` and
+        no `aria-label`: the list semantics and the name belong to the sizer
+        below, `aria-label` is prohibited on a generic element anyway, and
+        hoisting `role="list"` up here would put a non-`listitem` element
+        between the list and its rows.
+      */
+      tabIndex={0}
       className={cn(
         "overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]",
         className,

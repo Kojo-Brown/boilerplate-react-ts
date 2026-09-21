@@ -2,6 +2,7 @@ node_modules
 dist
 coverage
 playwright-report
+playwright-report-a11y
 .env
 .env.local
 .env.*.local

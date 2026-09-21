@@ -33,6 +33,7 @@
     "vite.sw.config.ts",
     "vitest.config.ts",
     "playwright.config.ts",
+    "playwright.a11y.config.ts",
     "reactCompiler.config.ts",
     "e2e",
     "tooling"

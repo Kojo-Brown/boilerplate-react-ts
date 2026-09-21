@@ -44,7 +44,8 @@ export function CheckoutStepper({ current, complete = false }: CheckoutStepperPr
               aria-current={active ? "step" : undefined}
               className={cn(
                 "inline-flex items-center gap-2 rounded-[var(--radius-full)] border px-3 py-1 text-sm",
-                active && "border-[var(--color-primary)] font-semibold text-[var(--color-primary)]",
+                active &&
+                  "border-[var(--color-primary)] font-semibold text-[var(--color-primary-strong)]",
                 done && "border-[var(--color-border)] text-[var(--color-muted-fg)]",
                 !active && !done && "border-[var(--color-border)] text-[var(--color-muted-fg)]",
               )}

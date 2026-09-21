@@ -103,6 +103,43 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  a11y:
+    name: Accessibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Its own job rather than a step of E2E, because it runs against its own
+      # server: a dev server with MSW left on, so axe audits pages with their
+      # content in them. `playwright.a11y.config.ts` says the rest. A separate
+      # job is also what makes "Accessibility" a check a reviewer can read
+      # without opening a log.
+      - name: Audit every route against WCAG 2.2 AA
+        run: pnpm test:a11y
+
+      - name: Upload accessibility report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-a11y
+          path: playwright-report-a11y/
+          retention-days: 7
+
   build:
     name: Build
     runs-on: ubuntu-latest

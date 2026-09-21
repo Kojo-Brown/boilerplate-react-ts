@@ -62,6 +62,9 @@ importers:
         specifier: ^5.0.0
         version: 5.0.14(@types/react@19.2.17)(immer@11.1.15)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
     devDependencies:
+      "@axe-core/playwright":
+        specifier: 4.13.0
+        version: 4.13.0(playwright-core@1.62.0)
       "@babel/core":
         specifier: ^7.29.7
         version: 7.29.7
@@ -104,6 +107,9 @@ importers:
       "@vitest/ui":
         specifier: ^4.1.10
         version: 4.1.10(vitest@4.1.10)
+      axe-core:
+        specifier: 4.13.0
+        version: 4.13.0
       babel-plugin-react-compiler:
         specifier: 1.0.0
         version: 1.0.0
@@ -176,6 +182,14 @@ packages:
         integrity: sha512-UJLfKXBhrc8i1vH2eJXuYQMwlsLKWFw3O+CPqXSuVEiikeAim3UgrfWX0k4tA/X8cRFM8iZ7OaqBokFGbYusdg==,
       }
     engines: { node: ^22.13.0 || >=24.0.0 }
+
+  "@axe-core/playwright@4.13.0":
+    resolution:
+      {
+        integrity: sha512-6YLx+kxXu5GJceG4ozFg+33a2EMTdjYwWGloJ3sb9Kta5pp+ZNS53uxGVog5JetIY8s++P5UrtX+cri+u0VAVg==,
+      }
+    peerDependencies:
+      playwright-core: ">= 1.0.0"
 
   "@babel/code-frame@7.29.7":
     resolution:
@@ -1784,6 +1798,13 @@ packages:
       {
         integrity: sha512-UPAgKJFSEGMWSDr3LX4tqnAb4f7KGT8O40Tyx8wbYmmZ/yn58lNCm8h3svs3eXgiGd5AXxz8NDOvXWvicq+rJA==,
       }
+
+  axe-core@4.13.0:
+    resolution:
+      {
+        integrity: sha512-UzGt8zg7Ny8djbYMhxl2zuEevVa7r2gJjYY5Lwr1xM7+XU2nd6CkIWFTVcCIbAP63vSz71NaVyyuSk9lHKcy0A==,
+      }
+    engines: { node: ">=4" }
 
   babel-plugin-react-compiler@1.0.0:
     resolution:
@@ -3928,6 +3949,11 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.2
 
+  "@axe-core/playwright@4.13.0(playwright-core@1.62.0)":
+    dependencies:
+      axe-core: 4.13.0
+      playwright-core: 1.62.0
+
   "@babel/code-frame@7.29.7":
     dependencies:
       "@babel/helper-validator-identifier": 7.29.7
@@ -4791,6 +4817,8 @@ snapshots:
       "@jridgewell/trace-mapping": 0.3.31
       estree-walker: 3.0.3
       js-tokens: 10.0.0
+
+  axe-core@4.13.0: {}
 
   babel-plugin-react-compiler@1.0.0:
     dependencies:

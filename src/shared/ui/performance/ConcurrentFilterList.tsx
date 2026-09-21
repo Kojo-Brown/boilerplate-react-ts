@@ -183,7 +183,7 @@ export function ConcurrentFilterList({
               "rounded-[var(--radius-sm)] px-2.5 py-1 text-xs font-medium transition-colors",
               category === option
                 ? "bg-[var(--color-primary)] text-[var(--color-primary-fg)]"
-                : "bg-[var(--color-muted)] text-[var(--color-fg)] hover:opacity-80",
+                : "bg-[var(--color-muted)] text-[var(--color-fg)] hover:bg-[var(--color-border)]",
             )}
           >
             {option}
@@ -204,15 +204,30 @@ export function ConcurrentFilterList({
         role="list"
         aria-label="Filtered items"
         aria-busy={isBusy}
+        /*
+          The rows are plain text, so this scroller holds nothing tabbable and
+          a keyboard user could not reach anything below the fold (WCAG 2.1.1).
+          The tab stop is what hands them the arrow keys; the `aria-label`
+          above is what it announces when they land on it.
+        */
+        tabIndex={0}
         data-testid="filter-results"
         data-stale={isStale}
         data-pending={isPending}
-        // Dimming the stale list is the honest signal: the rows on screen no
-        // longer match what was typed, and they are about to be replaced.
+        /*
+          Washing the stale list is the honest signal: the rows on screen no
+          longer match what was typed, and they are about to be replaced.
+
+          A background wash rather than the `opacity-60` it was, because
+          opacity multiplies down the tree. Each row's timestamp already
+          carries `opacity-60` of its own, so a busy list rendered those at an
+          effective 36% — 2.4:1, well under the 4.5:1 they clear when the list
+          is idle. The colour change is as visible and costs no contrast.
+        */
         className={cn(
           "overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)]",
-          "transition-opacity duration-150",
-          isBusy && "opacity-60",
+          "transition-colors duration-150",
+          isBusy && "bg-[var(--color-muted)]",
         )}
         style={{ height }}
       >

@@ -82,18 +82,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/*
+ * The `-strong` variants rather than the bare tokens, because on a toast the
+ * colour is never a fill: the panel is painted `*-subtle` and the status hue
+ * survives only as the border and the icon. Against that pale background the
+ * bare token is a graphic at 2.12:1 for warning — the colour that carries the
+ * meaning, failing to be visible at the one thing it is there for.
+ */
 const variantClasses: Record<ToastVariant, string> = {
   default: "bg-[var(--color-surface)] border-[var(--color-border)]",
-  success: "bg-[var(--color-success-subtle)] border-[var(--color-success)]",
-  warning: "bg-[var(--color-warning-subtle)] border-[var(--color-warning)]",
-  danger: "bg-[var(--color-danger-subtle)] border-[var(--color-danger)]",
+  success: "bg-[var(--color-success-subtle)] border-[var(--color-success-strong)]",
+  warning: "bg-[var(--color-warning-subtle)] border-[var(--color-warning-strong)]",
+  danger: "bg-[var(--color-danger-subtle)] border-[var(--color-danger-strong)]",
 };
 
 function ToastIcon({ variant }: { variant: ToastVariant }) {
   if (variant === "success") {
     return (
       <svg
-        className="h-4 w-4 shrink-0 text-[var(--color-success)]"
+        className="h-4 w-4 shrink-0 text-[var(--color-success-strong)]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -107,7 +114,7 @@ function ToastIcon({ variant }: { variant: ToastVariant }) {
   if (variant === "warning") {
     return (
       <svg
-        className="h-4 w-4 shrink-0 text-[var(--color-warning)]"
+        className="h-4 w-4 shrink-0 text-[var(--color-warning-strong)]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -121,7 +128,7 @@ function ToastIcon({ variant }: { variant: ToastVariant }) {
   if (variant === "danger") {
     return (
       <svg
-        className="h-4 w-4 shrink-0 text-[var(--color-danger)]"
+        className="h-4 w-4 shrink-0 text-[var(--color-danger-strong)]"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"

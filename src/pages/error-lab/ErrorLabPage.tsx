@@ -222,15 +222,24 @@ export function ErrorLabPage() {
             Refresh
           </Button>
         </div>
-        <ul data-testid="event-list" className="flex flex-col">
-          {sink.events.length === 0 ? (
-            <Text size="sm" className="text-[var(--color-muted-fg)]">
-              Nothing reported yet.
-            </Text>
-          ) : (
-            sink.events.map((event) => <EventRow key={event.eventId} event={event} />)
-          )}
-        </ul>
+        {/*
+          The empty state sits beside the list rather than inside it. A `<ul>`
+          may only contain `<li>` (plus script-supporting elements), so a
+          paragraph in that position is a broken list to an assistive
+          technology — and an empty list is exactly the state a screen-reader
+          user most needs announced correctly.
+        */}
+        {sink.events.length === 0 ? (
+          <Text size="sm" data-testid="event-list-empty" className="text-[var(--color-muted-fg)]">
+            Nothing reported yet.
+          </Text>
+        ) : (
+          <ul data-testid="event-list" className="flex flex-col">
+            {sink.events.map((event) => (
+              <EventRow key={event.eventId} event={event} />
+            ))}
+          </ul>
+        )}
       </section>
     </main>
   );

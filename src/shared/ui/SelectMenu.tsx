@@ -145,7 +145,7 @@ export function SelectMenu<TValue extends string>(props: SelectMenuProps<TValue>
             >
               <span>{option.label}</span>
               {listbox.selectedValue === option.value ? (
-                <span aria-hidden="true" className="text-[var(--color-primary)]">
+                <span aria-hidden="true" className="text-[var(--color-primary-strong)]">
                   ✓
                 </span>
               ) : null}

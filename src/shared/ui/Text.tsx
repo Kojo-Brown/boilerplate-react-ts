@@ -68,8 +68,8 @@ export interface TextOwnProps {
 const toneClasses: Record<Tone, string> = {
   default: "text-[var(--color-fg)]",
   muted: "text-[var(--color-muted-fg)]",
-  primary: "text-[var(--color-primary)]",
-  danger: "text-[var(--color-danger)]",
+  primary: "text-[var(--color-primary-strong)]",
+  danger: "text-[var(--color-danger-strong)]",
 };
 
 const sizeClasses: Record<Size, string> = {

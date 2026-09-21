@@ -186,8 +186,18 @@ function StatsPanel({ stats, isRefetching }: StatsPanelProps) {
       aria-label="Task counts, from the server"
       className={cn(
         "flex gap-6 rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-3",
-        "transition-opacity duration-150",
-        isRefetching && "opacity-60",
+        "transition-colors duration-150",
+        /*
+          A background wash rather than the `opacity-60` this used to be.
+          Dimming a panel dims its text with it, and these labels are already
+          `--color-muted-fg` — the most muted thing the system has. At 60% they
+          measure 2.51:1 in light mode and 2.85:1 in dark, so for as long as a
+          refetch lasts the panel said "I am behind" by becoming unreadable to
+          the people least able to spare the contrast. The wash changes the
+          panel just as visibly and leaves every ratio where it was; `aria-busy`
+          above already carries the same news to a screen reader.
+        */
+        isRefetching && "bg-[var(--color-muted)]",
       )}
     >
       {(["total", "open", "done"] as const).map((field) => (
