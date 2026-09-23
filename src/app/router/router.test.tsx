@@ -1,4 +1,4 @@
-import { createMemoryRouter, RouterProvider } from "react-router";
+import { createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
 import { render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { describe, it, expect } from "vitest";
@@ -6,6 +6,7 @@ import { routes } from "@/app/router";
 import { makeStore } from "@/test/renderWithProviders";
 import { actAsync } from "@/test/renderSuspense";
 import { setCredentials } from "@/entities/session/authSlice";
+import { isRouteHandle } from "@/features/route-announcement/routeTitle";
 
 function renderRoute(initialPath: string, authed = false) {
   const store = makeStore();
@@ -128,5 +129,40 @@ describe("router", () => {
     await waitFor(() => {
       expect(screen.getByText("404")).toBeInTheDocument();
     });
+  });
+});
+
+/**
+ * Every route that renders a page declares the name that page is announced by.
+ *
+ * `<RouteAnnouncer>` reads it through `useMatches`, and the failure mode
+ * without this test is the quiet one: a new route is added, its handle is
+ * forgotten, and the only symptom is that arriving there says nothing and
+ * leaves the tab titled "React TS". Nobody sees that in review, and nobody
+ * using a mouse ever sees it at all.
+ *
+ * Layout routes are exempt by construction — `children` is the test for one —
+ * because a shell has no name that is true of the pages inside it.
+ */
+function leafRoutes(
+  routeObjects: readonly RouteObject[],
+  trail: string[] = [],
+): [string, RouteObject][] {
+  return routeObjects.flatMap((route): [string, RouteObject][] => {
+    const path = [...trail, route.path ?? (route.index === true ? "(index)" : "(layout)")];
+    if (route.children !== undefined) return leafRoutes(route.children, path);
+    return [[path.join(" > "), route]];
+  });
+}
+
+describe("route handles", () => {
+  it("finds every leaf in the config", () => {
+    // A guard on the walker rather than on the app: a bug that made this
+    // return nothing would make the assertion below vacuously true.
+    expect(leafRoutes(routes).length).toBeGreaterThan(20);
+  });
+
+  it.each(leafRoutes(routes))("%s declares a title", (_name, route) => {
+    expect(isRouteHandle(route.handle)).toBe(true);
   });
 });

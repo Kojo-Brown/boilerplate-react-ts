@@ -8,6 +8,8 @@ import { RoutePrefetchProvider } from "@/features/route-prefetch/routePrefetch";
 import { WebVitalsReporter } from "@/shared/analytics/WebVitalsReporter";
 import { ErrorBreadcrumbs } from "@/features/route-errors/ErrorBreadcrumbs";
 import { OfflineIndicators } from "@/features/offline/OfflineIndicators";
+import { RouteAnnouncer } from "@/features/route-announcement/RouteAnnouncer";
+import { MAIN_CONTENT_ID, SkipLink } from "@/shared/ui/SkipLink";
 import type { ChunkRegistry } from "@/shared/lib/idlePrefetchQueue";
 
 export interface RootLayoutProps {
@@ -45,6 +47,29 @@ export function RootLayout({ fallback, prefetchRegistry }: RootLayoutProps) {
       <RoutePrefetchProvider registry={prefetchRegistry}>
         <div className="flex min-h-screen flex-col bg-[var(--color-bg)]">
           {/*
+            First in the DOM because that is the whole of how a skip link
+            works: it has to be the first thing Tab reaches, and "first" is
+            document order, not the `z-index` or the `top: 0` that make it
+            visible once it gets there.
+
+            One link, not the usual pair. "Skip to navigation" is the other
+            half of the convention and is deliberately absent: both of this
+            app's navs are already above the main content — the header's is
+            two Tab presses from here and the sidebar's is next after it — so a
+            link to them would skip nothing, and on a phone the header nav is
+            `display: none`, which makes it a link to a place focus cannot go.
+          */}
+          <SkipLink targetId={MAIN_CONTENT_ID}>Skip to main content</SkipLink>
+          {/*
+            Renders one visually-hidden live region and moves focus to `<main>`
+            after each navigation. In the shell rather than per route for the
+            same reason as the reporters above — it needs to see the route
+            change, which means outliving it — and next to `RoutePendingBar`,
+            which announces the other end of the same event: that one says a
+            navigation started, this one says which page arrived.
+          */}
+          <RouteAnnouncer />
+          {/*
             Renders nothing; it is here rather than in `main.tsx` because the
             collector attributes each metric to the route showing when the
             metric was reported, and that needs router context. Inside the
@@ -78,7 +103,17 @@ export function RootLayout({ fallback, prefetchRegistry }: RootLayoutProps) {
           <OfflineIndicators className="mx-4 mt-3" />
           <div className="flex flex-1">
             <Sidebar />
-            <div className="flex-1 overflow-y-auto">
+            {/*
+              A `<main>` landmark, which this layout did not have: the routed
+              page was in an anonymous `<div>`, so "skip to the content" and
+              "jump to main" had nothing to name.
+
+              `tabIndex={-1}` makes it focusable without putting it in the tab
+              order, which is what both the skip link and the route announcer
+              need — an element that is not focusable swallows a `focus()`
+              silently and leaves focus on `<body>`.
+            */}
+            <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex-1 overflow-y-auto">
               {/*
                 One boundary for every route under this layout, and it has to
                 be here rather than around each route element.
@@ -98,7 +133,7 @@ export function RootLayout({ fallback, prefetchRegistry }: RootLayoutProps) {
               <Suspense fallback={fallback}>
                 <Outlet />
               </Suspense>
-            </div>
+            </main>
           </div>
         </div>
       </RoutePrefetchProvider>

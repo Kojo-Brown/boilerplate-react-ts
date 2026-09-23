@@ -13,6 +13,11 @@ import { useRouteTransition } from "@/features/route-transition/routeTransition"
  * live region. Labelling the bar itself would put a `role="status"` accessible
  * name next to the nav landmark, which is the collision that made the page
  * skeletons decorative in the first place.
+ *
+ * It is not the only `role="status"` in the shell — `<RouteAnnouncer>` has two,
+ * for the other end of the same event — so the region carries a test id rather
+ * than leaving `getByRole("status")` to pick between them. Both are polite, so
+ * what a user hears is "Loading /about", then "About, page loaded".
  */
 export function RoutePendingBar() {
   const { isPending, pendingHref } = useRouteTransition();
@@ -29,7 +34,7 @@ export function RoutePendingBar() {
           isPending ? "animate-pulse opacity-100" : "opacity-0",
         )}
       />
-      <span role="status" aria-live="polite" className="sr-only">
+      <span role="status" aria-live="polite" className="sr-only" data-testid="route-pending-status">
         {isPending && pendingHref !== null ? `Loading ${pendingHref}` : ""}
       </span>
     </>

@@ -134,10 +134,22 @@ const LazyOAuthCallbackPage = lazy(() =>
  * dashboard facets on and what a bug report quotes. `<ErrorPage>` stays as the
  * router's `errorElement` for what a per-route boundary cannot see: a throw in
  * the layout itself, above all of them.
+ *
+ * Every leaf carries a `handle: { title }`, which is what `<RouteAnnouncer>`
+ * reads through `useMatches` to say where a navigation landed and what
+ * `document.title` becomes. It lives here rather than in a path-keyed map for
+ * two reasons: a map is a second list of every route, correct only on the day
+ * it is written; and `/no-such-page` has no entry in any such map but does
+ * match the `*` route, so a handle is the only form of the answer that can say
+ * "Page not found" instead of something inferred from a URL the user mistyped.
+ * Layout routes deliberately carry none — `RootLayout` has no name that would
+ * be true of the twenty-odd pages it hosts. `router.test.tsx` fails on a leaf
+ * that forgets one.
  */
 export const routes: RouteObject[] = [
   {
     path: "/login",
+    handle: { title: "Sign in" },
     element: (
       // Outside the Suspense boundary here, unlike the routes under `/` whose
       // boundary the layout owns. Either nesting catches a rejected
@@ -153,6 +165,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: "/auth/callback",
+    handle: { title: "Signing in" },
     element: (
       <RouteErrorBoundary route={ROUTES.OAUTH_CALLBACK}>
         <Suspense fallback={<PageLoader />}>
@@ -168,6 +181,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
+        handle: { title: "Home" },
         element: (
           <RouteErrorBoundary route={ROUTES.HOME}>
             <LazyHomePage />
@@ -179,6 +193,7 @@ export const routes: RouteObject[] = [
         children: [
           {
             path: "dashboard",
+            handle: { title: "Dashboard" },
             element: (
               <RouteErrorBoundary route={ROUTES.DASHBOARD}>
                 <LazyDashboardPage />
@@ -189,6 +204,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "about",
+        handle: { title: "About" },
         element: (
           <RouteErrorBoundary route={ROUTES.ABOUT}>
             <LazyAboutPage />
@@ -199,6 +215,7 @@ export const routes: RouteObject[] = [
         // Reference demo for the React 19 concurrency pattern. Deliberately
         // unlinked from the nav — it is a lab, not part of the app shell.
         path: "labs/concurrency",
+        handle: { title: "Concurrency lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.CONCURRENCY_LAB}>
             <LazyConcurrencyLabPage />
@@ -210,6 +227,7 @@ export const routes: RouteObject[] = [
         // unlinked from the nav — the failing-server mode is not something to
         // stumble into from the app shell.
         path: "labs/optimistic",
+        handle: { title: "Optimistic lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.OPTIMISTIC_LAB}>
             <LazyOptimisticLabPage />
@@ -221,6 +239,7 @@ export const routes: RouteObject[] = [
         // Unlinked from the nav for the same reason as its neighbours — the
         // rejecting-server modes are not something to stumble into.
         path: "labs/query-cache",
+        handle: { title: "Query cache lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.QUERY_CACHE_LAB}>
             <LazyQueryCacheLabPage />
@@ -232,6 +251,7 @@ export const routes: RouteObject[] = [
         // nav for the same reason as the others — the failing-server mode is
         // not something to stumble into from the app shell.
         path: "labs/use",
+        handle: { title: "use() lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.USE_API_LAB}>
             <LazyUseApiLabPage />
@@ -243,6 +263,7 @@ export const routes: RouteObject[] = [
         // for the same reason as the others — the failing-server mode is not
         // something to stumble into from the app shell.
         path: "labs/actions",
+        handle: { title: "Actions lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.ACTIONS_LAB}>
             <LazyActionsLabPage />
@@ -254,6 +275,7 @@ export const routes: RouteObject[] = [
         // nav for the same reason as the others — the broken-section mode is
         // not something to stumble into from the app shell.
         path: "labs/streaming",
+        handle: { title: "Streaming Suspense lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.STREAMING_LAB}>
             <LazyStreamingLabPage />
@@ -265,6 +287,7 @@ export const routes: RouteObject[] = [
         // the same reason as the others — its slow-route mode is deliberately
         // unpleasant to navigate.
         path: "labs/navigation",
+        handle: { title: "Route transition lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.NAVIGATION_LAB}>
             <LazyNavigationLabPage />
@@ -276,6 +299,7 @@ export const routes: RouteObject[] = [
         // nav like the others — three renderings of one list is a lab exhibit,
         // not something the app shell needs.
         path: "labs/headless",
+        handle: { title: "Headless lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.HEADLESS_LAB}>
             <LazyHeadlessLabPage />
@@ -287,6 +311,7 @@ export const routes: RouteObject[] = [
         // like the others — an element picker over one paragraph is a lab
         // exhibit, not something the app shell needs.
         path: "labs/polymorphic",
+        handle: { title: "Polymorphic lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.POLYMORPHIC_LAB}>
             <LazyPolymorphicLabPage />
@@ -298,6 +323,7 @@ export const routes: RouteObject[] = [
         // replaced them. Unlinked from the nav like the others — a row of
         // three cards reporting the same boolean is a lab exhibit.
         path: "labs/render-props",
+        handle: { title: "Render props lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.RENDER_PROPS_LAB}>
             <LazyRenderPropsLabPage />
@@ -309,6 +335,7 @@ export const routes: RouteObject[] = [
         // nav like the others — a basket that cannot actually be bought is a
         // lab exhibit, not part of the app shell.
         path: "labs/checkout",
+        handle: { title: "Checkout lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.CHECKOUT_LAB}>
             <LazyCheckoutLabPage />
@@ -320,6 +347,7 @@ export const routes: RouteObject[] = [
         // like the others — a page whose point is that its data is fake is a
         // lab exhibit, not part of the app shell.
         path: "labs/dependency-inversion",
+        handle: { title: "Dependency inversion lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.DEPENDENCY_INVERSION_LAB}>
             <LazyDependencyInversionLabPage />
@@ -331,6 +359,7 @@ export const routes: RouteObject[] = [
         // nav like the others — its main-thread arm deliberately freezes the
         // page for seconds, which is not something to stumble into.
         path: "labs/workers",
+        handle: { title: "Web worker lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.WORKER_LAB}>
             <LazyWorkerLabPage />
@@ -342,6 +371,7 @@ export const routes: RouteObject[] = [
         // like the others — it loads 5,000 rows from the mock feed, which is a
         // demonstration rather than a page the app has a use for.
         path: "labs/infinite-scroll",
+        handle: { title: "Windowed infinite scroll lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.INFINITE_SCROLL_LAB}>
             <LazyInfiniteScrollLabPage />
@@ -353,6 +383,7 @@ export const routes: RouteObject[] = [
         // the nav like the others — most of what it shows is a queue that is
         // deliberately empty until you interact with it.
         path: "labs/prefetch",
+        handle: { title: "Prefetch lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.PREFETCH_LAB}>
             <LazyPrefetchLabPage />
@@ -364,6 +395,7 @@ export const routes: RouteObject[] = [
         // the others — its point is a fixture that answers slowly and an arm
         // that deliberately reflows the page.
         path: "labs/images",
+        handle: { title: "Image lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.IMAGE_LAB}>
             <LazyImageLabPage />
@@ -375,6 +407,7 @@ export const routes: RouteObject[] = [
         // like the others — every arm of it is a page that deliberately
         // throws, which is not something to stumble into from the app shell.
         path: "labs/errors",
+        handle: { title: "Error lab" },
         element: (
           <RouteErrorBoundary route={ROUTES.ERROR_LAB}>
             <LazyErrorLabPage />
@@ -385,6 +418,7 @@ export const routes: RouteObject[] = [
         // The lab's destination. Its element decides where its own boundary
         // goes, which is the one thing a route config cannot express twice.
         path: "labs/navigation/slow",
+        handle: { title: "Slow route" },
         element: (
           <RouteErrorBoundary route={SLOW_ROUTE_PATH}>
             <LazySlowRouteLabRoute />
@@ -393,6 +427,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "*",
+        handle: { title: "Page not found" },
         element: (
           <RouteErrorBoundary route="*">
             <NotFoundPage />

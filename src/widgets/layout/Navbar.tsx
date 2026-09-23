@@ -2,6 +2,7 @@ import { TransitionLink } from "@/features/route-transition/TransitionLink";
 import { PrefetchNavLink } from "@/widgets/layout/PrefetchNavLink";
 import { cn } from "@/shared/lib/cn";
 import { useUi } from "@/shared/store/zustand";
+import { APP_NAME } from "@/shared/config/app";
 import { ROUTES } from "@/shared/routes/paths";
 
 interface NavItem {
@@ -46,7 +47,7 @@ export function Navbar() {
         >
           R
         </span>
-        <span>React TS</span>
+        <span>{APP_NAME}</span>
       </TransitionLink>
 
       <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main navigation">
