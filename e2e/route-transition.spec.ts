@@ -57,7 +57,9 @@ test.describe("held route transitions", () => {
     await startSlowNavigation(page, "hoisted");
 
     await expect(page.getByTestId("route-pending-bar")).toHaveAttribute("data-pending", "true");
-    await expect(page.getByRole("status")).toHaveText(/Loading \/labs\/navigation\/slow/);
+    await expect(page.getByTestId("route-pending-status")).toHaveText(
+      /Loading \/labs\/navigation\/slow/,
+    );
     await expect(page.getByTestId("pending-readout")).toContainText("this page is being held");
 
     await expect(page.getByRole("heading", { level: 1, name: "Slow route" })).toBeVisible({

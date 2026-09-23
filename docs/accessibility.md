@@ -14,6 +14,8 @@ the person who changed it, in the pull request where they changed it.
 - `tooling/a11y/` — the token contrast gate, in `pnpm test`
 - `pnpm test:a11y` — run the sweep locally
 - CI: the **Accessibility** job
+- `docs/focus-management.md` — skip links, focus traps and what a route change
+  announces, none of which either gate above can see
 
 ## Two gates, and why neither is redundant
 

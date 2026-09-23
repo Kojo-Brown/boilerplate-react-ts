@@ -567,6 +567,14 @@ adding it to the audit fails in the same pull request. What automated rules
 cannot judge — whether alt text is accurate, whether a focus order makes
 sense — is listed in [docs/accessibility.md](docs/accessibility.md).
 
+Focus is handled separately, because neither gate can see it. A skip link sits
+first in the tab order and sends focus to `<main id="main-content">`; every
+route change announces the page it landed on in a live region and puts focus at
+the top of it; and the sidebar traps focus while it is a drawer on a phone and
+does not while it is a landmark on a desktop. Why each of those is built the
+way it is — including when _not_ to reach for a focus trap — is in
+[docs/focus-management.md](docs/focus-management.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

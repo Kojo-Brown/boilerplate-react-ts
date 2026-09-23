@@ -1,6 +1,9 @@
 import { PrefetchNavLink } from "@/widgets/layout/PrefetchNavLink";
 import { cn } from "@/shared/lib/cn";
 import { useUi } from "@/shared/store/zustand";
+import { useFocusTrap } from "@/shared/hooks/useFocusTrap";
+import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
+import { MD_AND_UP } from "@/shared/config/breakpoints";
 import { ROUTES } from "@/shared/routes/paths";
 
 interface SidebarItem {
@@ -16,6 +19,25 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 
 export function Sidebar() {
   const { sidebarOpen, closeSidebar } = useUi();
+  /*
+   * The same breakpoint the `md:` classes below use, read in JavaScript
+   * because two of the three things it decides are not styling.
+   *
+   * Above it the sidebar is a column of the page: always visible, always
+   * reachable, no trap. Below it the same element is an overlay with a
+   * backdrop over the content — a modal dialog in everything but the tag name,
+   * and `showModal()` is not available to it because the element has to stay
+   * put on a desktop. So the drawer's modal behaviour is assembled by hand
+   * here, and only while the viewport says it is a drawer.
+   */
+  const isDesktop = useMediaQuery(MD_AND_UP);
+  const isDrawer = !isDesktop;
+  const isModal = isDrawer && sidebarOpen;
+  /*
+   * `closeSidebar` is a zustand action and therefore stable, so this does not
+   * rebuild the trap on every render of the shell.
+   */
+  const drawerRef = useFocusTrap<HTMLElement>({ active: isModal, onEscape: closeSidebar });
 
   return (
     <>
@@ -29,6 +51,32 @@ export function Sidebar() {
       )}
 
       <aside
+        ref={drawerRef}
+        /*
+          Focusable but not tabbable, so the trap has somewhere to put focus
+          when the drawer holds no enabled control.
+        */
+        tabIndex={-1}
+        /*
+          A closed drawer is off screen under `-translate-x-full`, and a
+          transform removes nothing from the tab order: without `inert` the
+          links below stay tabbable while invisible, so a phone user Tabbing
+          through the header falls into three nav links that are not on the
+          screen and cannot be scrolled to. `inert` is the attribute that says
+          "this subtree is not here", and it is scoped to the drawer case —
+          on a desktop the same markup is a visible landmark.
+        */
+        inert={isDrawer && !sidebarOpen}
+        /*
+          A landmark on a desktop, a modal dialog on a phone. The roles are
+          swapped rather than both being present because they are claims about
+          different things: `complementary` says "supporting content beside the
+          page", which stops being true the moment the thing is covering the
+          page and taking every keystroke.
+        */
+        {...(isModal
+          ? ({ role: "dialog", "aria-modal": true, "aria-label": "Navigation" } as const)
+          : {})}
         className={cn(
           // Base: fixed overlay on mobile
           "fixed inset-y-0 left-0 z-30 flex w-64 flex-col overflow-y-auto",
