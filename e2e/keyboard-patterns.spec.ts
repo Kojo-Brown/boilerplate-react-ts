@@ -68,7 +68,9 @@ test.describe("keyboard patterns", () => {
             if (active === null || active === document.body) return "body";
             return document.querySelector("dialog")?.contains(active) === true
               ? "dialog"
-              : (active.textContent ?? active.tagName);
+              : // Named rather than lumped in with the two expected landings, so
+                // a failure says what focus escaped onto.
+                `outside: ${active.tagName}`;
           }),
         );
       }
