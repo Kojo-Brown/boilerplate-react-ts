@@ -408,3 +408,146 @@ export function TypeAssertions() {
     </>
   );
 }
+
+describe("Tabs — the panel's tab stop", () => {
+  /*
+   * The panel used to be `tabIndex={0}` unconditionally, on the true
+   * observation that a panel holding nothing focusable is otherwise
+   * unreachable from the tab that activated it. It is true of that panel only:
+   * giving the stop to a panel that *does* hold focusable content puts a
+   * second, redundant stop in front of it, so Tab out of the tablist announces
+   * the whole panel and Tab again reaches the link the user was going for.
+   * APG makes the stop conditional for exactly that reason.
+   */
+
+  function PanelTabs({ withLink }: { withLink: boolean }) {
+    return (
+      <Tabs defaultValue="overview" label="Project sections">
+        <Tabs.List>
+          <Tabs.Tab value="overview">Overview</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="overview">
+          {withLink ? <a href="/somewhere">A link</a> : "Just text"}
+        </Tabs.Panel>
+      </Tabs>
+    );
+  }
+
+  it("takes a tab stop when the panel holds nothing focusable", () => {
+    render(<PanelTabs withLink={false} />);
+    expect(screen.getByRole("tabpanel")).toHaveAttribute("tabindex", "0");
+  });
+
+  it("gives the tab stop up when the panel holds something focusable", () => {
+    render(<PanelTabs withLink={true} />);
+    expect(screen.getByRole("tabpanel")).not.toHaveAttribute("tabindex");
+  });
+
+  it("re-measures when the panel's content changes", async () => {
+    const user = userEvent.setup();
+    function Growing() {
+      const [loaded, setLoaded] = useState(false);
+      return (
+        <Tabs defaultValue="overview" label="Project sections">
+          <Tabs.List>
+            <Tabs.Tab value="overview">Overview</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="overview">
+            {loaded ? (
+              <a href="/somewhere">Arrived</a>
+            ) : (
+              <button
+                type="button"
+                hidden
+                onClick={() => {
+                  setLoaded(true);
+                }}
+              >
+                hidden
+              </button>
+            )}
+          </Tabs.Panel>
+          <button
+            type="button"
+            onClick={() => {
+              setLoaded(true);
+            }}
+          >
+            Load
+          </button>
+        </Tabs>
+      );
+    }
+    render(<Growing />);
+    // A panel whose content has not arrived is reachable rather than stranded.
+    expect(screen.getByRole("tabpanel")).toHaveAttribute("tabindex", "0");
+
+    await user.click(screen.getByRole("button", { name: "Load" }));
+
+    expect(screen.getByRole("tabpanel")).not.toHaveAttribute("tabindex");
+  });
+});
+
+describe("Tabs — writing direction", () => {
+  /*
+   * "Next" in a horizontal tablist is rightwards in English and leftwards in
+   * Arabic, because the tabs are laid out that way. A fixed `ArrowRight: 1`
+   * sends an RTL user backwards through a row they are reading forwards.
+   *
+   * The direction is read with `getComputedStyle`, so an inline `dir` is what
+   * jsdom can be made to report — it implements no cascade, which is also why
+   * `resolveStep` treats an unknown direction as LTR rather than as
+   * not-RTL-so-probably-LTR.
+   */
+
+  function directionalList(direction: "ltr" | "rtl") {
+    render(
+      <div dir={direction}>
+        <BasicTabs />
+      </div>,
+    );
+    return screen.getByRole("tablist");
+  }
+
+  it("reverses the horizontal arrows under dir=rtl", async () => {
+    const user = userEvent.setup();
+    const list = directionalList("rtl");
+    // jsdom's computed `direction` does not inherit, so the value is asserted
+    // on the element the component actually reads.
+    list.setAttribute("dir", "rtl");
+    tab("Overview").focus();
+
+    await user.keyboard("{ArrowLeft}");
+
+    expect(tab("Activity")).toHaveFocus();
+
+    await user.keyboard("{ArrowRight}");
+
+    expect(tab("Overview")).toHaveFocus();
+  });
+
+  it("leaves the horizontal arrows alone under dir=ltr", async () => {
+    const user = userEvent.setup();
+    directionalList("ltr");
+    tab("Overview").focus();
+
+    await user.keyboard("{ArrowRight}");
+
+    expect(tab("Activity")).toHaveFocus();
+  });
+
+  it("does not flip the vertical arrows, which point the same way in both", async () => {
+    const user = userEvent.setup();
+    render(
+      <div dir="rtl">
+        <BasicTabs orientation="vertical" />
+      </div>,
+    );
+    screen.getByRole("tablist").setAttribute("dir", "rtl");
+    tab("Overview").focus();
+
+    await user.keyboard("{ArrowDown}");
+
+    expect(tab("Activity")).toHaveFocus();
+  });
+});

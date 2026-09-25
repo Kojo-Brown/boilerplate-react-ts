@@ -10,6 +10,7 @@ export const ROUTES = {
   STREAMING_LAB: "/labs/streaming",
   NAVIGATION_LAB: "/labs/navigation",
   HEADLESS_LAB: "/labs/headless",
+  KEYBOARD_LAB: "/labs/keyboard",
   POLYMORPHIC_LAB: "/labs/polymorphic",
   RENDER_PROPS_LAB: "/labs/render-props",
   CHECKOUT_LAB: "/labs/checkout",

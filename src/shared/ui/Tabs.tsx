@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useId,
   useRef,
   useState,
@@ -9,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/shared/lib/cn";
+import { getTabbableElements } from "@/shared/lib/focusTrap";
 
 export type TabsOrientation = "horizontal" | "vertical";
 
@@ -95,11 +97,48 @@ interface TabsContextValue<TValue extends string> {
   setFocused: (value: TValue | undefined) => void;
 }
 
-/** Arrow keys are orientation-dependent; the cross-axis pair must stay inert so the page can scroll. */
+/**
+ * Arrow keys are orientation-dependent; the cross-axis pair must stay inert so
+ * the page can scroll.
+ *
+ * The horizontal pair is also *direction*-dependent, which the vertical pair
+ * is not. "Next" in a horizontal tablist means rightwards in English and
+ * leftwards in Arabic, because the tabs themselves are laid out that way — so
+ * a fixed `ArrowRight: 1` sends an RTL user backwards through a row they are
+ * reading forwards. Vertical tabs stack downwards in every writing direction
+ * this supports, so ArrowDown is always "next". See `resolveStep`.
+ */
 const STEP_KEYS: Record<TabsOrientation, Record<string, 1 | -1 | undefined>> = {
   horizontal: { ArrowRight: 1, ArrowLeft: -1 },
   vertical: { ArrowDown: 1, ArrowUp: -1 },
 };
+
+/**
+ * The step an arrow key means for this tablist, as it is actually laid out.
+ *
+ * The direction is read from the rendered element rather than from a prop,
+ * because `dir` is inherited: a tablist inside an Arabic section is RTL
+ * without anybody passing it anything, and a prop would have to be threaded
+ * through every caller and would silently disagree with the CSS the first time
+ * someone forgot.
+ *
+ * `getComputedStyle` is the only reliable read — `element.dir` is empty unless
+ * the attribute is on that exact element, and `closest("[dir]")` misses a
+ * direction set in a stylesheet. jsdom implements no cascade and returns an
+ * empty string for `direction` on an element that has not been given one
+ * inline, which is why the check is `=== "rtl"` rather than `!== "ltr"`:
+ * anything unknown has to mean the common case.
+ */
+export function resolveStep(
+  list: HTMLElement,
+  orientation: TabsOrientation,
+  key: string,
+): 1 | -1 | undefined {
+  const step = STEP_KEYS[orientation][key];
+  if (step === undefined || orientation === "vertical") return step;
+  const direction = list.ownerDocument.defaultView?.getComputedStyle(list).direction;
+  return direction === "rtl" ? ((step * -1) as 1 | -1) : step;
+}
 
 /**
  * Builds a `<Tabs>` compound component whose slots are typed to `TValue`.
@@ -239,7 +278,7 @@ export function createTabs<TValue extends string>(): TabsComponent<TValue> {
       } else if (event.key === "End") {
         nextIndex = tabs.length - 1;
       } else {
-        const step = STEP_KEYS[orientation][event.key];
+        const step = resolveStep(list, orientation, event.key);
         if (step === undefined || activeIndex === -1) return;
         nextIndex = (activeIndex + step + tabs.length) % tabs.length;
       }
@@ -350,18 +389,55 @@ export function createTabs<TValue extends string>(): TabsComponent<TValue> {
   function TabsPanel({ value, children, className }: TabsPanelProps<TValue>): ReactNode {
     const { baseId, selected, keepMounted } = useTabsContext("Panel");
     const isSelected = selected === value;
+    const panelRef = useRef<HTMLDivElement>(null);
+    /**
+     * Whether this panel needs a tab stop of its own.
+     *
+     * It used to be `tabIndex={0}` unconditionally, with the comment that a
+     * panel holding nothing focusable is otherwise unreachable from the tab
+     * that activated it — which is true, and only true of that panel. A panel
+     * that *does* hold focusable content gets a second, redundant stop in
+     * front of it: Tab out of the tablist lands on the panel container, which
+     * announces the whole panel, and Tab again lands on the first link inside
+     * it. APG says to give the panel a tab stop only when it has no focusable
+     * descendant, for exactly that reason.
+     *
+     * Deciding it needs a measurement rather than a prop, because the answer
+     * is a property of the children and changes with them — a panel whose list
+     * of links is empty until a fetch resolves is unreachable before and
+     * doubly-stopped after. The default is `true`, so the first paint of a
+     * panel whose content has not arrived is reachable rather than stranded;
+     * the effect corrects it in the same commit the content lands in.
+     */
+    const [needsTabStop, setNeedsTabStop] = useState(true);
+
+    /*
+     * `children` is the dependency because the answer is a property of the
+     * children — and an element's identity changes on every render of whoever
+     * passed it, so in practice this re-measures constantly. That is the
+     * intent rather than a leak: a panel's focusable content appears and
+     * disappears with a fetch, a filter or a disclosure, and nothing tells a
+     * parent when. Re-running is cheap (one `querySelectorAll` over one
+     * panel), and setting the state it already holds is a bail-out in React
+     * rather than another render, so the loop the shape suggests does not
+     * happen.
+     */
+    useEffect(() => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      setNeedsTabStop(getTabbableElements(panel).length === 0);
+    }, [children, isSelected, keepMounted]);
 
     if (!isSelected && !keepMounted) return null;
 
     return (
       <div
+        ref={panelRef}
         role="tabpanel"
         id={panelId(baseId, value)}
         aria-labelledby={tabId(baseId, value)}
         hidden={!isSelected}
-        // A panel whose content holds nothing focusable is otherwise
-        // unreachable from the tab the user just activated.
-        tabIndex={0}
+        tabIndex={needsTabStop ? 0 : undefined}
         className={cn(
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]",
           className,

@@ -13,6 +13,7 @@ describe("ROUTES", () => {
     expect(ROUTES.STREAMING_LAB).toBe("/labs/streaming");
     expect(ROUTES.NAVIGATION_LAB).toBe("/labs/navigation");
     expect(ROUTES.HEADLESS_LAB).toBe("/labs/headless");
+    expect(ROUTES.KEYBOARD_LAB).toBe("/labs/keyboard");
     expect(ROUTES.RENDER_PROPS_LAB).toBe("/labs/render-props");
     expect(ROUTES.DEPENDENCY_INVERSION_LAB).toBe("/labs/dependency-inversion");
     expect(ROUTES.WORKER_LAB).toBe("/labs/workers");
@@ -35,6 +36,7 @@ describe("typedRoute", () => {
     expect(typedRoute("/labs/streaming")).toBe("/labs/streaming");
     expect(typedRoute("/labs/navigation")).toBe("/labs/navigation");
     expect(typedRoute("/labs/headless")).toBe("/labs/headless");
+    expect(typedRoute("/labs/keyboard")).toBe("/labs/keyboard");
     expect(typedRoute("/labs/render-props")).toBe("/labs/render-props");
     expect(typedRoute("/labs/dependency-inversion")).toBe("/labs/dependency-inversion");
     expect(typedRoute("/labs/workers")).toBe("/labs/workers");
