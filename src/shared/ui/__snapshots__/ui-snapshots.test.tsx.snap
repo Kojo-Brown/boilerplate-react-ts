@@ -249,7 +249,7 @@ exports[`UI system snapshots > Input > with value 1`] = `
 
 exports[`UI system snapshots > Modal > lg size 1`] = `
 <dialog
-  aria-labelledby="modal-title"
+  aria-labelledby="_r_3_-title"
   class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-lg"
   open=""
 >
@@ -261,8 +261,9 @@ exports[`UI system snapshots > Modal > lg size 1`] = `
     >
       <div>
         <h2
-          class="text-base font-semibold text-[var(--color-fg)]"
-          id="modal-title"
+          class="text-base font-semibold text-[var(--color-fg)] outline-none"
+          id="_r_3_-title"
+          tabindex="-1"
         >
           Large Modal
         </h2>
@@ -299,8 +300,8 @@ exports[`UI system snapshots > Modal > lg size 1`] = `
 
 exports[`UI system snapshots > Modal > open with description 1`] = `
 <dialog
-  aria-describedby="modal-description"
-  aria-labelledby="modal-title"
+  aria-describedby="_r_1_-description"
+  aria-labelledby="_r_1_-title"
   class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md"
   open=""
 >
@@ -312,14 +313,15 @@ exports[`UI system snapshots > Modal > open with description 1`] = `
     >
       <div>
         <h2
-          class="text-base font-semibold text-[var(--color-fg)]"
-          id="modal-title"
+          class="text-base font-semibold text-[var(--color-fg)] outline-none"
+          id="_r_1_-title"
+          tabindex="-1"
         >
           Delete Item
         </h2>
         <p
           class="mt-1 text-sm text-[var(--color-muted-fg)]"
-          id="modal-description"
+          id="_r_1_-description"
         >
           This action cannot be undone.
         </p>
@@ -356,7 +358,7 @@ exports[`UI system snapshots > Modal > open with description 1`] = `
 
 exports[`UI system snapshots > Modal > open with title and children 1`] = `
 <dialog
-  aria-labelledby="modal-title"
+  aria-labelledby="_r_0_-title"
   class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md"
   open=""
 >
@@ -368,8 +370,9 @@ exports[`UI system snapshots > Modal > open with title and children 1`] = `
     >
       <div>
         <h2
-          class="text-base font-semibold text-[var(--color-fg)]"
-          id="modal-title"
+          class="text-base font-semibold text-[var(--color-fg)] outline-none"
+          id="_r_0_-title"
+          tabindex="-1"
         >
           Confirm Action
         </h2>
@@ -406,7 +409,7 @@ exports[`UI system snapshots > Modal > open with title and children 1`] = `
 
 exports[`UI system snapshots > Modal > sm size 1`] = `
 <dialog
-  aria-labelledby="modal-title"
+  aria-labelledby="_r_2_-title"
   class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-sm"
   open=""
 >
@@ -418,8 +421,9 @@ exports[`UI system snapshots > Modal > sm size 1`] = `
     >
       <div>
         <h2
-          class="text-base font-semibold text-[var(--color-fg)]"
-          id="modal-title"
+          class="text-base font-semibold text-[var(--color-fg)] outline-none"
+          id="_r_2_-title"
+          tabindex="-1"
         >
           Small Modal
         </h2>
@@ -456,7 +460,7 @@ exports[`UI system snapshots > Modal > sm size 1`] = `
 
 exports[`UI system snapshots > Modal > xl size 1`] = `
 <dialog
-  aria-labelledby="modal-title"
+  aria-labelledby="_r_4_-title"
   class="m-auto w-full rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-0 shadow-[var(--shadow-xl)] outline-none backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-xl"
   open=""
 >
@@ -468,8 +472,9 @@ exports[`UI system snapshots > Modal > xl size 1`] = `
     >
       <div>
         <h2
-          class="text-base font-semibold text-[var(--color-fg)]"
-          id="modal-title"
+          class="text-base font-semibold text-[var(--color-fg)] outline-none"
+          id="_r_4_-title"
+          tabindex="-1"
         >
           XL Modal
         </h2>

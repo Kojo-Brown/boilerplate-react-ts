@@ -71,6 +71,10 @@ const LazyHeadlessLabPage = lazy(() =>
   routeChunks[ROUTES.HEADLESS_LAB]().then((m) => ({ default: m.HeadlessLabPage })),
 );
 
+const LazyKeyboardLabPage = lazy(() =>
+  routeChunks[ROUTES.KEYBOARD_LAB]().then((m) => ({ default: m.KeyboardLabPage })),
+);
+
 const LazyRenderPropsLabPage = lazy(() =>
   routeChunks[ROUTES.RENDER_PROPS_LAB]().then((m) => ({ default: m.RenderPropsLabPage })),
 );
@@ -303,6 +307,18 @@ export const routes: RouteObject[] = [
         element: (
           <RouteErrorBoundary route={ROUTES.HEADLESS_LAB}>
             <LazyHeadlessLabPage />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        // Reference demo for the four APG keyboard patterns. Unlinked from the
+        // nav like the others, and the one lab whose exhibit is a *comparison*
+        // — four controls that look alike and answer to different keys.
+        path: "labs/keyboard",
+        handle: { title: "Keyboard lab" },
+        element: (
+          <RouteErrorBoundary route={ROUTES.KEYBOARD_LAB}>
+            <LazyKeyboardLabPage />
           </RouteErrorBoundary>
         ),
       },

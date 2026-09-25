@@ -87,6 +87,7 @@ export const AUDIT_TARGETS: readonly AuditTarget[] = [
   { name: "streaming lab", route: "/labs/streaming", ready: "h1" },
   { name: "navigation lab", route: "/labs/navigation", ready: "h1" },
   { name: "headless lab", route: "/labs/headless", ready: "h1" },
+  { name: "keyboard lab", route: "/labs/keyboard", ready: "h1" },
   { name: "polymorphic lab", route: "/labs/polymorphic", ready: "h1" },
   { name: "render props lab", route: "/labs/render-props", ready: "h1" },
   { name: "checkout lab", route: "/labs/checkout", ready: "h1" },

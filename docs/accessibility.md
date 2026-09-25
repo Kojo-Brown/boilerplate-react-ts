@@ -16,6 +16,8 @@ the person who changed it, in the pull request where they changed it.
 - CI: the **Accessibility** job
 - `docs/focus-management.md` — skip links, focus traps and what a route change
   announces, none of which either gate above can see
+- `docs/keyboard-interactions.md` — the key maps for Modal, Menu, Combobox and
+  Tabs, and why they deliberately disagree with each other
 
 ## Two gates, and why neither is redundant
 
