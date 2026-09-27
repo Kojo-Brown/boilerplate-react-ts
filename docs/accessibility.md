@@ -77,6 +77,17 @@ The honest claim of this gate is that the machine-checkable part of AA holds on
 every route. The rest is a keyboard, a screen reader and half an hour, and it
 belongs in review rather than in CI.
 
+Live regions are worth calling out as the sharpest case of this. axe checks that
+a region is _well formed_ — the role and the `aria-live` value are valid, the
+element is where it says it is. Whether anything was ever **spoken** is invisible
+to it: a region that mounts with its text already in it, a message overwritten in
+the same tick by a second one, a `role="alert"` nested inside an
+`aria-live="polite"` container that silently wins over it — all of those pass
+every rule in the set and say nothing to a user. That is why the announcements
+are one system with its own tests rather than a `role="status"` per component;
+see [docs/live-regions.md](live-regions.md), and `/labs/live-regions` for the
+regions' contents rendered on screen.
+
 ## The token system after the audit
 
 The first run found 255 contrast violations across 21 routes, and almost all of

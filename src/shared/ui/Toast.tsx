@@ -1,8 +1,13 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/shared/lib/cn";
-
-type ToastVariant = "default" | "success" | "warning" | "danger";
+import { useAnnounce } from "@/shared/a11y/useAnnounce";
+import {
+  toastAnnouncement,
+  toastPoliteness,
+  type ToastVariant,
+} from "@/shared/ui/toastAnnouncement";
+import type { Announcer, Politeness } from "@/shared/a11y/announcer";
 
 interface ToastItem {
   id: string;
@@ -15,11 +20,25 @@ interface ToastItem {
 type ToastInput = Omit<ToastItem, "id" | "variant" | "duration"> & {
   variant?: ToastVariant | undefined;
   duration?: number | undefined;
+  /**
+   * Overrides the politeness {@link toastPoliteness} derives from the variant.
+   *
+   * There for the toast whose urgency is not its colour — a `default` toast
+   * saying a session is about to expire interrupts, a `danger` toast summarising
+   * a failure the user is already reading about does not.
+   */
+  politeness?: Politeness | undefined;
 };
 
 interface ToastContextValue {
   toast: (input: ToastInput) => void;
   dismiss: (id: string) => void;
+}
+
+export interface ToastProviderProps {
+  children: ReactNode;
+  /** Injected by tests; defaults to the application's announcer. */
+  announcer?: Announcer | undefined;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -43,22 +62,58 @@ export function useToast(): ToastContextValue {
  * The compiler memoizes the object literal along with the functions, so the
  * value is now genuinely stable. `Toast.test.tsx` asserts that.
  */
-export function ToastProvider({ children }: { children: ReactNode }) {
+export function ToastProvider({ children, announcer }: ToastProviderProps) {
   "use memo";
 
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const announce = useAnnounce(announcer);
+  /*
+   * Tracked so unmount can clear them. Each pending dismissal is a closure over
+   * `setToasts`, so an unmounted provider with four toasts in flight keeps
+   * itself and its state alive for the length of the longest duration — and
+   * then updates state nobody is rendering.
+   */
+  const dismissTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  useEffect(() => {
+    const timers = dismissTimers.current;
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
+    };
+  }, []);
 
   const dismiss = (id: string): void => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const toast = ({ variant = "default", duration = 4000, ...input }: ToastInput): void => {
+  const toast = ({
+    variant = "default",
+    duration = 4000,
+    politeness,
+    ...input
+  }: ToastInput): void => {
     const id = crypto.randomUUID();
     setToasts((prev) => [...prev, { id, variant, duration, ...input }]);
+    /*
+     * Announced here, from the event that created the toast, rather than by the
+     * card that renders it. The card is the wrong place for two reasons, and the
+     * second one is the whole reason this item exists: a card mounts *with* its
+     * text already in it, which is a new node rather than a mutation and is the
+     * one shape reliably not announced; and a card is removed after
+     * `duration` ms, taking any speech still queued behind it out of the
+     * document. Four seconds is less than a screen reader often needs to reach a
+     * message, so the announcement has to outlive the thing announcing.
+     */
+    announce(toastAnnouncement(input.title, input.description), {
+      politeness: politeness ?? toastPoliteness(variant),
+    });
     if (duration > 0) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
+        dismissTimers.current.delete(timer);
         setToasts((prev) => prev.filter((t) => t.id !== id));
       }, duration);
+      dismissTimers.current.add(timer);
     }
   };
 
@@ -66,10 +121,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ toast, dismiss }}>
       {children}
       {createPortal(
+        /*
+         * Not a live region, and that is a fix rather than an omission.
+         *
+         * This container declared `aria-live="polite"` while every card inside
+         * it declared `role="alert"` — a live region nested in a live region,
+         * where the inner one owns its subtree. The container's politeness
+         * applied to nothing, and every toast the app could raise, "Saved"
+         * included, interrupted the user. Nothing about the markup looked
+         * wrong; both attributes are the ones the documentation names.
+         *
+         * Now the announcement goes through `useAnnounce` and this is what it
+         * should have been all along: a labelled landmark a screen-reader user
+         * can navigate *to*, holding the toasts that are still on screen. That
+         * is worth more than a live region here, because it is the only way to
+         * re-read a message the reader spoke while the user was mid-sentence.
+         */
         <div
           role="region"
           aria-label="Notifications"
-          aria-live="polite"
           className="fixed right-4 bottom-4 z-[1500] flex flex-col gap-2"
         >
           {toasts.map((t) => (
@@ -150,8 +220,11 @@ interface ToastCardProps {
 
 function ToastCard({ item, onDismiss }: ToastCardProps) {
   return (
+    // No role. It was `role="alert"`, which made it the nested live region
+    // described on the container above; the announcement is the announcer's job
+    // now, and a card that claims a role no longer describes what it is.
     <div
-      role="alert"
+      data-testid="toast"
       className={cn(
         "flex w-80 items-start gap-3 rounded-[var(--radius-lg)] border p-4 shadow-[var(--shadow-lg)]",
         variantClasses[item.variant],

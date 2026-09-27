@@ -42,6 +42,7 @@ export const routeChunks = {
   [ROUTES.NAVIGATION_LAB]: () => import("@/pages/navigation-lab/NavigationLabPage"),
   [ROUTES.HEADLESS_LAB]: () => import("@/pages/headless-lab/HeadlessLabPage"),
   [ROUTES.KEYBOARD_LAB]: () => import("@/pages/keyboard-lab/KeyboardLabPage"),
+  [ROUTES.LIVE_REGIONS_LAB]: () => import("@/pages/live-regions-lab/LiveRegionsLabPage"),
   [ROUTES.POLYMORPHIC_LAB]: () => import("@/pages/polymorphic-lab/PolymorphicLabPage"),
   [ROUTES.RENDER_PROPS_LAB]: () => import("@/pages/render-props-lab/RenderPropsLabPage"),
   [ROUTES.CHECKOUT_LAB]: () => import("@/pages/checkout-lab/CheckoutLabPage"),

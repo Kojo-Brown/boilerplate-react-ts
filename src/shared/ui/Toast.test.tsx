@@ -3,8 +3,16 @@ import { render, screen, act, fireEvent, type RenderResult } from "@testing-libr
 import userEvent from "@testing-library/user-event";
 import { useState, type ReactElement } from "react";
 import { ToastProvider, useToast } from "@/shared/ui/Toast";
+import { createAnnouncerHarness, type AnnouncerHarness } from "@/test/announcer";
+import type { Politeness } from "@/shared/a11y/announcer";
 
-function ToastTrigger({ title, variant }: { title: string; variant?: "success" | "danger" }) {
+function ToastTrigger({
+  title,
+  variant,
+}: {
+  title: string;
+  variant?: "success" | "danger" | undefined;
+}) {
   const { toast } = useToast();
   return (
     <button
@@ -42,7 +50,7 @@ describe("ToastProvider / useToast", () => {
     const user = userEvent.setup();
     renderWithProvider(<ToastTrigger title="Hello World" />);
     await user.click(screen.getByRole("button", { name: "Show Toast" }));
-    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByTestId("toast")).toBeInTheDocument();
     expect(screen.getByText("Hello World")).toBeInTheDocument();
   });
 
@@ -69,9 +77,9 @@ describe("ToastProvider / useToast", () => {
     const user = userEvent.setup();
     renderWithProvider(<ToastTrigger title="Dismiss me" />);
     await user.click(screen.getByRole("button", { name: "Show Toast" }));
-    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByTestId("toast")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Dismiss notification" }));
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("toast")).not.toBeInTheDocument();
   });
 
   it("auto-dismisses after duration", () => {
@@ -95,12 +103,12 @@ describe("ToastProvider / useToast", () => {
     act(() => {
       fireEvent.click(screen.getByRole("button", { name: "Show" }));
     });
-    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByTestId("toast")).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(1001);
     });
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("toast")).not.toBeInTheDocument();
   });
 
   it("shows multiple toasts", async () => {
@@ -129,21 +137,177 @@ describe("ToastProvider / useToast", () => {
     renderWithProvider(<MultiTrigger />);
     await user.click(screen.getByRole("button", { name: "First" }));
     await user.click(screen.getByRole("button", { name: "Second" }));
-    expect(screen.getAllByRole("alert")).toHaveLength(2);
+    expect(screen.getAllByTestId("toast")).toHaveLength(2);
   });
 
   it("renders success variant", async () => {
     const user = userEvent.setup();
     renderWithProvider(<ToastTrigger title="Done" variant="success" />);
     await user.click(screen.getByRole("button", { name: "Show Toast" }));
-    expect(screen.getByRole("alert").className).toContain("bg-[var(--color-success-subtle)]");
+    expect(screen.getByTestId("toast").className).toContain("bg-[var(--color-success-subtle)]");
   });
 
   it("renders danger variant", async () => {
     const user = userEvent.setup();
     renderWithProvider(<ToastTrigger title="Error" variant="danger" />);
     await user.click(screen.getByRole("button", { name: "Show Toast" }));
-    expect(screen.getByRole("alert").className).toContain("bg-[var(--color-danger-subtle)]");
+    expect(screen.getByTestId("toast").className).toContain("bg-[var(--color-danger-subtle)]");
+  });
+
+  /*
+   * The card used to be `role="alert"` inside a container that was
+   * `aria-live="polite"` — a live region nested in a live region, where the
+   * inner one wins. So the container's politeness applied to nothing and every
+   * toast interrupted, "Saved" included. Both attributes are the ones the
+   * documentation names, which is why nothing looked wrong.
+   */
+  describe("announcements", () => {
+    function renderWithAnnouncer(ui: ReactElement, harness: AnnouncerHarness): RenderResult {
+      return render(<ToastProvider announcer={harness.announcer}>{ui}</ToastProvider>);
+    }
+
+    it("is not itself a live region, at either level", async () => {
+      const user = userEvent.setup();
+      const harness = createAnnouncerHarness();
+      renderWithAnnouncer(<ToastTrigger title="Saved" />, harness);
+      await user.click(screen.getByRole("button", { name: "Show Toast" }));
+
+      const card = screen.getByTestId("toast");
+      expect(card).not.toHaveAttribute("role");
+      expect(card).not.toHaveAttribute("aria-live");
+      // The container stays a landmark, which is the thing a live region cannot
+      // do: let a user navigate back to a message they missed.
+      const container = screen.getByRole("region", { name: "Notifications" });
+      expect(container).not.toHaveAttribute("aria-live");
+    });
+
+    it("announces the toast through the app's live regions", async () => {
+      const user = userEvent.setup();
+      const harness = createAnnouncerHarness();
+      renderWithAnnouncer(<ToastTrigger title="Saved" />, harness);
+      await user.click(screen.getByRole("button", { name: "Show Toast" }));
+
+      expect(harness.spoken).toEqual([{ politeness: "polite", text: "Saved" }]);
+    });
+
+    it("announces title and description as one message", async () => {
+      const user = userEvent.setup();
+      const harness = createAnnouncerHarness();
+      function Trigger() {
+        const { toast } = useToast();
+        return (
+          <button
+            onClick={() => {
+              toast({ title: "Upload failed", description: "The file is larger than 10 MB" });
+            }}
+          >
+            Show
+          </button>
+        );
+      }
+      renderWithAnnouncer(<Trigger />, harness);
+      await user.click(screen.getByRole("button", { name: "Show" }));
+
+      expect(harness.texts()).toEqual(["Upload failed. The file is larger than 10 MB"]);
+    });
+
+    it.each<["success" | "danger" | undefined, Politeness]>([
+      [undefined, "polite"],
+      ["success", "polite"],
+      ["danger", "assertive"],
+    ])("sends a %s toast to the %s queue", async (variant, politeness) => {
+      const user = userEvent.setup();
+      const harness = createAnnouncerHarness();
+      renderWithAnnouncer(<ToastTrigger title="Notice" variant={variant} />, harness);
+      await user.click(screen.getByRole("button", { name: "Show Toast" }));
+
+      expect(harness.spoken).toEqual([{ politeness, text: "Notice" }]);
+    });
+
+    it("lets a caller override the politeness its variant implies", async () => {
+      const user = userEvent.setup();
+      const harness = createAnnouncerHarness();
+      function Trigger() {
+        const { toast } = useToast();
+        return (
+          <button
+            onClick={() => {
+              toast({ title: "Your session expires in a minute", politeness: "assertive" });
+            }}
+          >
+            Show
+          </button>
+        );
+      }
+      renderWithAnnouncer(<Trigger />, harness);
+      await user.click(screen.getByRole("button", { name: "Show" }));
+
+      expect(harness.texts("assertive")).toEqual(["Your session expires in a minute"]);
+    });
+
+    it("keeps the announcement after the toast has auto-dismissed", () => {
+      vi.useFakeTimers();
+      const harness = createAnnouncerHarness();
+      function Trigger() {
+        const { toast } = useToast();
+        return (
+          <button
+            onClick={() => {
+              toast({ title: "First", duration: 1000 });
+              toast({ title: "Second", duration: 1000 });
+            }}
+          >
+            Show
+          </button>
+        );
+      }
+      renderWithAnnouncer(<Trigger />, harness);
+
+      act(() => {
+        fireEvent.click(screen.getByRole("button", { name: "Show" }));
+      });
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      // Both cards are gone from the document; the second message was still
+      // queued when the first card disappeared. A live region *on* the card
+      // would have been removed mid-sentence — four seconds is less than a
+      // screen reader often needs to reach a message.
+      expect(screen.queryByTestId("toast")).not.toBeInTheDocument();
+      expect(harness.texts()).toEqual(["First", "Second"]);
+    });
+
+    it("clears pending dismissals when the provider unmounts", () => {
+      vi.useFakeTimers();
+      const harness = createAnnouncerHarness();
+      function Trigger() {
+        const { toast } = useToast();
+        return (
+          <button
+            onClick={() => {
+              toast({ title: "Going", duration: 5000 });
+            }}
+          >
+            Show
+          </button>
+        );
+      }
+      const { unmount } = renderWithAnnouncer(<Trigger />, harness);
+      act(() => {
+        fireEvent.click(screen.getByRole("button", { name: "Show" }));
+      });
+      // The announcer has a timer of its own — the gap between two messages —
+      // and it is not the subject here, so it is cleared before counting.
+      harness.announcer.reset();
+      expect(vi.getTimerCount()).toBe(1);
+
+      // Each pending dismissal closes over `setToasts`, so an unmounted provider
+      // with toasts in flight kept itself alive for the longest duration and
+      // then updated state nobody was rendering.
+      unmount();
+      expect(vi.getTimerCount()).toBe(0);
+    });
   });
 
   // Before this provider opted into the React Compiler, `toast` and `dismiss`

@@ -63,6 +63,10 @@ const LazySlowRouteLabRoute = lazy(() =>
   routeChunks[SLOW_ROUTE_PATH]().then((m) => ({ default: m.SlowRouteLabRoute })),
 );
 
+const LazyLiveRegionsLabPage = lazy(() =>
+  routeChunks[ROUTES.LIVE_REGIONS_LAB]().then((m) => ({ default: m.LiveRegionsLabPage })),
+);
+
 const LazyPolymorphicLabPage = lazy(() =>
   routeChunks[ROUTES.POLYMORPHIC_LAB]().then((m) => ({ default: m.PolymorphicLabPage })),
 );
@@ -319,6 +323,18 @@ export const routes: RouteObject[] = [
         element: (
           <RouteErrorBoundary route={ROUTES.KEYBOARD_LAB}>
             <LazyKeyboardLabPage />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        // Reference demo for the app's live regions, and the one lab whose
+        // exhibit is normally invisible — four `sr-only` spans whose text
+        // changes for a fraction of a second. The page mirrors them on screen.
+        path: "labs/live-regions",
+        handle: { title: "Live regions lab" },
+        element: (
+          <RouteErrorBoundary route={ROUTES.LIVE_REGIONS_LAB}>
+            <LazyLiveRegionsLabPage />
           </RouteErrorBoundary>
         ),
       },

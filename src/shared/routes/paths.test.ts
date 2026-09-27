@@ -14,6 +14,7 @@ describe("ROUTES", () => {
     expect(ROUTES.NAVIGATION_LAB).toBe("/labs/navigation");
     expect(ROUTES.HEADLESS_LAB).toBe("/labs/headless");
     expect(ROUTES.KEYBOARD_LAB).toBe("/labs/keyboard");
+    expect(ROUTES.LIVE_REGIONS_LAB).toBe("/labs/live-regions");
     expect(ROUTES.RENDER_PROPS_LAB).toBe("/labs/render-props");
     expect(ROUTES.DEPENDENCY_INVERSION_LAB).toBe("/labs/dependency-inversion");
     expect(ROUTES.WORKER_LAB).toBe("/labs/workers");

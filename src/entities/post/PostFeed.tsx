@@ -2,7 +2,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useApiClient } from "@/shared/api/apiClientContext";
 import { cn } from "@/shared/lib/cn";
 import { Skeleton } from "@/shared/ui/Skeleton";
+import { useAsyncStatusAnnouncement } from "@/shared/a11y/useAsyncStatusAnnouncement";
 import { POST_FEED_QUERY_KEY, fetchPostFeed } from "@/entities/post/postFeed";
+
+/**
+ * What the live region says once the feed has loaded.
+ *
+ * The count, because that is the part a listening user cannot get from the
+ * skeleton disappearing. "Loaded" would tell them only that something happened.
+ */
+function loadedAnnouncement(count: number): string {
+  if (count === 0) return "No posts";
+  return count === 1 ? "1 post loaded" : `${count} posts loaded`;
+}
 
 export interface PostFeedProps {
   className?: string | undefined;
@@ -30,12 +42,38 @@ export interface PostFeedProps {
  */
 export function PostFeed({ className }: PostFeedProps) {
   const client = useApiClient();
-  const { data, error, isPending } = useQuery({
+  const { data, error, isPending, status } = useQuery({
     queryKey: POST_FEED_QUERY_KEY,
     // `signal` comes from TanStack Query and is forwarded to the client, so an
     // unmount mid-flight aborts the request instead of resolving into nothing.
     queryFn: ({ signal }) => fetchPostFeed(client, { signal }),
     retry: false,
+  });
+
+  /*
+   * The skeleton below says "loading" to anyone who can see it and nothing at
+   * all to anyone who cannot: `Skeleton` is `aria-hidden` by design, so a screen
+   * full of placeholder bars is not read out one bar at a time, and this
+   * component's loading branch is a plain `<div>` around two of them. The load
+   * and its result were both silent before this.
+   *
+   * `status` rather than `isFetching`, so a background refetch that has data to
+   * show says nothing; see `useAsyncStatusAnnouncement`. The first load is
+   * announced because the status *changes* out of `pending`, and nothing is
+   * announced on arrival with a warm cache.
+   *
+   * `error` is `null` on purpose and is not an omission: the paragraph below is
+   * `role="alert"` and announces itself when it appears. Announcing here as well
+   * would say it twice, once per region, which is the failure mode that made the
+   * nested live region in `Toast` invisible for as long as it was.
+   */
+  useAsyncStatusAnnouncement({
+    status,
+    messages: {
+      pending: "Loading posts",
+      success: data === undefined ? null : loadedAnnouncement(data.length),
+      error: null,
+    },
   });
 
   if (isPending) {

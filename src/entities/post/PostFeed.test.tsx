@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "@/test/renderWithProviders";
+import { announcer } from "@/shared/a11y/announcer";
+import { observeAnnouncements } from "@/test/announcer";
 import { ApiError, type ApiClient, type ApiRequestOptions } from "@/shared/api/apiClient";
 import { createStubApiClient } from "@/shared/api/createStubApiClient";
 import { PostFeed } from "@/entities/post/PostFeed";
@@ -73,6 +75,34 @@ describe("<PostFeed>", () => {
     await screen.findByTestId("post-feed");
     await waitFor(() => {
       expect(seen?.signal).toBeInstanceOf(AbortSignal);
+    });
+  });
+
+  describe("announcements", () => {
+    it("announces the count once the feed arrives", async () => {
+      const recorder = observeAnnouncements(announcer);
+      const apiClient = createStubApiClient({ routes: { "GET /posts": POSTS } });
+
+      renderWithProviders(<PostFeed />, { apiClient });
+      expect(await screen.findByTestId("post-feed")).toBeInTheDocument();
+
+      // The skeleton is `aria-hidden`, so without this the load is silent for
+      // anyone who cannot see it. The count rather than "loaded", because the
+      // count is the part the skeleton disappearing does not convey.
+      expect(recorder.texts()).toEqual(["2 posts loaded"]);
+      recorder.stop();
+    });
+
+    it("says nothing extra for an error the visible alert already announces", async () => {
+      const recorder = observeAnnouncements(announcer);
+      const apiClient = createStubApiClient({ routes: {} });
+
+      renderWithProviders(<PostFeed />, { apiClient });
+      expect(await screen.findByTestId("post-feed-error")).toBeInTheDocument();
+
+      // Two regions describing one failure is the user hearing it twice.
+      expect(recorder.spoken).toEqual([]);
+      recorder.stop();
     });
   });
 });

@@ -12,6 +12,8 @@ import { startSilentRefresh } from "@/features/auth/silentRefresh";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { ThemeProvider } from "@/shared/theme/ThemeContext";
 import { ErrorReporterProvider } from "@/shared/observability/ErrorReporterProvider";
+import { LiveRegions } from "@/shared/a11y/LiveRegions";
+import { ToastProvider } from "@/shared/ui/Toast";
 import { reporter } from "@/app/observability/reporter";
 import { offlineClient } from "@/shared/offline/offlineClient";
 import { getServiceWorkerContainer } from "@/shared/offline/registerServiceWorker";
@@ -129,6 +131,23 @@ void enableMocking().then(() => {
     },
   }).render(
     <StrictMode>
+      {/*
+        First in the tree, and outside every provider and the router, because
+        the four live regions it renders have to outlive everything that
+        announces through them:
+
+        - `/login` and `/auth/callback` render outside `RootLayout`, so a region
+          in the shell would not exist on the one route where an unheard error
+          costs the user the session.
+        - A live region only announces a change made while it is *already in the
+          document*. Mounted here it is in the document from the first paint and
+          never remounts, which is the only way that is true of the first
+          announcement as well as the hundredth.
+
+        Nothing re-renders to deliver a message: `announce()` writes to a store
+        and this leaf is its only subscriber. See `src/shared/a11y/announcer.ts`.
+      */}
+      <LiveRegions />
       <ThemeProvider>
         {/*
           Outside every other provider: a reporter is the one dependency the
@@ -149,7 +168,18 @@ void enableMocking().then(() => {
             */}
               <ApiClientProvider client={api}>
                 <AuthProvider>
-                  <App />
+                  {/*
+                    Wraps the router so any page can raise a toast, and above it
+                    rather than inside the shell so a toast survives the
+                    navigation that follows the action that raised it.
+
+                    Its state changing does not re-render the routes: `children`
+                    is the same element object across its own re-renders, so
+                    React bails out of that subtree.
+                  */}
+                  <ToastProvider>
+                    <App />
+                  </ToastProvider>
                 </AuthProvider>
               </ApiClientProvider>
               <ReactQueryDevtools initialIsOpen={false} />
