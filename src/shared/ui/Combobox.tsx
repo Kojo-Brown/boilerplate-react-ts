@@ -10,6 +10,7 @@ import {
 } from "react";
 import { cn } from "@/shared/lib/cn";
 import { filterOptions } from "@/shared/lib/filterOptions";
+import { useDebouncedAnnouncement } from "@/shared/a11y/useDebouncedAnnouncement";
 import type { ListboxOption } from "@/shared/hooks/useListbox";
 
 /**
@@ -49,6 +50,24 @@ import type { ListboxOption } from "@/shared/hooks/useListbox";
  *   it to "clear" unconditionally means a user dismissing a popup they did not
  *   want also loses what they typed.
  */
+
+/**
+ * What the live region says about the current suggestions.
+ *
+ * A count, not the list. The list is on screen and navigable with the arrow
+ * keys, and reading it aloud on every keystroke would bury the field the user is
+ * typing in. The count is the one thing they cannot see from where they are:
+ * whether narrowing the query helped, and whether it is now worth pressing Down
+ * at all.
+ *
+ * The query is deliberately not read back, for the empty case included. The user
+ * typed it; a region that repeats it costs them the words that would have said
+ * what happened to it.
+ */
+function suggestionsAnnouncement(count: number): string {
+  if (count === 0) return "No suggestions";
+  return count === 1 ? "1 suggestion available" : `${count} suggestions available`;
+}
 
 export interface ComboboxProps<TValue extends string> {
   options: readonly ListboxOption<TValue>[];
@@ -132,6 +151,27 @@ export function Combobox<TValue extends string>({
   // A popup with nothing in it is not something to show or to point
   // `aria-controls` at; the empty state below carries the news instead.
   const isExpanded = isOpen && matches.length > 0;
+
+  /*
+   * The count goes to the shared live regions, debounced, rather than into a
+   * `role="status"` of this component's own — which is what the previous
+   * comment here said belonged to a later item, and this is it.
+   *
+   * Debounced because the count changes on every keystroke and each change is
+   * an interruption; `useDebouncedAnnouncement` waits for the typing to stop and
+   * announces where it ended up. `null` while there is nothing open and nothing
+   * empty, so closing the popup withdraws an announcement that has not been
+   * spoken yet instead of describing a list that is no longer there.
+   *
+   * The empty state below stays exactly as it was. It is `aria-describedby` on
+   * the textbox, which is not a duplicate of this: the announcement is *news*
+   * and passes once, while the description is *state* and can be re-read by a
+   * user who arrives at the field later, or who missed it. The live region
+   * cannot do the second job and the description cannot do the first.
+   */
+  useDebouncedAnnouncement(
+    isExpanded || hasNoMatches ? suggestionsAnnouncement(matches.length) : null,
+  );
 
   useEffect(() => {
     if (resolvedActiveValue === null) return;
@@ -307,12 +347,15 @@ export function Combobox<TValue extends string>({
 
       {hasNoMatches ? (
         /*
-         * Not a live region, deliberately. `role="status"` here would be the
-         * obvious reach and it belongs to the next spec item, which is about
-         * announcing async status as a system rather than one control at a
-         * time. For now the field points at it with `aria-describedby`, so the
-         * news arrives when focus is in the box — which, in a combobox, is
-         * always.
+         * Still not a live region, now for a better reason than "later".
+         *
+         * The announcement is made by `useDebouncedAnnouncement` above, through
+         * the app's regions. This paragraph is the *description* of the field —
+         * pointed at by `aria-describedby`, re-readable at any time, and
+         * carrying the query back because a user re-reading it has lost the
+         * context that the announcement had. Making it a region as well would
+         * announce the same fact twice, once per keystroke, out of step with
+         * the debounced one.
          */
         <p id={emptyId} className="mt-1 text-sm text-[var(--color-muted-fg)]">
           No matches for “{query.trim()}”

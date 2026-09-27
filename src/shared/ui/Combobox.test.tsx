@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Combobox } from "@/shared/ui/Combobox";
+import { announcer } from "@/shared/a11y/announcer";
+import { observeAnnouncements } from "@/test/announcer";
 import type { ListboxOption } from "@/shared/hooks/useListbox";
 
 type City = "new-york" | "new-hampshire" | "newcastle" | "york" | "boston" | "berlin";
@@ -384,6 +386,128 @@ describe("<Combobox>", () => {
 
       expect(input()).toHaveValue("new h");
       expect(optionLabels()).toEqual(["New Hampshire"]);
+    });
+  });
+  /*
+   * The count is what a listening user cannot see from where they are: whether
+   * narrowing the query helped, and whether pressing Down is worth it. It goes
+   * to the app's live regions rather than to a `role="status"` this component
+   * owns — one region per control is how announcements end up competing.
+   */
+  describe("suggestion count announcements", () => {
+    const DEBOUNCE_MS = 500;
+
+    /*
+     * `fireEvent` and not `userEvent`, for the reason `Toast.test.tsx` gives:
+     * `userEvent` awaits internal delay timers of its own, which deadlocks
+     * against a fake clock. One `change` per keystroke is what the component
+     * sees either way — its `onChange` is the only thing that opens the popup or
+     * moves the filter.
+     */
+    function typeQuery(text: string): void {
+      act(() => {
+        fireEvent.change(input(), { target: { value: text } });
+      });
+    }
+
+    function pass(ms: number): void {
+      act(() => {
+        vi.advanceTimersByTime(ms);
+      });
+    }
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("announces where the count ended up, not every count on the way", () => {
+      const recorder = observeAnnouncements(announcer);
+      render(<Harness />);
+
+      // 5 matches, then 3, then 1.
+      for (const query of ["n", "ne", "new y"]) {
+        typeQuery(query);
+        pass(DEBOUNCE_MS - 1);
+      }
+
+      // Three counts and nothing said yet: each announcement would interrupt the
+      // one before it, and only the last is the answer the user was typing
+      // towards.
+      expect(recorder.spoken).toEqual([]);
+
+      pass(1);
+      expect(recorder.texts()).toEqual(["1 suggestion available"]);
+      recorder.stop();
+    });
+
+    it("does not postpone an announcement the next keystroke leaves true", () => {
+      const recorder = observeAnnouncements(announcer);
+      render(<Harness />);
+
+      // Both queries leave the same three matches, so the wait is not restarted:
+      // the count has been continuously true for the whole delay, and there is
+      // nothing to be gained by withholding a fact that is not changing.
+      typeQuery("ne");
+      pass(DEBOUNCE_MS - 1);
+      typeQuery("new");
+      pass(1);
+
+      expect(recorder.texts()).toEqual(["3 suggestions available"]);
+      recorder.stop();
+    });
+
+    it("counts plural suggestions", () => {
+      const recorder = observeAnnouncements(announcer);
+      render(<Harness />);
+
+      typeQuery("new");
+      pass(DEBOUNCE_MS);
+
+      expect(recorder.texts()).toEqual(["3 suggestions available"]);
+      recorder.stop();
+    });
+
+    it("announces the empty case, without reading the query back", () => {
+      const recorder = observeAnnouncements(announcer);
+      render(<Harness />);
+
+      typeQuery("zzz");
+      pass(DEBOUNCE_MS);
+
+      // The user typed the query; repeating it costs them the words that say what
+      // happened to it. The visible empty state carries it instead.
+      expect(recorder.texts()).toEqual(["No suggestions"]);
+      recorder.stop();
+    });
+
+    it("says nothing when the popup closes before the debounce elapses", () => {
+      const recorder = observeAnnouncements(announcer);
+      render(<Harness />);
+
+      typeQuery("new");
+      act(() => {
+        fireEvent.keyDown(input(), { key: "Escape" });
+      });
+      pass(DEBOUNCE_MS * 2);
+
+      expect(recorder.spoken).toEqual([]);
+      recorder.stop();
+    });
+
+    it("keeps the visible empty state as a description rather than a region", () => {
+      render(<Harness />);
+      typeQuery("zzz");
+
+      const empty = screen.getByText(/No matches for/);
+      // Not a live region: the announcement above is the news, and this is the
+      // state — `aria-describedby`, re-readable, and carrying the query that the
+      // announcement leaves out.
+      expect(empty).not.toHaveAttribute("role");
+      expect(empty).not.toHaveAttribute("aria-live");
+      expect(input()).toHaveAttribute("aria-describedby", empty.id);
     });
   });
 });

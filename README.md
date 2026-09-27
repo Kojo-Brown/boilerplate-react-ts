@@ -575,6 +575,20 @@ does not while it is a landmark on a desktop. Why each of those is built the
 way it is — including when _not_ to reach for a focus trap — is in
 [docs/focus-management.md](docs/focus-management.md).
 
+Announcements are separate again, and for the same reason: axe can tell you a
+live region is well formed and not whether anything was ever spoken through it.
+Toasts, a query settling and a filter's result count all announce through four
+visually hidden regions owned by one store — mounted above the router so they
+exist on every route and never remount, queued so that two messages in one tick
+are not one mutation, and paired so the same message twice is heard twice.
+`useAsyncStatusAnnouncement` covers the query case, including the half-second
+grace period that keeps a fast refetch silent. The regions that reflect a
+_condition_ rather than an event — the offline banner, the route progress bar —
+stay their own, because a queue cannot un-say a sentence and state has to be able
+to stop being true. `/labs/live-regions` renders the regions' contents on screen;
+that split, and what is still to migrate, is in
+[docs/live-regions.md](docs/live-regions.md).
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

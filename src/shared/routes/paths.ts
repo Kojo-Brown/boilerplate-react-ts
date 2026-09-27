@@ -11,6 +11,7 @@ export const ROUTES = {
   NAVIGATION_LAB: "/labs/navigation",
   HEADLESS_LAB: "/labs/headless",
   KEYBOARD_LAB: "/labs/keyboard",
+  LIVE_REGIONS_LAB: "/labs/live-regions",
   POLYMORPHIC_LAB: "/labs/polymorphic",
   RENDER_PROPS_LAB: "/labs/render-props",
   CHECKOUT_LAB: "/labs/checkout",
