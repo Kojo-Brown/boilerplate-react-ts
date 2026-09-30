@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, Link, Outlet, RouterProvider } from "react-router";
 import { RouteAnnouncer } from "@/features/route-announcement/RouteAnnouncer";
 import { MAIN_CONTENT_ID } from "@/shared/ui/SkipLink";
+import { TestI18nProvider } from "@/test/intl";
 import { APP_NAME } from "@/shared/config/app";
 
 /**
@@ -31,15 +32,19 @@ function renderApp(initialEntries = ["/"]) {
         path: "/",
         element: <Shell />,
         children: [
-          { index: true, handle: { title: "Home" }, element: <h1>Home</h1> },
-          { path: "about", handle: { title: "About" }, element: <h1>About</h1> },
+          { index: true, handle: { titleId: "route.home.title" }, element: <h1>Home</h1> },
+          { path: "about", handle: { titleId: "route.about.title" }, element: <h1>About</h1> },
           { path: "untitled", element: <h1>Untitled</h1> },
         ],
       },
     ],
     { initialEntries },
   );
-  return render(<RouterProvider router={router} />);
+  return render(
+    <TestI18nProvider>
+      <RouterProvider router={router} />
+    </TestI18nProvider>,
+  );
 }
 
 const announcer = () => screen.getByTestId("route-announcer");
@@ -112,14 +117,18 @@ describe("RouteAnnouncer", () => {
           path: "/",
           element: <Shell />,
           children: [
-            { index: true, handle: { title: "Home" }, element: <h1>Home</h1> },
-            { path: "about", handle: { title: "About" }, element: <h1>About</h1> },
+            { index: true, handle: { titleId: "route.home.title" }, element: <h1>Home</h1> },
+            { path: "about", handle: { titleId: "route.about.title" }, element: <h1>About</h1> },
           ],
         },
       ],
       { initialEntries: ["/"] },
     );
-    render(<RouterProvider router={router} />);
+    render(
+      <TestI18nProvider>
+        <RouterProvider router={router} />
+      </TestI18nProvider>,
+    );
 
     await user.click(screen.getByRole("link", { name: "to about" }));
     expect(announcer()).toHaveTextContent("About, page loaded");
@@ -138,14 +147,18 @@ describe("RouteAnnouncer", () => {
           path: "/",
           element: <Shell />,
           children: [
-            { index: true, handle: { title: "Home" }, element: <h1>Home</h1> },
+            { index: true, handle: { titleId: "route.home.title" }, element: <h1>Home</h1> },
             { path: "about", element: <h1>Untitled</h1> },
           ],
         },
       ],
       { initialEntries: ["/"] },
     );
-    render(<RouterProvider router={router} />);
+    render(
+      <TestI18nProvider>
+        <RouterProvider router={router} />
+      </TestI18nProvider>,
+    );
 
     await user.click(screen.getByRole("link", { name: "to about" }));
     expect(announcer()).toHaveTextContent("");
@@ -216,14 +229,18 @@ describe("RouteAnnouncer", () => {
             </div>
           ),
           children: [
-            { index: true, handle: { title: "Home" }, element: <h1>Home</h1> },
-            { path: "about", handle: { title: "About" }, element: <h1>About</h1> },
+            { index: true, handle: { titleId: "route.home.title" }, element: <h1>Home</h1> },
+            { path: "about", handle: { titleId: "route.about.title" }, element: <h1>About</h1> },
           ],
         },
       ],
       { initialEntries: ["/"] },
     );
-    render(<RouterProvider router={router} />);
+    render(
+      <TestI18nProvider>
+        <RouterProvider router={router} />
+      </TestI18nProvider>,
+    );
 
     await user.click(screen.getByRole("link", { name: "to about" }));
     // Still announced — the announcement does not depend on the focus target.

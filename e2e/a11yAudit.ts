@@ -106,6 +106,7 @@ export const AUDIT_TARGETS: readonly AuditTarget[] = [
   { name: "prefetch lab", route: "/labs/prefetch", ready: "h1" },
   { name: "image lab", route: "/labs/images", ready: "h1" },
   { name: "error lab", route: "/labs/errors", ready: "h1" },
+  { name: "i18n lab", route: "/labs/i18n", ready: "h1" },
 ];
 
 /**

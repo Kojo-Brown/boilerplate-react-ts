@@ -106,7 +106,7 @@ export function OfflineStatus({
         <button
           type="button"
           onClick={onApplyUpdate}
-          className="ml-auto rounded-sm border border-[var(--color-border-strong)] px-2 py-1 font-medium underline-offset-2 hover:underline"
+          className="ms-auto rounded-sm border border-[var(--color-border-strong)] px-2 py-1 font-medium underline-offset-2 hover:underline"
         >
           A new version is ready — reload
         </button>

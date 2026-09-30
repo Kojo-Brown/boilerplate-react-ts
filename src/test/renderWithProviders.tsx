@@ -7,6 +7,8 @@ import { authSlice } from "@/entities/session/authSlice";
 import { baseApi } from "@/shared/api/baseApi";
 import { ApiClientProvider } from "@/shared/api/ApiClientProvider";
 import { createStubApiClient } from "@/shared/api/createStubApiClient";
+import { TestI18nProvider } from "@/test/intl";
+import { DEFAULT_LOCALE, type LocaleTag } from "@/shared/i18n/locales";
 import type { ApiClient } from "@/shared/api/apiClient";
 
 export function makeStore() {
@@ -32,6 +34,15 @@ interface RenderWithProvidersOptions extends Omit<RenderOptions, "wrapper"> {
    * keeps the handle, which is also how it asserts on the calls that were made.
    */
   apiClient?: ApiClient;
+  /**
+   * The locale the tree renders in. Defaults to `en-GB`.
+   *
+   * Present on the general-purpose harness rather than only on `renderWithIntl`
+   * because any component may reach for a message, and a test that has to know
+   * whether the one it is rendering happens to do so is a test that breaks when
+   * an unrelated string is translated.
+   */
+  locale?: LocaleTag;
 }
 
 export function renderWithProviders(
@@ -39,6 +50,7 @@ export function renderWithProviders(
   {
     store = makeStore(),
     apiClient = createStubApiClient(),
+    locale = DEFAULT_LOCALE,
     ...options
   }: RenderWithProvidersOptions = {},
 ) {
@@ -48,11 +60,13 @@ export function renderWithProviders(
 
   function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <Provider store={store}>
-        <QueryClientProvider client={testQueryClient}>
-          <ApiClientProvider client={apiClient}>{children}</ApiClientProvider>
-        </QueryClientProvider>
-      </Provider>
+      <TestI18nProvider locale={locale}>
+        <Provider store={store}>
+          <QueryClientProvider client={testQueryClient}>
+            <ApiClientProvider client={apiClient}>{children}</ApiClientProvider>
+          </QueryClientProvider>
+        </Provider>
+      </TestI18nProvider>
     );
   }
 

@@ -1,3 +1,4 @@
+import { useIntl } from "react-intl";
 import { PrefetchNavLink } from "@/widgets/layout/PrefetchNavLink";
 import { cn } from "@/shared/lib/cn";
 import { useUi } from "@/shared/store/zustand";
@@ -5,20 +6,23 @@ import { useFocusTrap } from "@/shared/hooks/useFocusTrap";
 import { useMediaQuery } from "@/shared/hooks/useMediaQuery";
 import { MD_AND_UP } from "@/shared/config/breakpoints";
 import { ROUTES } from "@/shared/routes/paths";
+import type { MessageId } from "@/shared/i18n/messages";
 
 interface SidebarItem {
-  label: string;
+  /** The message id for the link text. See the note in `Navbar.tsx`. */
+  labelId: MessageId;
   to: string;
 }
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { label: "Home", to: ROUTES.HOME },
-  { label: "Dashboard", to: ROUTES.DASHBOARD },
-  { label: "About", to: ROUTES.ABOUT },
+  { labelId: "nav.home", to: ROUTES.HOME },
+  { labelId: "nav.dashboard", to: ROUTES.DASHBOARD },
+  { labelId: "nav.about", to: ROUTES.ABOUT },
 ];
 
 export function Sidebar() {
   const { sidebarOpen, closeSidebar } = useUi();
+  const intl = useIntl();
   /*
    * The same breakpoint the `md:` classes below use, read in JavaScript
    * because two of the three things it decides are not styling.
@@ -58,7 +62,7 @@ export function Sidebar() {
         */
         tabIndex={-1}
         /*
-          A closed drawer is off screen under `-translate-x-full`, and a
+          A closed drawer is off screen under the translate below, and a
           transform removes nothing from the tab order: without `inert` the
           links below stay tabbable while invisible, so a phone user Tabbing
           through the header falls into three nav links that are not on the
@@ -75,22 +79,44 @@ export function Sidebar() {
           page and taking every keystroke.
         */
         {...(isModal
-          ? ({ role: "dialog", "aria-modal": true, "aria-label": "Navigation" } as const)
+          ? ({
+              role: "dialog",
+              "aria-modal": true,
+              "aria-label": intl.formatMessage({ id: "nav.drawer" }),
+            } as const)
           : {})}
         className={cn(
-          // Base: fixed overlay on mobile
-          "fixed inset-y-0 left-0 z-30 flex w-64 flex-col overflow-y-auto",
-          "border-r bg-[var(--color-bg)] pt-14 pb-6",
+          // Base: fixed overlay on mobile. `start-0` and `border-e` rather than
+          // `left-0` and `border-r`: the drawer is anchored to the inline-start
+          // edge, which is the right-hand side of a right-to-left document, and
+          // its divider is on the edge facing the content either way.
+          "fixed inset-y-0 start-0 z-30 flex w-64 flex-col overflow-y-auto",
+          "border-e bg-[var(--color-bg)] pt-14 pb-6",
           "transition-transform duration-200 ease-in-out",
           // Desktop: normal flow (overrides fixed positioning)
           "md:static md:inset-auto md:z-auto md:w-64 md:translate-x-0 md:pt-6",
-          // Mobile: slide in/out based on Zustand state
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          /*
+            Mobile: slide in and out, and this is the one place in the app where
+            a physical direction has to be named twice.
+
+            `translate` has no logical form — there is no `translate-inline-start`
+            — so "off screen towards the edge it is anchored to" is a negative X
+            in a left-to-right document and a positive X in a mirrored one. A
+            bare `-translate-x-full` hides the drawer correctly in English and
+            slides it *across the page* in Arabic, arriving off the far edge
+            having travelled over the content. The `ltr:`/`rtl:` pair is what
+            `tooling/eslint/logicalProperties.ts` insists on here rather than
+            accepting a single transform that is right half the time.
+          */
+          sidebarOpen ? "translate-x-0" : "ltr:-translate-x-full rtl:translate-x-full",
         )}
       >
         {/* The label belongs on the <nav> landmark, not the <aside>: it is the
             navigation region that assistive tech announces and queries by name. */}
-        <nav className="flex flex-col gap-1 px-3" aria-label="Sidebar navigation">
+        <nav
+          className="flex flex-col gap-1 px-3"
+          aria-label={intl.formatMessage({ id: "nav.sidebar" })}
+        >
           {SIDEBAR_ITEMS.map((item) => (
             <PrefetchNavLink
               key={item.to}
@@ -107,7 +133,7 @@ export function Sidebar() {
                 )
               }
             >
-              {item.label}
+              {intl.formatMessage({ id: item.labelId })}
             </PrefetchNavLink>
           ))}
         </nav>

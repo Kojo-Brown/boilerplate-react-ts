@@ -140,7 +140,7 @@ export function ToastProvider({ children, announcer }: ToastProviderProps) {
         <div
           role="region"
           aria-label="Notifications"
-          className="fixed right-4 bottom-4 z-[1500] flex flex-col gap-2"
+          className="fixed end-4 bottom-4 z-[1500] flex flex-col gap-2"
         >
           {toasts.map((t) => (
             <ToastCard key={t.id} item={t} onDismiss={dismiss} />

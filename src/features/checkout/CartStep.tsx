@@ -60,7 +60,7 @@ export function CartStep({ cart, message, onQuantityChange, onRemove, onNext }: 
                   className="h-9 w-16 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-2 text-[var(--color-fg)]"
                 />
               </label>
-              <span className="w-20 text-right font-mono text-sm">
+              <span className="w-20 text-end font-mono text-sm">
                 {formatMoney(item.unitPriceMinor * item.quantity)}
               </span>
               <Button

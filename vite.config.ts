@@ -52,6 +52,34 @@ export default defineConfig(({ mode }) => ({
           router: ["react-router"],
           query: ["@tanstack/react-query"],
           redux: ["@reduxjs/toolkit", "react-redux"],
+          /*
+            Split for cacheability, not to move a number.
+
+            `react-intl` and the three `@formatjs` packages under it are the
+            i18n *runtime* — the ICU parser and the formatter wrappers — and they
+            are in the initial graph because `<IntlProvider>` wraps the
+            application. They change on their own release cadence rather than
+            with this codebase, so a separate chunk means an app deploy does not
+            invalidate 17kB of stable library in every returning reader's cache,
+            the same reason `router` and `redux` are split.
+
+            It buys nothing on first load and `initial.js` is budgeted to say so:
+            per-chunk ceilings can always be met by splitting a chunk in two, so
+            the sum is what the gate actually holds. See `docs/bundle-budget.md`.
+
+            The message catalogues are *not* here. `en-GB` is linked statically
+            because it is the fallback and a fallback that has to be fetched is
+            not one; every other locale is an `import()` and gets its own chunk
+            on demand.
+
+            `react-intl` alone, not its `@formatjs` dependencies: an object-form
+            `manualChunks` entry names *entry modules*, which have to resolve
+            from the project root, and under pnpm a transitive package does not.
+            Naming the one direct dependency is enough — Rollup follows its
+            static imports into the same chunk, which is where `@formatjs/intl`,
+            `intl-messageformat` and the ICU parser land.
+          */
+          intl: ["react-intl"],
         },
       },
     },

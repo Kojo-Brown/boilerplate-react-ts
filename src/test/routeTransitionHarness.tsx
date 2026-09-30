@@ -4,6 +4,8 @@ import { RouteTransitionProvider } from "@/features/route-transition/routeTransi
 import { RoutePrefetchProvider } from "@/features/route-prefetch/routePrefetch";
 import type { ChunkRegistry, IdleScheduler } from "@/shared/lib/idlePrefetchQueue";
 import { createManualIdleScheduler } from "@/test/prefetch";
+import { TestI18nProvider } from "@/test/intl";
+import { DEFAULT_LOCALE, type LocaleTag } from "@/shared/i18n/locales";
 
 const NO_CHUNKS: ChunkRegistry = {};
 
@@ -22,10 +24,19 @@ export interface RouteTransitionHarnessProps {
    * jsdom and fire mid-assertion.
    */
   prefetchScheduler?: IdleScheduler;
+  /**
+   * The locale the subtree renders in. Defaults to `en-GB`.
+   *
+   * The i18n provider is one of the contexts a navigation-aware component needs
+   * now that the nav labels, the sidebar landmark and the skip link come from a
+   * catalogue: `useIntl()` throws without it, exactly as the two providers below
+   * do. Passing `"ar-EG"` is how a layout test asserts that the shell mirrors.
+   */
+  locale?: LocaleTag;
 }
 
 /**
- * The three contexts every navigation-aware link needs.
+ * The contexts every navigation-aware link needs.
  *
  * `<RouteTransitionProvider>` and `<RoutePrefetchProvider>` both throw rather
  * than defaulting when absent, so a component that navigates or prefetches
@@ -38,6 +49,7 @@ export function RouteTransitionHarness({
   initialEntries = ["/"],
   prefetchRegistry = NO_CHUNKS,
   prefetchScheduler,
+  locale = DEFAULT_LOCALE,
 }: RouteTransitionHarnessProps) {
   // Held in state rather than created inline: a fresh scheduler identity on
   // every render would rebuild the queue and throw away its state each time.
@@ -45,12 +57,14 @@ export function RouteTransitionHarness({
   const scheduler = prefetchScheduler ?? fallbackScheduler;
 
   return (
-    <MemoryRouter initialEntries={initialEntries}>
-      <RouteTransitionProvider>
-        <RoutePrefetchProvider registry={prefetchRegistry} scheduler={scheduler}>
-          {children}
-        </RoutePrefetchProvider>
-      </RouteTransitionProvider>
-    </MemoryRouter>
+    <TestI18nProvider locale={locale}>
+      <MemoryRouter initialEntries={initialEntries}>
+        <RouteTransitionProvider>
+          <RoutePrefetchProvider registry={prefetchRegistry} scheduler={scheduler}>
+            {children}
+          </RoutePrefetchProvider>
+        </RouteTransitionProvider>
+      </MemoryRouter>
+    </TestI18nProvider>
   );
 }

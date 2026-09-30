@@ -179,7 +179,7 @@ export function VirtualInfiniteList<TItem>({
               role="listitem"
               data-index={virtualRow.index}
               ref={virtualizer.measureElement}
-              className="absolute top-0 left-0 w-full"
+              className="absolute start-0 top-0 w-full"
               style={{ transform: `translateY(${virtualRow.start}px)` }}
             >
               {renderItem(item, virtualRow.index)}

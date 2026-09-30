@@ -386,7 +386,7 @@ export function Menu({
                   handleItemClick(item);
                 }}
                 className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-left text-sm text-[var(--color-fg)]",
+                  "flex cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] px-3 py-2 text-start text-sm text-[var(--color-fg)]",
                   "focus:bg-[var(--color-muted)] focus:outline-none",
                   disabled && "cursor-not-allowed text-[var(--color-muted-fg)]",
                 )}

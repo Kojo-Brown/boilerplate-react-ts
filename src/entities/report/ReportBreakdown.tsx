@@ -37,14 +37,14 @@ export function ReportBreakdown({ cache, className }: ReportBreakdownProps) {
       </h3>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-[var(--color-muted-fg)]">
+          <tr className="text-start text-[var(--color-muted-fg)]">
             <th scope="col" className="pb-2 font-medium">
               Channel
             </th>
-            <th scope="col" className="pb-2 text-right font-medium">
+            <th scope="col" className="pb-2 text-end font-medium">
               Orders
             </th>
-            <th scope="col" className="pb-2 text-right font-medium">
+            <th scope="col" className="pb-2 text-end font-medium">
               Revenue
             </th>
           </tr>
@@ -52,21 +52,21 @@ export function ReportBreakdown({ cache, className }: ReportBreakdownProps) {
         <tbody>
           {rows.map((row) => (
             <tr key={row.channel} className="border-t border-[var(--color-border)]">
-              <th scope="row" className="py-2 text-left font-normal">
+              <th scope="row" className="py-2 text-start font-normal">
                 {row.channel}
               </th>
-              <td className="py-2 text-right tabular-nums">{row.orders.toLocaleString("en-GB")}</td>
-              <td className="py-2 text-right tabular-nums">{formatCurrency(row.revenue)}</td>
+              <td className="py-2 text-end tabular-nums">{row.orders.toLocaleString("en-GB")}</td>
+              <td className="py-2 text-end tabular-nums">{formatCurrency(row.revenue)}</td>
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr className="border-t border-[var(--color-border)] font-semibold">
-            <th scope="row" className="py-2 text-left">
+            <th scope="row" className="py-2 text-start">
               Total
             </th>
             <td />
-            <td data-testid="breakdown-total" className="py-2 text-right tabular-nums">
+            <td data-testid="breakdown-total" className="py-2 text-end tabular-nums">
               {formatCurrency(total)}
             </td>
           </tr>
