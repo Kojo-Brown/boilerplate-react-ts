@@ -62,14 +62,14 @@ export function UnsentWritesNotice({ unsent, onDismiss, className }: UnsentWrite
         <button
           type="button"
           onClick={onDismiss}
-          className="ml-auto rounded-sm border border-[var(--color-danger)] px-2 py-1 font-medium underline-offset-2 hover:underline"
+          className="ms-auto rounded-sm border border-[var(--color-danger)] px-2 py-1 font-medium underline-offset-2 hover:underline"
         >
           Dismiss
         </button>
       </div>
 
       {unsent.writes.length > 0 && (
-        <ul className="mt-1 list-disc space-y-0.5 pl-5">
+        <ul className="mt-1 list-disc space-y-0.5 ps-5">
           {unsent.writes.map((write, index) => (
             // The index is part of the key because the queue can legitimately
             // hold two identical requests — a user who pressed Save twice —

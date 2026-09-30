@@ -17,7 +17,7 @@ export function FormField({ label, error, hint, required, children, className }:
         <span className="text-sm leading-none font-medium text-[var(--color-fg)]">
           {label}
           {required && (
-            <span className="ml-0.5 text-[var(--color-danger-strong)]" aria-hidden="true">
+            <span className="ms-0.5 text-[var(--color-danger-strong)]" aria-hidden="true">
               *
             </span>
           )}

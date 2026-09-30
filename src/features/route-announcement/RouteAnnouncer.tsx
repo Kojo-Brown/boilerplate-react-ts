@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useMatches } from "react-router";
+import { useIntl } from "react-intl";
 import { MAIN_CONTENT_ID } from "@/shared/ui/SkipLink";
 import {
   documentTitle,
   routeAnnouncement,
-  routeTitleFromMatches,
+  routeTitleIdFromMatches,
 } from "@/features/route-announcement/routeTitle";
 
 export interface RouteAnnouncerProps {
@@ -79,19 +80,33 @@ const SILENT: Announcement = { slot: 0, text: "" };
  * gets is therefore "main", then the page name — which is the right way round,
  * and why the regions are `polite`: an assertive one would interrupt the focus
  * announcement rather than queue behind it.
+ *
+ * ## Why the title effect depends on `intl` and the announcement effect does not
+ *
+ * Changing language has to retitle the tab: the document title is the one piece
+ * of the page a reader keeps seeing after they switch away from it, and leaving
+ * it in the previous language is the sort of thing that survives a whole
+ * release. So the title effect reruns whenever `intl` changes.
+ *
+ * The announcement must *not*. A language switch is not a navigation, and
+ * saying "Dashboard, page loaded" on top of the switcher's own "Language
+ * changed to العربية" describes an event that did not happen. `I18nProvider`
+ * announces the switch; this component announces arrivals, and the key is what
+ * tells them apart.
  */
 export function RouteAnnouncer({ focusTargetId = MAIN_CONTENT_ID }: RouteAnnouncerProps = {}) {
   const location = useLocation();
   const matches = useMatches();
-  const title = routeTitleFromMatches(matches);
+  const intl = useIntl();
+  const titleId = routeTitleIdFromMatches(matches);
   const routeKey = location.key;
 
   const [announcement, setAnnouncement] = useState<Announcement>(SILENT);
   const seenKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    document.title = documentTitle(title);
-  }, [title]);
+    document.title = documentTitle(intl, titleId);
+  }, [intl, titleId]);
 
   useEffect(() => {
     const previousKey = seenKeyRef.current;
@@ -108,11 +123,12 @@ export function RouteAnnouncer({ focusTargetId = MAIN_CONTENT_ID }: RouteAnnounc
      */
     document.getElementById(focusTargetId)?.focus({ preventScroll: true });
 
-    const text = routeAnnouncement(title);
+    const text = routeAnnouncement(intl, titleId);
     setAnnouncement((previous) => ({ slot: previous.slot === 0 ? 1 : 0, text }));
-    // `title` is read rather than depended on: it is derived from the same
-    // location as the key, so a change to it without a new key is a route
-    // renaming itself mid-session, which is not a navigation to announce.
+    // `titleId` and `intl` are read rather than depended on. The id is derived
+    // from the same location as the key, so a change to it without a new key is
+    // a route renaming itself mid-session; `intl` changes when the language
+    // does, which is not an arrival either. See the note above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeKey, focusTargetId]);
 

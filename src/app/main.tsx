@@ -11,6 +11,8 @@ import { ApiClientProvider } from "@/shared/api/ApiClientProvider";
 import { startSilentRefresh } from "@/features/auth/silentRefresh";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { ThemeProvider } from "@/shared/theme/ThemeContext";
+import { I18nProvider } from "@/shared/i18n/I18nProvider";
+import { resolveI18n } from "@/shared/i18n/bootstrap";
 import { ErrorReporterProvider } from "@/shared/observability/ErrorReporterProvider";
 import { LiveRegions } from "@/shared/a11y/LiveRegions";
 import { ToastProvider } from "@/shared/ui/Toast";
@@ -94,7 +96,33 @@ enableOfflineSupport();
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
 
-void enableMocking().then(() => {
+/*
+  Both resolved before the first render, and the i18n half is the one that has
+  to be.
+
+  `resolveI18n()` negotiates the locale and fetches its catalogue, and the
+  application cannot usefully render until it has: the alternative is one commit
+  in the default locale, which for a right-to-left reader is the entire layout
+  drawn mirrored and then re-drawn. One `import()` on the critical path buys a
+  first paint that is correct in both language and direction — and for the
+  default locale there is no import at all, because its catalogue is statically
+  linked (see `messages/index.ts`).
+
+  Run concurrently with `enableMocking()` rather than after it. They share
+  nothing, both are network-bound in development, and sequencing them would add
+  the worker registration to the critical path of the locale fetch for no reason.
+*/
+void Promise.all([
+  enableMocking(),
+  resolveI18n({
+    onError: (error) => {
+      reporter.captureException(error, {
+        level: "warning",
+        mechanism: { type: "i18n.bootstrap", handled: true },
+      });
+    },
+  }),
+]).then(([, i18n]) => {
   createRoot(root, {
     /*
       Only the uncaught handler reports, and the omission of `onCaughtError` is
@@ -148,16 +176,37 @@ void enableMocking().then(() => {
         and this leaf is its only subscriber. See `src/shared/a11y/announcer.ts`.
       */}
       <LiveRegions />
-      <ThemeProvider>
-        {/*
+      {/*
+        Above `ThemeProvider` and outside everything else, because `<html dir>`
+        is one of the two things it sets and a mirrored layout has to be true of
+        the first paint rather than of the first effect below it. It is also
+        above the router: a route announcement and a document title are both
+        translated strings, so the announcer has to be able to read an intl.
+
+        Below `<LiveRegions />`, though, and deliberately: switching language
+        announces itself, and an announcement needs a region that was already in
+        the document when the switch happened.
+      */}
+      <I18nProvider
+        initialLocale={i18n.locale}
+        initialMessages={i18n.messages}
+        onError={(error) => {
+          reporter.captureException(error, {
+            level: "warning",
+            mechanism: { type: "i18n.format", handled: true },
+          });
+        }}
+      >
+        <ThemeProvider>
+          {/*
           Outside every other provider: a reporter is the one dependency the
           error path needs, and an error thrown while the store or the query
           client is being set up must still reach it.
         */}
-        <ErrorReporterProvider reporter={reporter}>
-          <Provider store={store}>
-            <QueryClientProvider client={queryClient}>
-              {/*
+          <ErrorReporterProvider reporter={reporter}>
+            <Provider store={store}>
+              <QueryClientProvider client={queryClient}>
+                {/*
               The composition root's half of the dependency inversion: the one
               module that knows the concrete client publishes it, and every
               consumer below reads it from context. Inside the store provider
@@ -166,9 +215,9 @@ void enableMocking().then(() => {
               singleton directly, not through context) but keeping it here says
               which one depends on which.
             */}
-              <ApiClientProvider client={api}>
-                <AuthProvider>
-                  {/*
+                <ApiClientProvider client={api}>
+                  <AuthProvider>
+                    {/*
                     Wraps the router so any page can raise a toast, and above it
                     rather than inside the shell so a toast survives the
                     navigation that follows the action that raised it.
@@ -177,16 +226,17 @@ void enableMocking().then(() => {
                     is the same element object across its own re-renders, so
                     React bails out of that subtree.
                   */}
-                  <ToastProvider>
-                    <App />
-                  </ToastProvider>
-                </AuthProvider>
-              </ApiClientProvider>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </QueryClientProvider>
-          </Provider>
-        </ErrorReporterProvider>
-      </ThemeProvider>
+                    <ToastProvider>
+                      <App />
+                    </ToastProvider>
+                  </AuthProvider>
+                </ApiClientProvider>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </QueryClientProvider>
+            </Provider>
+          </ErrorReporterProvider>
+        </ThemeProvider>
+      </I18nProvider>
     </StrictMode>,
   );
 });

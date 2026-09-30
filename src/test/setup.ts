@@ -4,6 +4,7 @@ import { server } from "@/shared/mocks/server";
 import { announcer } from "@/shared/a11y/announcer";
 import { installStorageFallback } from "@/test/localStorage";
 import { installMatchMediaFallback } from "@/test/matchMedia";
+import { resetDocumentDirection } from "@/test/intl";
 
 installStorageFallback();
 installMatchMediaFallback();
@@ -21,6 +22,9 @@ afterEach(() => {
    * the suite runs in a particular order.
    */
   announcer.reset();
+  // `<html lang>` and `<html dir>` are written by `I18nProvider` and jsdom keeps
+  // one document per file; see `resetDocumentDirection`.
+  resetDocumentDirection();
 });
 afterAll(() => {
   server.close();

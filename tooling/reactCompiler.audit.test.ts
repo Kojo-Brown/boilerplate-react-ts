@@ -49,6 +49,7 @@ const SRC = join(REPO_ROOT, "src");
  */
 const OPTED_IN: readonly { file: string; functions: readonly string[] }[] = [
   { file: "shared/hooks/useFilteredSortedItems.ts", functions: ["useFilteredSortedItems"] },
+  { file: "shared/i18n/I18nProvider.tsx", functions: ["I18nProvider"] },
   { file: "shared/theme/ThemeContext.tsx", functions: ["ThemeProvider"] },
   { file: "shared/ui/Toast.tsx", functions: ["ToastProvider"] },
 ];

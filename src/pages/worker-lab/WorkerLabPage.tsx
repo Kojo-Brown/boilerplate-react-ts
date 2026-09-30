@@ -358,17 +358,17 @@ function ResultPanel({ result, elapsedMs }: ResultPanelProps) {
         {elapsedMs === null ? null : ` · ${elapsedMs.toFixed(0)} ms`}
       </p>
 
-      <table className="w-full max-w-2xl text-left text-sm">
+      <table className="w-full max-w-2xl text-start text-sm">
         <caption className="sr-only">Totals by category</caption>
         <thead>
           <tr className="border-b border-[var(--color-border)]">
             <th scope="col" className="py-1">
               Category
             </th>
-            <th scope="col" className="py-1 text-right">
+            <th scope="col" className="py-1 text-end">
               Rows
             </th>
-            <th scope="col" className="py-1 text-right">
+            <th scope="col" className="py-1 text-end">
               Total
             </th>
           </tr>
@@ -377,8 +377,8 @@ function ResultPanel({ result, elapsedMs }: ResultPanelProps) {
           {result.categories.map((category) => (
             <tr key={category.category} className="border-b border-[var(--color-border)]">
               <td className="py-1">{category.category}</td>
-              <td className="py-1 text-right tabular-nums">{category.count.toLocaleString()}</td>
-              <td className="py-1 text-right tabular-nums">{formatMinor(category.totalMinor)}</td>
+              <td className="py-1 text-end tabular-nums">{category.count.toLocaleString()}</td>
+              <td className="py-1 text-end tabular-nums">{formatMinor(category.totalMinor)}</td>
             </tr>
           ))}
         </tbody>

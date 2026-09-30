@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 import { Outlet, ScrollRestoration } from "react-router";
+import { useIntl } from "react-intl";
 import { Navbar } from "@/widgets/layout/Navbar";
 import { Sidebar } from "@/widgets/layout/Sidebar";
 import { RoutePendingBar } from "@/features/route-transition/RoutePendingBar";
@@ -37,6 +38,8 @@ export interface RootLayoutProps {
 }
 
 export function RootLayout({ fallback, prefetchRegistry }: RootLayoutProps) {
+  const intl = useIntl();
+
   return (
     <RouteTransitionProvider>
       {/*
@@ -59,7 +62,9 @@ export function RootLayout({ fallback, prefetchRegistry }: RootLayoutProps) {
             link to them would skip nothing, and on a phone the header nav is
             `display: none`, which makes it a link to a place focus cannot go.
           */}
-          <SkipLink targetId={MAIN_CONTENT_ID}>Skip to main content</SkipLink>
+          <SkipLink targetId={MAIN_CONTENT_ID}>
+            {intl.formatMessage({ id: "skipLink.mainContent" })}
+          </SkipLink>
           {/*
             Renders one visually-hidden live region and moves focus to `<main>`
             after each navigation. In the shell rather than per route for the

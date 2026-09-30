@@ -320,7 +320,7 @@ export function createTabs<TValue extends string>(): TabsComponent<TValue> {
             "flex gap-1",
             orientation === "horizontal"
               ? "border-b border-[var(--color-border)]"
-              : "flex-col border-r border-[var(--color-border)] pr-1",
+              : "flex-col border-e border-[var(--color-border)] pe-1",
             className,
           )}
         >

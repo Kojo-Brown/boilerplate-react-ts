@@ -7,6 +7,7 @@ import { makeStore } from "@/test/renderWithProviders";
 import { actAsync } from "@/test/renderSuspense";
 import { setCredentials } from "@/entities/session/authSlice";
 import { isRouteHandle } from "@/features/route-announcement/routeTitle";
+import { TestI18nProvider } from "@/test/intl";
 
 function renderRoute(initialPath: string, authed = false) {
   const store = makeStore();
@@ -24,9 +25,11 @@ function renderRoute(initialPath: string, authed = false) {
     initialEntries: [initialPath],
   });
   return render(
-    <Provider store={store}>
-      <RouterProvider router={memoryRouter} />
-    </Provider>,
+    <TestI18nProvider>
+      <Provider store={store}>
+        <RouterProvider router={memoryRouter} />
+      </Provider>
+    </TestI18nProvider>,
   );
 }
 

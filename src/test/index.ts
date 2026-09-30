@@ -1,4 +1,6 @@
 export { renderWithProviders, makeStore } from "@/test/renderWithProviders";
+export { renderWithIntl, TestI18nProvider, intlFor, resetDocumentDirection } from "@/test/intl";
+export type { IntlHarnessOptions } from "@/test/intl";
 export type { TestStore } from "@/test/renderWithProviders";
 export { renderAsync, actAsync } from "@/test/renderSuspense";
 export { RouteTransitionHarness } from "@/test/routeTransitionHarness";

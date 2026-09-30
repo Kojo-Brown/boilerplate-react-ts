@@ -589,6 +589,33 @@ to stop being true. `/labs/live-regions` renders the regions' contents on screen
 that split, and what is still to migrate, is in
 [docs/live-regions.md](docs/live-regions.md).
 
+### Internationalisation, and the right-to-left pass
+
+`react-intl` with two locales — `en-GB` and `ar-EG` — and the second one is
+Arabic on purpose. A list of two left-to-right languages exercises message lookup
+and nothing else; the defects this layer exists to prevent are a `margin-left`
+that does not mirror, a sentence assembled from fragments, a `count === 1` plural
+that is wrong for 2, 3–10 and 11–99, and a number interpolated as a string where
+the locale writes its own digits. All four are invisible in German and obvious in
+Arabic.
+
+Every catalogue but the source one is typed `Record<MessageId, string>`, so a
+half-finished translation is a compile error; react-intl's `FormatjsIntl` hooks
+are declared, so a mistyped message id, an unsupported locale and an undeclared
+named format are all type errors at every call site in the program. What a type
+cannot check — a malformed ICU string, a renamed placeholder, a plural category
+CLDR selects and the message omits — is checked by parsing every message in every
+locale with the same parser react-intl runs.
+
+The layout mirrors because `<html dir>` changes and for no other reason: nothing
+in `src/` names a physical side, and `i18n/logical-properties` is a lint rule over
+class strings that keeps it that way, with a companion scan for `globals.css`. The
+one place a direction is named twice is the sidebar's slide transform, which has
+no logical form. `/labs/i18n` is the instrument — six distinct Arabic plural forms
+beside English's two, the same amount in the same currency written two ways, and a
+layout with no side in it. [docs/i18n.md](docs/i18n.md) has the reasoning, the
+load path, and an honest list of what is still English.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

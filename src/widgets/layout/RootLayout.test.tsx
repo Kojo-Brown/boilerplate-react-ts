@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { RootLayout } from "@/widgets/layout/RootLayout";
 import { MAIN_CONTENT_ID } from "@/shared/ui/SkipLink";
+import { TestI18nProvider } from "@/test/intl";
 import type { ChunkRegistry } from "@/shared/lib/idlePrefetchQueue";
 
 // Nothing in this file asserts on prefetching; an empty registry is what the
@@ -27,7 +28,7 @@ function renderLayout() {
         children: [
           {
             index: true,
-            handle: { title: "Home" },
+            handle: { titleId: "route.home.title" },
             element: <div>Page content</div>,
           },
         ],
@@ -35,7 +36,11 @@ function renderLayout() {
     ],
     { initialEntries: ["/"] },
   );
-  return render(<RouterProvider router={router} />);
+  return render(
+    <TestI18nProvider>
+      <RouterProvider router={router} />
+    </TestI18nProvider>,
+  );
 }
 
 describe("RootLayout", () => {

@@ -41,7 +41,7 @@ const Row = memo(function Row({ item }: RowProps) {
       <span className="shrink-0 rounded-[var(--radius-sm)] bg-[var(--color-muted)] px-2 py-0.5 text-xs text-[var(--color-fg)]">
         {item.category}
       </span>
-      <span className="w-12 shrink-0 text-right text-xs text-[var(--color-fg)] tabular-nums opacity-60">
+      <span className="w-12 shrink-0 text-end text-xs text-[var(--color-fg)] tabular-nums opacity-60">
         {item.score}
       </span>
     </li>

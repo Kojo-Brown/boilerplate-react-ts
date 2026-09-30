@@ -218,7 +218,7 @@ function RequestTimeline({ events }: { events: readonly RequestEvent[] }) {
             key={`${event.section}-${event.kind}-${String(index)}`}
             className="flex items-center gap-3"
           >
-            <span className="w-6 text-right text-[var(--color-muted-fg)] tabular-nums">
+            <span className="w-6 text-end text-[var(--color-muted-fg)] tabular-nums">
               {index + 1}
             </span>
             <span

@@ -5,6 +5,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import { fsdPlugin } from "./tooling/eslint/fsdBoundaries";
+import { i18nPlugin } from "./tooling/eslint/logicalProperties";
 
 export default defineConfig(
   // eslint.config.ts is excluded from the tsconfig projects (the `globals`
@@ -34,6 +35,7 @@ export default defineConfig(
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
       fsd: fsdPlugin,
+      i18n: i18nPlugin,
     },
     rules: {
       // The React Compiler's own diagnostics, shipped as lint rules by
@@ -63,6 +65,7 @@ export default defineConfig(
             "useTheme",
             "useRouteTransition",
             "useRoutePrefetch",
+            "useI18n",
           ],
         },
       ],
@@ -75,6 +78,11 @@ export default defineConfig(
       // one, and that rule is what makes an inline `import { RootState }`
       // impossible to write.
       "fsd/layer-imports": "error",
+      // The right-to-left layout pass, enforced rather than reviewed. A
+      // physical `ml-4` is invisible to every other gate here: it type-checks,
+      // it renders, and axe has no opinion about which side a margin is on. See
+      // `tooling/eslint/logicalProperties.ts`.
+      "i18n/logical-properties": "error",
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       // Interpolating a number is safe and universally readable; the default
@@ -93,6 +101,10 @@ export default defineConfig(
     // captured request bodies). Non-null assertions are the clearest tool there.
     files: ["**/*.test.{ts,tsx}", "src/test/**/*.{ts,tsx}"],
     rules: {
+      // Test scaffolding is not in the fast-refresh graph: nothing under
+      // `src/test/` is rendered by the application, so a harness that exports a
+      // wrapper component beside the helpers it needs costs nothing.
+      "react-refresh/only-export-components": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",

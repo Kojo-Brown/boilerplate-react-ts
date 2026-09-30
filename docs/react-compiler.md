@@ -94,8 +94,15 @@ Every hand-written memoization in `src/`, with a verdict.
 | `shared/theme/ThemeContext.tsx`          | `useCallback` on `setMode`, `useMemo` on the context value | A provider's context value is where identity matters most — a new object re-renders every consumer.                                                                                                                     |
 | `shared/ui/Toast.tsx`                    | `useCallback` on `toast` and `dismiss`                     | See below; these two were already achieving nothing.                                                                                                                                                                    |
 
+### Written without one
+
+| Site                           | What was not written                                         | Why                                                                                                                                                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared/i18n/I18nProvider.tsx` | `useCallback` on `setLocale`, `useMemo` on the context value | Added after the compiler, so there was nothing to remove — the same shape as `ThemeProvider` with the same reason to be memoized, written the way the compiler makes possible. It is in the audit's opt-in list rather than in the table above because "what came out" is nothing. |
+
 Each removal is covered by a stability test in the file's existing suite
-(`useFilteredSortedItems.test.ts`, `ThemeContext.test.tsx`, `Toast.test.tsx`).
+(`useFilteredSortedItems.test.ts`, `ThemeContext.test.tsx`, `Toast.test.tsx`), and
+`I18nProvider.test.tsx` carries the same pair for the entry above.
 
 **`ToastProvider` is the clearest case for the compiler in this codebase.**
 `toast` and `dismiss` were each wrapped in `useCallback` — and then handed to
