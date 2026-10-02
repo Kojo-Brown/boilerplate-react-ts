@@ -6,6 +6,19 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import { fsdPlugin } from "./tooling/eslint/fsdBoundaries";
 import { i18nPlugin } from "./tooling/eslint/logicalProperties";
+import { securityPlugin } from "./tooling/eslint/noDangerousHtml";
+
+/**
+ * Files permitted to parse a string as HTML.
+ *
+ * This list is the XSS boundary, and it is here rather than in a disable
+ * comment on purpose: widening it is a change to the lint configuration, which
+ * a reviewer reads as one, where a `// eslint-disable-next-line` is a line in
+ * whichever diff happened to need it. `docs/xss.md` explains what a file has to
+ * guarantee to earn a place here. Adding one without a sanitiser is how the ban
+ * becomes paperwork.
+ */
+const HTML_SANITISATION_BOUNDARY = ["src/shared/ui/RichText.tsx"];
 
 export default defineConfig(
   // eslint.config.ts is excluded from the tsconfig projects (the `globals`
@@ -36,6 +49,7 @@ export default defineConfig(
       "react-refresh": reactRefresh,
       fsd: fsdPlugin,
       i18n: i18nPlugin,
+      security: securityPlugin,
     },
     rules: {
       // The React Compiler's own diagnostics, shipped as lint rules by
@@ -83,6 +97,13 @@ export default defineConfig(
       // it renders, and axe has no opinion about which side a margin is on. See
       // `tooling/eslint/logicalProperties.ts`.
       "i18n/logical-properties": "error",
+      // The XSS boundary, enforced rather than reviewed. React escapes every
+      // interpolated string, so the only way markup reaches the DOM here is
+      // through a sink that parses it — and every one of those is reported
+      // outside `HTML_SANITISATION_BOUNDARY`. See
+      // `tooling/eslint/noDangerousHtml.ts` for the list of sinks and
+      // `docs/xss.md` for the policy they leave as the only route.
+      "security/no-dangerous-html": ["error", { allow: HTML_SANITISATION_BOUNDARY }],
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       // Interpolating a number is safe and universally readable; the default
@@ -105,6 +126,13 @@ export default defineConfig(
       // `src/test/` is rendered by the application, so a harness that exports a
       // wrapper component beside the helpers it needs costs nothing.
       "react-refresh/only-export-components": "off",
+      // A test that builds a DOM fixture out of a string it wrote itself —
+      // `focusTrap.test.ts` is the one here — is not an injection: there is no
+      // untrusted input anywhere in a unit test, and nothing in a `.test.` file
+      // is in the shipped module graph (`fsd/layer-imports` guarantees the
+      // second half of that). The ban is about code that renders data, so it is
+      // scoped to the code that can receive data.
+      "security/no-dangerous-html": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",

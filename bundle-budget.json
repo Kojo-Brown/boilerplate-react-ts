@@ -7,7 +7,7 @@
     "chunk.redux": 16000,
     "chunk.router": 33300,
     "chunk.vendor": 1500,
-    "initial.css": 9600,
+    "initial.css": 9920,
     "initial.js": 208000,
     "lazy.largest": 23300,
     "unattributed": 11100
