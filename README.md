@@ -616,6 +616,39 @@ beside English's two, the same amount in the same currency written two ways, and
 layout with no side in it. [docs/i18n.md](docs/i18n.md) has the reasoning, the
 load path, and an honest list of what is still English.
 
+## XSS-safe rendering
+
+React escapes every string it interpolates, so this application cannot have
+_accidental_ cross-site scripting — only deliberate XSS, written by someone who
+reached for an API whose purpose is to parse a string as markup. The policy
+follows from that: nothing may parse HTML, and one component may.
+
+`security/no-dangerous-html` is the ban. It reports six sinks —
+`dangerouslySetInnerHTML` as a JSX attribute and as an object key (which is how
+`createElement` takes it), `innerHTML` and `outerHTML` assignment, `insertAdjacentHTML`,
+`Range.createContextualFragment` and `document.write` — because a ban on the
+React prop alone would be theatre: `ref.current` is a real element, and closing
+one sink without the others just moves which line the payload is written on.
+`write` is judged on its receiver rather than its name, so streams and loggers
+are not reported; a rule that flagged every `.write()` would be switched off
+within a week.
+
+The one exception is `RichText`, named in the rule's `allow` list in
+`eslint.config.ts` rather than exempted by a disable comment — widening that
+list is a change to the lint configuration, which a reviewer reads as one. It
+accepts `SafeHtml`, a branded string only `sanitizeHtml()` returns, so
+sanitising the template and then interpolating the value into it is a compile
+error rather than a review comment. The policy itself is an allowlist of
+thirty-one tags and four attributes, no `class`, `style`, `id`, `target`, ARIA or
+`data-*`, `href` narrowed to `http`/`https`/`mailto` plus relative URLs, and the
+XHTML namespace only — which is what closes the mutation-XSS payloads that
+sanitise clean as MathML and re-parse as an `<img onerror>`. Where there is no
+DOM to parse with, it escapes its input rather than returning it, because a
+sanitiser that passes the string through when the check could not run is a build
+that is correct in every browser and raw in the one place it mattered.
+[docs/xss.md](docs/xss.md) has the full policy, the payload corpus, and an
+honest list of what the rule cannot see.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.
