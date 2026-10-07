@@ -1,6 +1,20 @@
-import { z } from "zod";
+import { z } from "@/shared/config/zod";
 
 const envSchema = z.object({
+  /*
+    The defaults on this key and the two reporting URLs below are pinned by
+    `tooling/csp/envDefaults.test.ts`, and changing one without the other is a
+    red build.
+
+    A default here is a value the *bundle* uses and the *build* cannot see: an
+    unset variable is absent from Vite's resolved env, so the
+    Content-Security-Policy derived from it came out as `connect-src 'self'`
+    beside an application fetching `http://localhost:4000` and refused every
+    one of its own requests. The policy keeps its own copy of these fallbacks
+    because `src/` and `tooling/` are separate TypeScript projects and cannot
+    import from each other; the gate is what makes two copies safe. See
+    `docs/csp.md`.
+  */
   VITE_API_URL: z.url().default("http://localhost:4000"),
   VITE_AUTH_DOMAIN: z.string().optional(),
   VITE_CLIENT_ID: z.string().optional(),

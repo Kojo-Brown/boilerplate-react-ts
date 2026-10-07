@@ -75,11 +75,21 @@ export function listFiles(root: string): string[] {
  * verbatim and is likewise absent, including `mockServiceWorker.js`, which
  * ships to production today at 9.7kB.
  *
- * Two exclusions, both because the browser never asks for them: sourcemaps,
- * and Vite's own metadata directory.
+ * Two kinds of exclusion, both because the browser never asks for them:
+ * sourcemaps, and anything in a dot-directory. `.vite/manifest.json` was the
+ * first of those and `.csp/policy.conf` is the second — a policy the build
+ * computes for the web server to include, which `nginx.conf` serves to nobody
+ * (`location ~ /\.` denies it) and the Dockerfile copies out of the web root
+ * entirely. Counting it would make a budget about user-visible bytes fail over
+ * a file no user can fetch.
  */
 export function unattributedFiles(files: readonly string[], attributed: ReadonlySet<string>) {
-  return files.filter((f) => !attributed.has(f) && !f.endsWith(".map") && !f.startsWith(".vite/"));
+  return files.filter((f) => !attributed.has(f) && !f.endsWith(".map") && !isBuildMetadata(f));
+}
+
+/** A path whose first segment is a dot-directory, e.g. `.vite/`, `.csp/`. */
+export function isBuildMetadata(file: string): boolean {
+  return file.startsWith(".");
 }
 
 /** Compressed size of one file below `root`. */

@@ -36,6 +36,13 @@
     "playwright.a11y.config.ts",
     "reactCompiler.config.ts",
     "e2e",
-    "tooling"
+    "tooling",
+    // The one file this project shares with the application's own.
+    // `tooling/csp/policy.ts` has to read the same `VITE_*` defaults
+    // `src/shared/config/env.ts` applies, or `connect-src` names an origin the
+    // bundle does not use — see the comment in `envDefaults.ts`. It is a plain
+    // object literal with no imports, so pulling it in costs this project
+    // nothing and needs none of `tsconfig.json`'s DOM or Vite types.
+    "src/shared/config/envDefaults.ts"
   ]
 }

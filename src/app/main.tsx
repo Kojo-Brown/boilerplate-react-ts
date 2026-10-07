@@ -17,6 +17,7 @@ import { ErrorReporterProvider } from "@/shared/observability/ErrorReporterProvi
 import { LiveRegions } from "@/shared/a11y/LiveRegions";
 import { ToastProvider } from "@/shared/ui/Toast";
 import { reporter } from "@/app/observability/reporter";
+import { reportCspViolations } from "@/shared/security/reportCspViolations";
 import { offlineClient } from "@/shared/offline/offlineClient";
 import { getServiceWorkerContainer } from "@/shared/offline/registerServiceWorker";
 import { App } from "@/app/App";
@@ -92,6 +93,21 @@ function enableOfflineSupport(): void {
 
 startSilentRefresh(store);
 enableOfflineSupport();
+
+/*
+  Subscribed here rather than inside a provider, and as early as this file can
+  manage, because the window it can observe only ever shrinks.
+
+  `securitypolicyviolation` is a DOM event, so nothing hears a refusal that
+  happened before the listener existed — including the one that matters most,
+  an entry script blocked because the nonce substitution failed. That case is
+  structurally out of reach from inside the document and is covered by
+  `e2e/csp.spec.ts` instead. What this does catch is every route: a lazily
+  loaded page reaching for an origin `connect-src` does not name, a library
+  injecting a `<style>`, a widget somebody adds next quarter. Never unsubscribed
+  — the page is the subscription's lifetime. See `docs/csp.md`.
+*/
+reportCspViolations({ reporter });
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
