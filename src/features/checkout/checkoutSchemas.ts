@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/shared/config/zod";
 import type { PaymentDetails, ShippingDetails } from "@/features/checkout/checkoutApi";
 
 /**

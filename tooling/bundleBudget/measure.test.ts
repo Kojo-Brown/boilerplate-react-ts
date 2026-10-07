@@ -66,13 +66,18 @@ describe("unattributedFiles", () => {
     ).toEqual(["assets/csvParser.worker-b.js", "mockServiceWorker.js"]);
   });
 
-  it("ignores sourcemaps and Vite's own metadata", () => {
+  it("ignores sourcemaps and anything in a dot-directory", () => {
     // `build.sourcemap` is on, so `dist/` is mostly `.map` files. Counting
     // them would make the budget a measurement of the debug artefacts — and
     // they are four times the size of everything a browser downloads.
+    //
+    // A dot-directory is build metadata rather than payload: `.vite/` holds the
+    // manifest this gate reads, and `.csp/` holds the Content-Security-Policy
+    // the build computes for the web server. Neither is reachable over HTTP —
+    // see `nginx.conf` — so neither is a byte anybody downloads.
     expect(
       unattributedFiles(
-        ["assets/index-a.js.map", ".vite/manifest.json", "assets/index-a.js"],
+        ["assets/index-a.js.map", ".vite/manifest.json", ".csp/policy.conf", "assets/index-a.js"],
         attributed,
       ),
     ).toEqual([]);

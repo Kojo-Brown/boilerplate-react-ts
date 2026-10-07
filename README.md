@@ -649,6 +649,36 @@ that is correct in every browser and raw in the one place it mattered.
 [docs/xss.md](docs/xss.md) has the full policy, the payload corpus, and an
 honest list of what the rule cannot see.
 
+## Content-Security-Policy with nonces
+
+`script-src 'self' 'nonce-…' 'strict-dynamic'`, with a fresh nonce on every
+response. `'strict-dynamic'` is the part that makes it worth having: it tells
+the browser to ignore the host allowlist for scripts — `'self'` included, so an
+injection that writes `<script src="/uploads/avatar.js">` no longer runs — and
+to extend trust to what an already-trusted script inserts, which is what every
+lazy route here needs.
+
+A nonce cannot live in a build artefact: `index.html` is written once and served
+a million times, and a baked-in value is shared by every visitor and readable
+from the document. So the build leaves `nonce="__CSP_NONCE__"` on every tag
+(Vite's `html.cspNonce`) and `nginx.conf` substitutes it per request from
+`$request_id`, with `Cache-Control: no-store` on the shell so no cache can hand
+one visitor another's. `connect-src` goes the other way and cannot live in the
+server config, because `VITE_API_URL` is inlined into the bundle — so the build
+emits the policy it computed to `dist/.csp/policy.conf` and the container
+includes it, which is one source of truth rather than two that drift.
+
+The dev server and `vite preview` enforce the same policy, which is the point:
+`e2e/csp.spec.ts` runs a real production build under the real production policy
+in a browser, because every other check here can only assert what the string
+says. Two findings came out of doing that — Zod 4 compiles object parsers with
+`new Function` (hence `shared/config/zod.ts` and `jitless: true`), and an unset
+`VITE_API_URL` produced a policy that refused the application's own API calls
+(hence `shared/config/envDefaults.ts`). [docs/csp.md](docs/csp.md) has the
+directive-by-directive reasoning, the two development relaxations and why
+neither can reach production, and what is still not done — starting with the
+fact that nothing in CI runs nginx.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

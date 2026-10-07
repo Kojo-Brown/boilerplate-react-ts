@@ -7,7 +7,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
-import { type ZodType } from "zod";
+import type { ZodType } from "zod";
 
 /**
  * `useForm` pre-wired to a Zod schema.

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { z } from "zod";
+import { z } from "@/shared/config/zod";
 import { useZodForm } from "@/shared/hooks/useZodForm";
 
 const schema = z.object({

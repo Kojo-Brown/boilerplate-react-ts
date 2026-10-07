@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";
 import { reactCompilerBabelPlugin } from "./reactCompiler.config";
+import { csp } from "./tooling/csp/vitePlugin.ts";
 
 export default defineConfig(({ mode }) => ({
   plugins: [
@@ -14,6 +15,19 @@ export default defineConfig(({ mode }) => ({
       babel: { plugins: [reactCompilerBabelPlugin] },
     }),
     tailwindcss(),
+    /*
+      The Content-Security-Policy, which is a build concern in this application
+      and not only a server one.
+
+      Two things only the build knows. The nonce has to appear on every tag
+      Vite generates, which is what `html.cspNonce` does and what this plugin
+      turns on; and `connect-src` has to name the same origins `VITE_API_URL`
+      and friends were inlined into the bundle as, which is what it emits to
+      `dist/.csp/policy.conf` for the server to include. It also enforces the
+      policy on the dev and preview servers, so the one that ships has been run
+      by a browser. See `docs/csp.md`.
+    */
+    csp(),
     mode === "analyze" &&
       visualizer({
         filename: "stats.html",

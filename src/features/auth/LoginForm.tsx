@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/shared/config/zod";
 import { useZodForm } from "@/shared/hooks/useZodForm";
 import { FormField } from "@/shared/ui/FormField";
 import { Input } from "@/shared/ui/Input";
