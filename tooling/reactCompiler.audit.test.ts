@@ -32,6 +32,23 @@ import { reactCompilerConfig } from "../reactCompiler.config";
  * Vite and Vitest use, so this measures the real configuration.
  */
 
+/**
+ * Wall-clock budget for the two cases that sweep the whole source tree.
+ *
+ * Vitest's default is 5 seconds, which was never the right budget for a test
+ * whose cost is `files × Babel`: it does not describe this test, it describes
+ * the codebase's size on the day the default was accepted. The sweep takes
+ * about 1.5s locally across ~250 files and expired at 5s on a CI runner
+ * compiling three workers' worth of suites at once — a failure that says
+ * nothing about the React Compiler and everything about how many files there
+ * now are.
+ *
+ * The assertions are untouched. Only the clock moved, and it moved to a number
+ * no healthy run will approach, so a real hang still fails rather than hanging
+ * the job.
+ */
+const SWEEP_TIMEOUT_MS = 60_000;
+
 // This suite lives in `tooling/` rather than `src/` on purpose: it needs Node
 // types and `@babel/core`, and `tsconfig.json` deliberately restricts the app
 // program to `types: ["vite/client"]`. Widening that to let one test read the
@@ -134,39 +151,47 @@ describe("React Compiler adoption", () => {
     }
   });
 
-  it("compiles nothing that has not opted in", async () => {
-    const optedInPaths = new Set(OPTED_IN.map(({ file }) => join(SRC, file)));
-    const unexpected: string[] = [];
+  it(
+    "compiles nothing that has not opted in",
+    async () => {
+      const optedInPaths = new Set(OPTED_IN.map(({ file }) => join(SRC, file)));
+      const unexpected: string[] = [];
 
-    for (const absolute of await sourceFiles()) {
-      if (optedInPaths.has(absolute)) continue;
-      const events = await compile(absolute);
-      if (events.some((e) => e.kind === "CompileSuccess")) {
-        unexpected.push(relative(REPO_ROOT, absolute));
+      for (const absolute of await sourceFiles()) {
+        if (optedInPaths.has(absolute)) continue;
+        const events = await compile(absolute);
+        if (events.some((e) => e.kind === "CompileSuccess")) {
+          unexpected.push(relative(REPO_ROOT, absolute));
+        }
       }
-    }
 
-    // This is what "incremental" means operationally: in `annotation` mode a
-    // file is compiled only when it asks to be. If this ever fails, the
-    // compilation mode changed and every un-audited file is now being
-    // rewritten.
-    expect(unexpected).toEqual([]);
-  });
+      // This is what "incremental" means operationally: in `annotation` mode a
+      // file is compiled only when it asks to be. If this ever fails, the
+      // compilation mode changed and every un-audited file is now being
+      // rewritten.
+      expect(unexpected).toEqual([]);
+    },
+    SWEEP_TIMEOUT_MS,
+  );
 
-  it("keeps the opt-in cohort and the `use memo` directives in sync", async () => {
-    const annotated: string[] = [];
+  it(
+    "keeps the opt-in cohort and the `use memo` directives in sync",
+    async () => {
+      const annotated: string[] = [];
 
-    for (const absolute of await sourceFiles()) {
-      const source = await readFile(absolute, "utf8");
-      if (DIRECTIVE.test(source)) {
-        annotated.push(relative(SRC, absolute));
+      for (const absolute of await sourceFiles()) {
+        const source = await readFile(absolute, "utf8");
+        if (DIRECTIVE.test(source)) {
+          annotated.push(relative(SRC, absolute));
+        }
       }
-    }
 
-    // Sorted so the failure message reads as a diff of the two lists rather
-    // than a filesystem-order accident.
-    expect(annotated.sort()).toEqual(OPTED_IN.map(({ file }) => file).sort());
-  });
+      // Sorted so the failure message reads as a diff of the two lists rather
+      // than a filesystem-order accident.
+      expect(annotated.sort()).toEqual(OPTED_IN.map(({ file }) => file).sort());
+    },
+    SWEEP_TIMEOUT_MS,
+  );
 
   it("is configured for incremental adoption against the React major in use", () => {
     expect(reactCompilerConfig.compilationMode).toBe("annotation");

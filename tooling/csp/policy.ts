@@ -32,8 +32,6 @@
  * see `tooling/csp/vitePlugin.ts`.
  */
 
-import { ENV_DEFAULTS } from "../../src/shared/config/envDefaults.ts";
-
 /**
  * The token the build leaves in `index.html` wherever a nonce belongs.
  *
@@ -251,6 +249,30 @@ export const CONNECT_SRC_ENV_KEYS = [
 ] as const;
 
 /**
+ * What each of those keys means when nobody sets it.
+ *
+ * A second copy of the `.default()` values in `src/shared/config/env.ts`, which
+ * is not an oversight and is not free: `src/` and `tooling/` are separate
+ * TypeScript projects referencing each other, so a module that belongs to both
+ * is an input of both and `tsc` refuses it. `tooling/csp/envDefaults.test.ts`
+ * is what makes two copies safe — it reads the schema and fails when a default
+ * there is not the one here.
+ *
+ * This exists because of a real bug, and the bug is the whole reason the build
+ * needs these at all. An unset variable is **absent from Vite's resolved env
+ * and present in the bundle**, because the schema fills it in. So a build with
+ * no `VITE_API_URL` produced `connect-src 'self'` beside an application
+ * fetching `http://localhost:4000`, and every request it made was refused —
+ * visible only by loading a production build in a browser under the policy.
+ */
+export const ENV_FALLBACKS: Readonly<Record<(typeof CONNECT_SRC_ENV_KEYS)[number], string>> = {
+  VITE_API_URL: "http://localhost:4000",
+  /** Empty means "do not report" rather than "report to a default endpoint". */
+  VITE_ANALYTICS_URL: "",
+  VITE_ERROR_REPORT_URL: "",
+};
+
+/**
  * The origins {@link CONNECT_SRC_ENV_KEYS} name, as CSP source expressions.
  *
  * **Origins, never the full URL**, and that is a decision rather than
@@ -266,19 +288,9 @@ export const CONNECT_SRC_ENV_KEYS = [
  * build that fails here would fail with a worse message.
  */
 export function connectSourcesFromEnv(env: Readonly<Record<string, string | undefined>>): string[] {
-  /*
-    `ENV_DEFAULTS` underneath, and this is the correction to a real bug rather
-    than defensiveness.
-
-    An unset variable is absent from Vite's resolved `env` and present in the
-    bundle, because `env.ts`'s schema fills it in with a Zod `.default()`. So a
-    build with no `VITE_API_URL` produced `connect-src 'self'` beside an
-    application fetching `http://localhost:4000`, and every request it made was
-    refused — found by loading a production build under the policy, which is
-    the only place it is visible. The defaults are therefore read from the same
-    module the schema reads them from. See `src/shared/config/envDefaults.ts`.
-  */
-  const resolved: Record<string, string | undefined> = { ...ENV_DEFAULTS, ...env };
+  // `ENV_FALLBACKS` underneath, because an unset variable is absent here and
+  // present in the bundle — see the comment on that constant for the bug.
+  const resolved: Record<string, string | undefined> = { ...ENV_FALLBACKS, ...env };
   const origins = new Set<string>();
   for (const key of CONNECT_SRC_ENV_KEYS) {
     const value = resolved[key];

@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { ENV_DEFAULTS } from "../../src/shared/config/envDefaults.ts";
 import {
   CONNECT_SRC_ENV_KEYS,
+  ENV_FALLBACKS,
   DEVELOPMENT_RELAXATIONS,
   DIRECTIVE_ORDER,
   NONCE_BYTE_LENGTH,
@@ -175,16 +175,16 @@ describe("connectSourcesFromEnv", () => {
     // *present* in the bundle, because `env.ts` defaults it. A policy built
     // from the env alone said `'self'` while the application fetched
     // `http://localhost:4000`, and refused every one of its own requests.
-    expect(connectSourcesFromEnv({})).toEqual([ENV_DEFAULTS.VITE_API_URL]);
+    expect(connectSourcesFromEnv({})).toEqual([ENV_FALLBACKS.VITE_API_URL]);
     // And a configured value still wins over the default.
     expect(connectSourcesFromEnv({ VITE_API_URL: "https://api.example.com" })).toEqual([
       "https://api.example.com",
     ]);
   });
 
-  it("has a default for every key it reads", () => {
+  it("has a fallback for every key it reads", () => {
     // Otherwise the next key added here reintroduces the bug above.
-    expect(Object.keys(ENV_DEFAULTS).sort()).toEqual([...CONNECT_SRC_ENV_KEYS].sort());
+    expect(Object.keys(ENV_FALLBACKS).sort()).toEqual([...CONNECT_SRC_ENV_KEYS].sort());
   });
 
   it("drops an opaque origin rather than writing the string `null`", () => {
@@ -204,7 +204,7 @@ describe("connectSourcesFromEnv", () => {
         VITE_REDIRECT_URI: "https://app.example.com/auth/callback",
         VITE_AUTH_DOMAIN: "https://tenant.eu.auth0.com",
       }),
-    ).toEqual([ENV_DEFAULTS.VITE_API_URL]);
+    ).toEqual([ENV_FALLBACKS.VITE_API_URL]);
   });
 
   it("is deterministic, so a build does not churn the generated policy", () => {

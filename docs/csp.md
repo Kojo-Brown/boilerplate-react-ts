@@ -64,19 +64,26 @@ The `Dockerfile` copies `policy.conf` to `/etc/nginx/csp-policy.conf`, which
 `nginx.conf` includes. nginx refuses to start if it is missing, and that is the
 right failure: a container that came up with no policy would look healthy.
 
-### The bug that shaped `envDefaults.ts`
+### The bug that shaped `ENV_FALLBACKS`
 
 The first version read `connect-src` straight from Vite's resolved `env`, which
 is correct except for the case that matters. With `VITE_API_URL` unset, the
 variable is **absent from the env and present in the bundle** — `env.ts` fills
 it in with a Zod `.default()`. The policy came out as `connect-src 'self'`
 beside an application fetching `http://localhost:4000`, and every request it
-made was refused. The defaults now live in `src/shared/config/envDefaults.ts`
-and both the schema and the policy read them from there, with a test asserting
-that every key the policy reads has one.
+made was refused. It was found by loading a production build in a browser under
+the real policy, which is the only place it is visible, and is what
+`e2e/csp.spec.ts` exists for.
 
-It was found by loading a production build in a browser under the real policy,
-which is the only place it is visible. That is what `e2e/csp.spec.ts` is for.
+So `tooling/csp/policy.ts` keeps `ENV_FALLBACKS`, a second copy of the schema's
+defaults. One shared module would be better and does not compile:
+`tsconfig.json` owns `src/` and `tsconfig.node.json` owns `tooling/` and
+references it, so a file listed in both is an input of both and `tsc` rejects
+the second claim — _conditionally_, which is worse. The shared module
+type-checked locally, where an earlier `tsc -b` had left the declaration
+behind, and failed in CI where `.tsbuildinfo/` does not exist.
+`tooling/csp/envDefaults.test.ts` is what makes two copies safe: it reads the
+schema and fails when a default there is not the one here.
 
 ## Dev and preview enforce it too
 

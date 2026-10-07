@@ -674,7 +674,8 @@ in a browser, because every other check here can only assert what the string
 says. Two findings came out of doing that — Zod 4 compiles object parsers with
 `new Function` (hence `shared/config/zod.ts` and `jitless: true`), and an unset
 `VITE_API_URL` produced a policy that refused the application's own API calls
-(hence `shared/config/envDefaults.ts`). [docs/csp.md](docs/csp.md) has the
+(hence `ENV_FALLBACKS` and the gate that pins it to the schema).
+[docs/csp.md](docs/csp.md) has the
 directive-by-directive reasoning, the two development relaxations and why
 neither can reach production, and what is still not done — starting with the
 fact that nothing in CI runs nginx.

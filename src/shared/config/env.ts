@@ -1,10 +1,21 @@
 import { z } from "@/shared/config/zod";
-import { ENV_DEFAULTS } from "@/shared/config/envDefaults";
 
 const envSchema = z.object({
-  // Default from `envDefaults.ts` rather than written here, because the CSP
-  // build plugin needs the same value to put the API origin in `connect-src`.
-  VITE_API_URL: z.url().default(ENV_DEFAULTS.VITE_API_URL),
+  /*
+    The defaults on this key and the two reporting URLs below are pinned by
+    `tooling/csp/envDefaults.test.ts`, and changing one without the other is a
+    red build.
+
+    A default here is a value the *bundle* uses and the *build* cannot see: an
+    unset variable is absent from Vite's resolved env, so the
+    Content-Security-Policy derived from it came out as `connect-src 'self'`
+    beside an application fetching `http://localhost:4000` and refused every
+    one of its own requests. The policy keeps its own copy of these fallbacks
+    because `src/` and `tooling/` are separate TypeScript projects and cannot
+    import from each other; the gate is what makes two copies safe. See
+    `docs/csp.md`.
+  */
+  VITE_API_URL: z.url().default("http://localhost:4000"),
   VITE_AUTH_DOMAIN: z.string().optional(),
   VITE_CLIENT_ID: z.string().optional(),
   VITE_GOOGLE_CLIENT_ID: z.string().optional(),
@@ -20,7 +31,7 @@ const envSchema = z.object({
   // reporter then subscribes to nothing rather than collecting into a sink
   // that discards. Validated as a URL so a typo fails at boot instead of
   // producing a build that silently sends nothing.
-  VITE_ANALYTICS_URL: z.union([z.literal(""), z.url()]).default(ENV_DEFAULTS.VITE_ANALYTICS_URL),
+  VITE_ANALYTICS_URL: z.union([z.literal(""), z.url()]).default(""),
   // Share of *visits* that report vitals, 0–1. See `docs/web-vitals.md` for
   // why the roll is per visit rather than per metric.
   VITE_VITALS_SAMPLE_RATE: z
@@ -35,9 +46,7 @@ const envSchema = z.object({
   // without a collector gets — see `app/observability/reporter.ts`. Validated
   // as a URL for the same reason as `VITE_ANALYTICS_URL`: a typo should fail
   // at boot, not produce a build that reports nowhere.
-  VITE_ERROR_REPORT_URL: z
-    .union([z.literal(""), z.url()])
-    .default(ENV_DEFAULTS.VITE_ERROR_REPORT_URL),
+  VITE_ERROR_REPORT_URL: z.union([z.literal(""), z.url()]).default(""),
   // Stamped on every error event as the `release` tag. Grouping is per-issue;
   // the release is what turns "this issue exists" into "this issue started in
   // build 4c1f0". Blank when the build system does not supply one.
