@@ -9,6 +9,7 @@ import { queryClient } from "@/app/api/queryClient";
 import { startOfflineReconciliation } from "@/app/api/offlineReconcile";
 import { ApiClientProvider } from "@/shared/api/ApiClientProvider";
 import { startSilentRefresh } from "@/features/auth/silentRefresh";
+import { restoreSession } from "@/features/auth/restoreSession";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { ThemeProvider } from "@/shared/theme/ThemeContext";
 import { I18nProvider } from "@/shared/i18n/I18nProvider";
@@ -92,6 +93,7 @@ function enableOfflineSupport(): void {
 }
 
 startSilentRefresh(store);
+
 enableOfflineSupport();
 
 /*
@@ -139,6 +141,39 @@ void Promise.all([
     },
   }),
 ]).then(([, i18n]) => {
+  /*
+    Replaces reading the session back out of `localStorage`.
+
+    The access token is no longer persisted, so a reload begins with no session
+    in memory and the refresh cookie is `HttpOnly` — unreadable from
+    JavaScript. The only way to learn whether the returning visitor is signed in
+    is to ask `POST /auth/refresh`, which is a round trip, which means there is
+    now a window in which the answer is unknown.
+
+    Three things about where this sits.
+
+    **Inside this callback rather than at module scope**, which is where it was
+    first written and where it was wrong. `enableMocking()` installs MSW's
+    service worker and resolves in the `Promise.all` above; a refresh issued
+    before that lands on the real network, so in development every boot restore
+    failed with `ERR_CONNECTION_REFUSED` against an API that is not running.
+    Production has no mocks and did not care, which is exactly what made it the
+    kind of bug that ships.
+
+    **Before `createRoot().render()`, and not awaited.** `restoreSession`
+    dispatches `sessionRestoreStarted()` before its first `await`, so by the
+    time React renders below, the store already reads `restoring` and
+    `ProtectedRoute` holds still instead of redirecting to `/login`. Awaiting it
+    would put a network round trip in front of the first paint for every
+    visitor, including the signed-out majority who have no session to restore.
+
+    **After `startSilentRefresh(store)` above**, which subscribes to the store.
+    The renewal timer is scheduled from the `expiresAt` this restore is the
+    first thing to set, so a restore that landed before anything was listening
+    would leave the session unrenewed, to die quietly at its first expiry.
+  */
+  void restoreSession(store);
+
   createRoot(root, {
     /*
       Only the uncaught handler reports, and the omission of `onCaughtError` is

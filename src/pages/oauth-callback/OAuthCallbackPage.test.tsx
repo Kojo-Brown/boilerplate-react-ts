@@ -5,8 +5,8 @@ import { http, HttpResponse } from "msw";
 import { Provider } from "react-redux";
 import { server } from "@/shared/mocks/server";
 import { makeStore } from "@/test/renderWithProviders";
-import { AUTH_STORAGE_KEYS } from "@/entities/session/authSlice";
 import { OAUTH_STORAGE_KEYS } from "@/features/auth/oauth";
+import { appStorageKeys } from "@/test/localStorage";
 import { OAuthCallbackPage } from "@/pages/oauth-callback/OAuthCallbackPage";
 
 const API = "http://localhost:4000";
@@ -67,7 +67,15 @@ describe("OAuthCallbackPage", () => {
     const { store } = renderCallback("/auth/callback?code=AUTH_CODE&state=valid-state");
     expect(await screen.findByText("Dashboard")).toBeInTheDocument();
     expect(store.getState().auth.token).toBe("google-access-token");
-    expect(localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN)).toBe("google-access-token");
+    expect(store.getState().auth.status).toBe("authenticated");
+    /*
+      The exchanged access token stays in memory. The OAuth flow's own
+      `sessionStorage` entries are the PKCE verifier and `state` nonce, which
+      `validateOAuthCallback` clears on its way out — so after a successful
+      exchange nothing about this session is in storage at all.
+    */
+    expect(appStorageKeys(localStorage)).toEqual([]);
+    expect(appStorageKeys(sessionStorage)).toEqual([]);
   });
 
   it("redirects to login when the token exchange API fails", async () => {

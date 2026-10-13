@@ -8,14 +8,21 @@ import { startSilentRefresh, stopSilentRefresh } from "@/features/auth/silentRef
 const API = "http://localhost:4000";
 const mockUser: AuthUser = { id: "1", email: "test@example.com", role: "user" };
 
-interface RefreshRequestBody {
-  refreshToken: string;
-}
+/**
+ * What the refresh request is allowed to carry.
+ *
+ * Deliberately a type with no members: the endpoint used to take the refresh
+ * token in its body, and the contract now is that it takes nothing, because the
+ * credential travels in an `HttpOnly` cookie the browser attaches. The assertion
+ * below reads the body back and checks it holds no token — a body is the one
+ * place a regression would put one, and it would be invisible to a test that
+ * only checked the request was made.
+ */
+type RefreshRequestBody = Record<string, unknown>;
 
 describe("silentRefresh", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    localStorage.clear();
   });
 
   afterEach(() => {
@@ -23,13 +30,13 @@ describe("silentRefresh", () => {
     vi.useRealTimers();
   });
 
-  it("does not schedule a refresh timer when there is no stored token", async () => {
+  it("does not schedule a refresh timer when there is no token in memory", async () => {
     const store = makeStore();
     const refreshCalled = vi.fn();
     server.use(
       http.post(`${API}/auth/refresh`, () => {
         refreshCalled();
-        return HttpResponse.json({ token: "t", expiresIn: 900 });
+        return HttpResponse.json({ token: "t", expiresIn: 900, user: mockUser });
       }),
     );
 
@@ -41,18 +48,21 @@ describe("silentRefresh", () => {
 
   it("fires the refresh endpoint approximately 1 minute before token expiry", async () => {
     const store = makeStore();
-    store.dispatch(
-      setCredentials({ token: "tok", refreshToken: "ref-tok", expiresIn: 120, user: mockUser }),
-    );
+    store.dispatch(setCredentials({ token: "tok", expiresIn: 120, user: mockUser }));
 
     // Held in an object rather than a bare `let`: TypeScript's control-flow
     // analysis cannot see the assignment inside the async handler and would
     // narrow a `let` to `null` for the rest of the test.
-    const captured: { body: RefreshRequestBody | null } = { body: null };
+    const captured: { body: RefreshRequestBody | null; credentials: RequestCredentials | null } = {
+      body: null,
+      credentials: null,
+    };
     server.use(
       http.post(`${API}/auth/refresh`, async ({ request }) => {
-        captured.body = (await request.json()) as RefreshRequestBody;
-        return HttpResponse.json({ token: "new-tok", expiresIn: 900 });
+        captured.credentials = request.credentials;
+        const text = await request.text();
+        captured.body = text === "" ? {} : (JSON.parse(text) as RefreshRequestBody);
+        return HttpResponse.json({ token: "new-tok", expiresIn: 900, user: mockUser });
       }),
     );
 
@@ -70,18 +80,21 @@ describe("silentRefresh", () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(captured.body).not.toBeNull();
-    expect(captured.body?.refreshToken).toBe("ref-tok");
+    // The credential is not in the body, because it is not in JavaScript at all.
+    expect(captured.body).not.toHaveProperty("refreshToken");
+    // And the request is the kind that carries a cookie. Without this the
+    // browser omits it cross-origin and every refresh 401s — a failure no
+    // assertion about the body would notice.
+    expect(captured.credentials).toBe("include");
   });
 
   it("updates the Redux access token after the silent refresh completes", async () => {
     const store = makeStore();
-    store.dispatch(
-      setCredentials({ token: "old-tok", refreshToken: "ref-tok", expiresIn: 120, user: mockUser }),
-    );
+    store.dispatch(setCredentials({ token: "old-tok", expiresIn: 120, user: mockUser }));
 
     server.use(
       http.post(`${API}/auth/refresh`, () =>
-        HttpResponse.json({ token: "refreshed-tok", expiresIn: 900 }),
+        HttpResponse.json({ token: "refreshed-tok", expiresIn: 900, user: mockUser }),
       ),
     );
 
@@ -96,15 +109,13 @@ describe("silentRefresh", () => {
 
   it("clears the refresh timer when the user logs out", async () => {
     const store = makeStore();
-    store.dispatch(
-      setCredentials({ token: "tok", refreshToken: "ref", expiresIn: 120, user: mockUser }),
-    );
+    store.dispatch(setCredentials({ token: "tok", expiresIn: 120, user: mockUser }));
 
     const refreshCalled = vi.fn();
     server.use(
       http.post(`${API}/auth/refresh`, () => {
         refreshCalled();
-        return HttpResponse.json({ token: "new", expiresIn: 900 });
+        return HttpResponse.json({ token: "new", expiresIn: 900, user: mockUser });
       }),
     );
 
@@ -118,9 +129,7 @@ describe("silentRefresh", () => {
 
   it("reschedules the timer after a successful token refresh", async () => {
     const store = makeStore();
-    store.dispatch(
-      setCredentials({ token: "tok", refreshToken: "ref", expiresIn: 120, user: mockUser }),
-    );
+    store.dispatch(setCredentials({ token: "tok", expiresIn: 120, user: mockUser }));
 
     let callCount = 0;
     server.use(
@@ -147,15 +156,13 @@ describe("silentRefresh", () => {
 
   it("stopSilentRefresh cancels a pending refresh timer", async () => {
     const store = makeStore();
-    store.dispatch(
-      setCredentials({ token: "tok", refreshToken: "ref", expiresIn: 120, user: mockUser }),
-    );
+    store.dispatch(setCredentials({ token: "tok", expiresIn: 120, user: mockUser }));
 
     const refreshCalled = vi.fn();
     server.use(
       http.post(`${API}/auth/refresh`, () => {
         refreshCalled();
-        return HttpResponse.json({ token: "new", expiresIn: 900 });
+        return HttpResponse.json({ token: "new", expiresIn: 900, user: mockUser });
       }),
     );
 

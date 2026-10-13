@@ -1,4 +1,4 @@
-import { test, expect, API_BASE, mockAuthResponse } from "./fixtures";
+import { test, expect, API_BASE, mockAuthResponse, fulfillJson } from "./fixtures";
 
 test.describe("Protected route", () => {
   test("unauthenticated user is redirected to /login", async ({ page }) => {
@@ -35,27 +35,47 @@ test.describe("Protected route", () => {
     await expect(page).not.toHaveURL(/\/login/);
   });
 
-  test("user is logged out and redirected when token is cleared from storage", async ({
+  /*
+    Replaces a test that cleared `localStorage` and reloaded.
+
+    That is no longer a way to end a session — there is nothing of the session
+    in storage to clear — so the test would have passed for the wrong reason:
+    green because the user was redirected, while the thing it claimed to clear
+    had no bearing on it. Expiry and revocation now show up as a rejected
+    refresh cookie, so that is what this simulates.
+  */
+  test("user is redirected when the refresh cookie is no longer accepted", async ({
     authedPage,
+    context,
   }) => {
     await authedPage.goto("/dashboard");
     await expect(authedPage.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 
-    // Clear auth from storage — simulates expiry or manual logout
-    await authedPage.evaluate(() => localStorage.clear());
+    // Revoked server-side, which is what a logout elsewhere or an expiry looks
+    // like from here: the cookie may still be in the jar and is simply refused.
+    await context.clearCookies();
     await authedPage.reload();
 
     await expect(authedPage).toHaveURL(/\/login/);
   });
 
+  test("a signed-in user survives a reload, with no token in storage to survive on", async ({
+    authedPage,
+  }) => {
+    await authedPage.goto("/dashboard");
+    await expect(authedPage.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+
+    // The property the whole item turns on. Before this change the session
+    // survived a reload because four keys were read back out of
+    // `localStorage`; now it survives because the cookie is re-exchanged, and
+    // storage is empty throughout.
+    await authedPage.reload();
+    await expect(authedPage.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+    expect(await authedPage.evaluate(() => Object.keys(localStorage))).toEqual([]);
+  });
+
   test("login while authenticated redirects straight to dashboard", async ({ page }) => {
-    await page.route(`${API_BASE}/auth/login`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(mockAuthResponse),
-      }),
-    );
+    await page.route(`${API_BASE}/auth/login`, (route) => fulfillJson(route, mockAuthResponse));
 
     await page.goto("/login");
     await page.getByLabel("Email").fill("test@example.com");

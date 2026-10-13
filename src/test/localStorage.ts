@@ -59,3 +59,45 @@ export function installStorageFallback(): void {
     }
   }
 }
+
+/**
+ * The key MSW uses for its own cookie jar, which is not application state.
+ *
+ * `setupServer` honours `Set-Cookie` by keeping a jar, and under jsdom it
+ * persists that jar to `localStorage`. So from the moment the auth handlers
+ * started issuing a real refresh cookie, every suite that touches them has an
+ * extra `localStorage` key — written by the test harness, containing the
+ * harness's copy of the cookie.
+ *
+ * This matters for what a unit test can honestly claim. `localStorage.length
+ * === 0` stops meaning "the application persisted nothing" and starts meaning
+ * "the application persisted nothing *and* no handler set a cookie", which is
+ * the opposite of what these tests want to exercise. Worse, the jar's value
+ * contains the refresh token, so a jsdom test that grepped storage for the
+ * token would fail on MSW's bookkeeping while the application was behaving
+ * perfectly.
+ *
+ * The split that follows: a unit test asserts the *application* writes nothing,
+ * using {@link appStorageKeys} to exclude this one key. That an `HttpOnly`
+ * cookie is genuinely unreachable from JavaScript is a browser guarantee, not a
+ * jsdom one, and is asserted in `e2e/token-storage.spec.ts` against a real
+ * cookie jar instead.
+ */
+export const MSW_COOKIE_STORE_KEY = "__msw-cookie-store__";
+
+/**
+ * Every key in `storage` that the application itself put there.
+ *
+ * Returns keys rather than taking a list to check against, so a caller asserts
+ * on the whole set: `expect(appStorageKeys(localStorage)).toEqual([])` fails for
+ * a credential written under *any* name, where a check against four known names
+ * only fails for those four.
+ */
+export function appStorageKeys(storage: Storage): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (key !== null && key !== MSW_COOKIE_STORE_KEY) keys.push(key);
+  }
+  return keys.sort();
+}

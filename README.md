@@ -649,6 +649,55 @@ that is correct in every browser and raw in the one place it mattered.
 [docs/xss.md](docs/xss.md) has the full policy, the payload corpus, and an
 honest list of what the rule cannot see.
 
+## Token storage
+
+The access token is a JavaScript variable — the `auth` slice — and the refresh
+token is an `HttpOnly` cookie the server sets. Nothing about the session is
+persisted by the client: no token, no user, no expiry, under any key.
+
+The asymmetry that motivates it is about blast radius, not about tokens being
+special. `localStorage` is readable by every script on the origin, which is fine
+for a theme preference. An access token there is a bad fifteen minutes. A
+_refresh_ token there is the account — it is long-lived by definition, so one
+line of injected script buys renewable access that outlives the page, the tab
+and the browser session, silently. `HttpOnly` is the one place script cannot
+reach, and it is enforced by the browser, which is why the only honest test of
+it is `e2e/token-storage.spec.ts` running `document.cookie` in a real Chromium.
+
+The interesting cost is what a reload became. Reading four keys out of storage
+was synchronous, so "is there a session?" had two answers and both were
+available before the first render. Now the only durable part of the session is a
+cookie the client cannot read, so the question is a round trip to
+`POST /auth/refresh` and there is a third answer: _not yet known_. That is what
+`AuthStatus` is for. Collapsing it back into "no token" — redirecting whenever
+`token === null` — throws every signed-in user out of the application on every
+reload, a few hundred milliseconds before the session they still have finishes
+being restored, and leaves them on `/login` because the restore completing does
+not un-navigate them. So `ProtectedRoute` waits while `restoring` and redirects
+only once `anonymous`; `restoring` is entered only by the restore itself, never
+by `initialState`, so a cold visit to a protected URL still redirects on the
+first render instead of hanging on a spinner nothing will resolve.
+
+`credentials: "include"` is set on the four auth endpoints individually rather
+than on the shared `fetchBaseQuery`. One line on the base query would have
+attached the refresh cookie to `/posts`, `/feed` and everything added later;
+`Path=/auth` means the browser would withhold it anyway, so the client asks only
+where it is needed and the cookie is scoped so that is the only place it could
+go.
+
+`tokens/no-token-storage` is what stops this decaying, because none of it is
+self-sustaining: `localStorage.setItem` is one line, it is the obvious fix for "I
+get signed out when I reload", and it type-checks, lints and passes every other
+test. It reports a credential-shaped key in Web Storage anywhere, and _any_
+storage access at all inside `entities/session/` and `features/auth/` — the
+second being the one that catches the code this replaced, whose keys were member
+expressions a key-matching rule cannot read. `localStorage` itself is not
+banned; the theme toggle, the locale preference and the offline queue all use it
+correctly. The one exemption is `oauth.ts`, whose PKCE verifier has to survive a
+cross-origin redirect and therefore cannot live in memory.
+[docs/token-storage.md](docs/token-storage.md) has the cookie attributes, the
+server's three obligations, and the table of which property is proved where.
+
 ## Content-Security-Policy with nonces
 
 `script-src 'self' 'nonce-…' 'strict-dynamic'`, with a fresh nonce on every

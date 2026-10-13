@@ -20,10 +20,22 @@ function scheduleRefresh(store: AppStore, expiresAt: number): void {
 
   timerId = setTimeout(() => {
     timerId = null;
-    const { refreshToken } = store.getState().auth;
-    if (!refreshToken) return;
+    /*
+      Gated on there being a live access token rather than on a refresh token,
+      which no longer exists in store state — the credential is in an `HttpOnly`
+      cookie the browser attaches and this code cannot see. `token` is the right
+      stand-in: the timer was scheduled from an `expiresAt` that only a live
+      session sets, and a `logout()` between scheduling and firing clears both.
 
-    void store.dispatch(authApi.endpoints.refresh.initiate(refreshToken));
+      The check still earns its place. `scheduleRefresh` can be called with a
+      delay of 0 for a token that is already near expiry, so the callback can
+      land in the same task queue as a logout dispatched from elsewhere, and a
+      refresh fired after sign-out would re-authenticate a user who just left.
+    */
+    const { token } = store.getState().auth;
+    if (token === null) return;
+
+    void store.dispatch(authApi.endpoints.refresh.initiate());
   }, delay);
 }
 

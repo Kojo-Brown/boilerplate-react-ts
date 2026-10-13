@@ -123,28 +123,73 @@ export const UNREGISTERED_TARGETS: readonly (Omit<AuditTarget, "route"> & { url:
   { name: "slow route lab", url: "/labs/navigation/slow", ready: "h1" },
 ];
 
-/** Must mirror AUTH_STORAGE_KEYS in src/entities/session/authSlice.ts */
-const AUTH_STORAGE_KEYS = {
-  ACCESS_TOKEN: "auth.accessToken",
-  REFRESH_TOKEN: "auth.refreshToken",
-  EXPIRES_AT: "auth.expiresAt",
-  USER: "auth.user",
-} as const;
-
-/** Obviously-fake session, seeded so `ProtectedRoute` lets the audit through. */
+/**
+ * Signs the audit in, so `ProtectedRoute` lets it through to the real content.
+ *
+ * Seeded by *performing a login* rather than by writing four `localStorage`
+ * keys, which is how this worked until the access token moved into memory.
+ * There is no longer anything to write: the store reads nothing from storage on
+ * boot, so a session has to be established the way the application establishes
+ * one.
+ *
+ * It has to survive the `page.goto()` that follows, which is a full document
+ * load and therefore discards the in-memory access token. What carries it
+ * across is the refresh cookie and the boot restore — the production mechanism,
+ * exercised rather than bypassed.
+ *
+ * The login goes through `fetch` rather than the sign-in form because the point
+ * is the cookie, not the UI: MSW answers `POST /auth/login` with the
+ * `Set-Cookie`, records it in its own jar, and attaches it to the
+ * `POST /auth/refresh` that `restoreSession` makes on the next load.
+ *
+ * A browser-jar cookie installed with `context.addCookies()` would *not* work
+ * here, which is worth stating because it is the obvious thing to reach for:
+ * MSW's worker never sees a real `Cookie` header, since the browser attaches
+ * cookies after the service worker has already had the request. Under MSW the
+ * only cookies that exist are the ones MSW itself issued.
+ */
 export async function seedSession(page: Page): Promise<void> {
+  // A document to run in, and the visit that registers MSW's worker.
   await page.goto("/");
-  await page.evaluate(
-    ({ keys, expiresAt }) => {
-      localStorage.setItem(keys.ACCESS_TOKEN, "mock-access-token");
-      localStorage.setItem(keys.REFRESH_TOKEN, "mock-refresh-token");
-      localStorage.setItem(keys.EXPIRES_AT, JSON.stringify(expiresAt));
-      localStorage.setItem(
-        keys.USER,
-        JSON.stringify({ id: "1", email: "audit@example.test", role: "user" }),
-      );
-    },
-    { keys: AUTH_STORAGE_KEYS, expiresAt: Date.now() + 15 * 60 * 1000 },
+
+  /*
+    Retried, because the worker's registration races this.
+
+    `page.goto()` resolves on `load`, and MSW's `worker.start()` is awaited in
+    `main.tsx` some time after that — so the first login attempt can be issued
+    before any handler is installed, in which case it reaches the real network
+    and fails with `ERR_CONNECTION_REFUSED` against an API that is not running.
+    The failure is a bare `TypeError: Failed to fetch` with nothing to point at
+    the cause, which is why this polls rather than asserting once.
+  */
+  const deadline = Date.now() + 15_000;
+  let lastStatus = 0;
+
+  for (;;) {
+    lastStatus = await page.evaluate(async () => {
+      try {
+        const res = await fetch("http://localhost:4000/auth/login", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: "audit@example.test", password: "obviously-fake" }),
+        });
+        return res.status;
+      } catch {
+        // MSW is not answering yet.
+        return 0;
+      }
+    });
+
+    if (lastStatus === 200) return;
+    if (Date.now() > deadline) break;
+    await page.waitForTimeout(250);
+  }
+
+  throw new Error(
+    `Audit sign-in failed: POST /auth/login last answered ${lastStatus} after 15s. ` +
+      `The audit server runs with MSW enabled — check that the worker starts and that ` +
+      `shared/mocks/handlers.ts still issues a refresh cookie on login.`,
   );
 }
 
