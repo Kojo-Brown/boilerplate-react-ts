@@ -27,7 +27,6 @@ describe("RoleGuard", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: { id: "1", email: "admin@example.com", role: "admin" },
       }),
@@ -47,7 +46,6 @@ describe("RoleGuard", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: { id: "1", email: "user@example.com", role: "user" },
       }),
@@ -67,7 +65,6 @@ describe("RoleGuard", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: { id: "1", email: "user@example.com", role: "user" },
       }),
@@ -88,7 +85,6 @@ describe("RoleGuard", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: { id: "1", email: "editor@example.com", role: "editor" },
       }),

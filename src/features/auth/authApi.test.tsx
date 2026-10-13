@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { server } from "@/shared/mocks/server";
 import { renderWithProviders } from "@/test/renderWithProviders";
-import { setCredentials, AUTH_STORAGE_KEYS, type AuthUser } from "@/entities/session/authSlice";
+import { appStorageKeys } from "@/test/localStorage";
+import { setCredentials, type AuthUser } from "@/entities/session/authSlice";
 import {
   useLoginMutation,
   useRefreshMutation,
@@ -40,7 +41,7 @@ function RefreshButton() {
     <div>
       <button
         onClick={() => {
-          refresh("my-refresh-token").catch(() => undefined);
+          refresh().catch(() => undefined);
         }}
       >
         Refresh
@@ -68,17 +69,12 @@ function LogoutButton() {
 }
 
 describe("authApi — useLoginMutation", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
   it("stores credentials in Redux state on successful login", async () => {
     const user = userEvent.setup();
     server.use(
       http.post(`${API}/auth/login`, () =>
         HttpResponse.json({
           token: "access-tok",
-          refreshToken: "ref-tok",
           expiresIn: 900,
           user: mockUser,
         }),
@@ -94,31 +90,63 @@ describe("authApi — useLoginMutation", () => {
 
     const authState = store.getState().auth;
     expect(authState.token).toBe("access-tok");
-    expect(authState.refreshToken).toBe("ref-tok");
     expect(authState.user).toEqual(mockUser);
     expect(authState.expiresAt).toBeGreaterThan(Date.now());
+    expect(authState.status).toBe("authenticated");
   });
 
-  it("persists access token and refresh token to localStorage on login", async () => {
+  /*
+    The inverse of the test that used to be here, which asserted both tokens
+    reached `localStorage`. Kept as a test rather than deleted along with the
+    behaviour: "login persists nothing" is the property the item buys, and it
+    is the one a well-meaning fix for "I lose my session on reload" breaks.
+
+    Asserts on the whole of storage rather than on four key names, so a
+    credential written under a fifth name fails it too.
+  */
+  it("writes nothing to localStorage on login", async () => {
     const user = userEvent.setup();
     server.use(
       http.post(`${API}/auth/login`, () =>
         HttpResponse.json({
           token: "access-tok",
-          refreshToken: "ref-tok",
           expiresIn: 900,
           user: mockUser,
         }),
       ),
     );
 
+    const { store } = renderWithProviders(<LoginButton />);
+    await user.click(screen.getByRole("button", { name: "Login" }));
+
+    await waitFor(() => {
+      expect(store.getState().auth.token).toBe("access-tok");
+    });
+
+    expect(appStorageKeys(localStorage)).toEqual([]);
+    expect(appStorageKeys(sessionStorage)).toEqual([]);
+  });
+
+  it("sends the login request with credentials so the Set-Cookie is honoured", async () => {
+    const user = userEvent.setup();
+    const captured: { credentials: RequestCredentials | null } = { credentials: null };
+    server.use(
+      http.post(`${API}/auth/login`, ({ request }) => {
+        captured.credentials = request.credentials;
+        return HttpResponse.json({ token: "access-tok", expiresIn: 900, user: mockUser });
+      }),
+    );
+
     renderWithProviders(<LoginButton />);
     await user.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
-      expect(localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN)).toBe("access-tok");
-      expect(localStorage.getItem(AUTH_STORAGE_KEYS.REFRESH_TOKEN)).toBe("ref-tok");
+      expect(screen.getByText("Logged in!")).toBeInTheDocument();
     });
+
+    // Without this the browser drops the refresh cookie the response sets, and
+    // the session dies at the first reload with no other symptom.
+    expect(captured.credentials).toBe("include");
   });
 
   it("shows error state when login credentials are invalid", async () => {
@@ -139,15 +167,11 @@ describe("authApi — useLoginMutation", () => {
 });
 
 describe("authApi — useRefreshMutation", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
   it("updates the access token in Redux state after a successful refresh", async () => {
     const user = userEvent.setup();
     server.use(
       http.post(`${API}/auth/refresh`, () =>
-        HttpResponse.json({ token: "new-access-tok", expiresIn: 900 }),
+        HttpResponse.json({ token: "new-access-tok", expiresIn: 900, user: mockUser }),
       ),
     );
 
@@ -162,11 +186,38 @@ describe("authApi — useRefreshMutation", () => {
     expect(store.getState().auth.expiresAt).toBeGreaterThan(Date.now());
   });
 
-  it("updates the access token in localStorage after refresh", async () => {
+  it("sends no refresh token in the body and asks for the cookie instead", async () => {
+    const user = userEvent.setup();
+    const captured: { body: string; credentials: RequestCredentials | null } = {
+      body: "unset",
+      credentials: null,
+    };
+    server.use(
+      http.post(`${API}/auth/refresh`, async ({ request }) => {
+        captured.credentials = request.credentials;
+        captured.body = await request.text();
+        return HttpResponse.json({ token: "new-access-tok", expiresIn: 900, user: mockUser });
+      }),
+    );
+
+    renderWithProviders(<RefreshButton />);
+    await user.click(screen.getByRole("button", { name: "Refresh" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Refreshed!")).toBeInTheDocument();
+    });
+
+    // The endpoint takes `void`, so there is nothing a call site could put
+    // here — this pins that the wire agrees with the signature.
+    expect(captured.body).toBe("");
+    expect(captured.credentials).toBe("include");
+  });
+
+  it("writes nothing to localStorage after refresh", async () => {
     const user = userEvent.setup();
     server.use(
       http.post(`${API}/auth/refresh`, () =>
-        HttpResponse.json({ token: "new-access-tok", expiresIn: 900 }),
+        HttpResponse.json({ token: "new-access-tok", expiresIn: 900, user: mockUser }),
       ),
     );
 
@@ -174,16 +225,14 @@ describe("authApi — useRefreshMutation", () => {
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
     await waitFor(() => {
-      expect(localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN)).toBe("new-access-tok");
+      expect(screen.getByText("Refreshed!")).toBeInTheDocument();
     });
+
+    expect(appStorageKeys(localStorage)).toEqual([]);
   });
 });
 
 describe("authApi — useLogoutUserMutation", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
   it("clears auth state in Redux after logout", async () => {
     const user = userEvent.setup();
     server.use(http.post(`${API}/auth/logout`, () => new HttpResponse(null, { status: 200 })));
@@ -192,7 +241,6 @@ describe("authApi — useLogoutUserMutation", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: mockUser,
       }),
@@ -206,9 +254,8 @@ describe("authApi — useLogoutUserMutation", () => {
 
     const authState = store.getState().auth;
     expect(authState.token).toBeNull();
-    expect(authState.refreshToken).toBeNull();
     expect(authState.user).toBeNull();
-    expect(localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN)).toBeNull();
+    expect(authState.status).toBe("anonymous");
   });
 
   it("clears auth state even when the server logout request fails", async () => {
@@ -223,7 +270,6 @@ describe("authApi — useLogoutUserMutation", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: mockUser,
       }),

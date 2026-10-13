@@ -38,7 +38,6 @@ describe("useAuth", () => {
     store.dispatch(
       setCredentials({
         token: "tok-abc",
-        refreshToken: "ref-tok",
         expiresIn: 900,
         user: { id: "1", email: "user@example.com", role: "user" },
       }),
@@ -54,7 +53,6 @@ describe("useAuth", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: { id: "1", email: "admin@example.com", role: "admin" },
       }),
@@ -77,7 +75,6 @@ describe("useAuth", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: { id: "1", email: "editor@example.com", role: "editor" },
       }),
@@ -98,7 +95,6 @@ describe("useAuth", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: { id: "1", email: "user@example.com", role: "user" },
       }),

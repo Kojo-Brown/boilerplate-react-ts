@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import type { ReactNode } from "react";
 import { makeStore } from "@/test/renderWithProviders";
 import { setCredentials, logout } from "@/entities/session/authSlice";
-import { usePersistedSession } from "@/entities/session/usePersistedSession";
+import { useSessionExpiry } from "@/entities/session/useSessionExpiry";
 
 function makeWrapper(store: ReturnType<typeof makeStore>) {
   return function Wrapper({ children }: { children: ReactNode }) {
@@ -14,10 +14,9 @@ function makeWrapper(store: ReturnType<typeof makeStore>) {
 
 const mockUser = { id: "1", email: "test@example.com", role: "user" as const };
 
-describe("usePersistedSession", () => {
+describe("useSessionExpiry", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    localStorage.clear();
   });
 
   afterEach(() => {
@@ -28,7 +27,7 @@ describe("usePersistedSession", () => {
     const store = makeStore();
     renderHook(
       () => {
-        usePersistedSession();
+        useSessionExpiry();
       },
       { wrapper: makeWrapper(store) },
     );
@@ -45,7 +44,6 @@ describe("usePersistedSession", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 1,
         user: mockUser,
       }),
@@ -55,7 +53,7 @@ describe("usePersistedSession", () => {
 
     renderHook(
       () => {
-        usePersistedSession();
+        useSessionExpiry();
       },
       { wrapper: makeWrapper(store) },
     );
@@ -69,7 +67,6 @@ describe("usePersistedSession", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 90,
         user: mockUser,
       }),
@@ -77,7 +74,7 @@ describe("usePersistedSession", () => {
 
     renderHook(
       () => {
-        usePersistedSession();
+        useSessionExpiry();
       },
       { wrapper: makeWrapper(store) },
     );
@@ -100,7 +97,6 @@ describe("usePersistedSession", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: mockUser,
       }),
@@ -109,7 +105,7 @@ describe("usePersistedSession", () => {
     const dispatchSpy = vi.spyOn(store, "dispatch");
     renderHook(
       () => {
-        usePersistedSession();
+        useSessionExpiry();
       },
       { wrapper: makeWrapper(store) },
     );
@@ -129,7 +125,6 @@ describe("usePersistedSession", () => {
     store.dispatch(
       setCredentials({
         token: "tok",
-        refreshToken: "ref",
         expiresIn: 900,
         user: mockUser,
       }),
@@ -137,7 +132,7 @@ describe("usePersistedSession", () => {
 
     const { unmount } = renderHook(
       () => {
-        usePersistedSession();
+        useSessionExpiry();
       },
       {
         wrapper: makeWrapper(store),

@@ -47,9 +47,18 @@ export function makeCreatePostInput(overrides: Partial<CreatePostInput> = {}): C
   };
 }
 
+/**
+ * A successful `POST /auth/login` or `/auth/refresh`, as the server now answers.
+ *
+ * `refreshToken` was a field here until the refresh token moved into an
+ * `HttpOnly` cookie. Removing it from the factory matters more than it looks:
+ * a factory is the shape test authors copy, so one that kept minting a refresh
+ * token would keep producing tests that pass against a response the server
+ * never sends — and would quietly invite the next person to read it from the
+ * body. The cookie is issued by `Set-Cookie` in `shared/mocks/handlers.ts`.
+ */
 export interface AuthTokenResponse {
   token: string;
-  refreshToken: string;
   expiresIn: number;
   user: AuthUser;
 }
@@ -57,7 +66,6 @@ export interface AuthTokenResponse {
 export function makeAuthResponse(overrides: Partial<AuthTokenResponse> = {}): AuthTokenResponse {
   return {
     token: "mock-access-token",
-    refreshToken: "mock-refresh-token",
     expiresIn: 900,
     user: makeUser(),
     ...overrides,

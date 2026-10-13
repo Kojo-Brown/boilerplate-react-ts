@@ -7,6 +7,7 @@ import tseslint from "typescript-eslint";
 import { fsdPlugin } from "./tooling/eslint/fsdBoundaries";
 import { i18nPlugin } from "./tooling/eslint/logicalProperties";
 import { securityPlugin } from "./tooling/eslint/noDangerousHtml";
+import { tokenStoragePlugin } from "./tooling/eslint/noTokenStorage";
 
 /**
  * Files permitted to parse a string as HTML.
@@ -19,6 +20,38 @@ import { securityPlugin } from "./tooling/eslint/noDangerousHtml";
  * becomes paperwork.
  */
 const HTML_SANITISATION_BOUNDARY = ["src/shared/ui/RichText.tsx"];
+
+/**
+ * The modules that hold the session, and may not touch Web Storage at all.
+ *
+ * Directories rather than files, so a module added to either slice inherits the
+ * ban instead of having to be remembered. These are the two places a
+ * credential legitimately exists in this application — the `auth` slice holds
+ * the access token in memory, the auth feature performs the login, refresh and
+ * logout that produce it — and neither has any business persisting it: the
+ * refresh token is an `HttpOnly` cookie the browser keeps and this code cannot
+ * read. `docs/token-storage.md` is the policy; the rule is what keeps it true
+ * after the pull request that established it has scrolled out of view.
+ */
+const SESSION_MODULES = ["src/entities/session", "src/features/auth"];
+
+/**
+ * The one file inside {@link SESSION_MODULES} allowed to use Web Storage.
+ *
+ * `oauth.ts` holds the PKCE code verifier and the `state` nonce across a
+ * full-page redirect to Google and back. That round trip discards the
+ * JavaScript heap, so memory — where every other part of the session now lives
+ * — cannot carry them, and `sessionStorage` is what RFC 8252's browser-app
+ * profile specifies instead. Both values are single-use, live for the seconds
+ * between two navigations, and are useless without the authorization code they
+ * are exchanged with, which is a different risk profile from a refresh token
+ * that is valid for a week.
+ *
+ * Named here rather than disabled at the call site for the same reason as
+ * `HTML_SANITISATION_BOUNDARY`: widening this list is a change to the lint
+ * configuration, which a reviewer reads as one.
+ */
+const OAUTH_TRANSIENT_STORAGE = ["src/features/auth/oauth.ts"];
 
 export default defineConfig(
   // eslint.config.ts is excluded from the tsconfig projects (the `globals`
@@ -50,6 +83,7 @@ export default defineConfig(
       fsd: fsdPlugin,
       i18n: i18nPlugin,
       security: securityPlugin,
+      tokens: tokenStoragePlugin,
     },
     rules: {
       // The React Compiler's own diagnostics, shipped as lint rules by
@@ -104,6 +138,16 @@ export default defineConfig(
       // `tooling/eslint/noDangerousHtml.ts` for the list of sinks and
       // `docs/xss.md` for the policy they leave as the only route.
       "security/no-dangerous-html": ["error", { allow: HTML_SANITISATION_BOUNDARY }],
+      // The token-storage boundary, enforced rather than reviewed. Two checks:
+      // a credential-shaped key in `localStorage`/`sessionStorage` anywhere, and
+      // any storage access at all inside the modules that hold the session.
+      // The second is the one that would have caught the code this replaced,
+      // whose keys were member expressions a key-matching rule cannot read. See
+      // `tooling/eslint/noTokenStorage.ts` and `docs/token-storage.md`.
+      "tokens/no-token-storage": [
+        "error",
+        { session: SESSION_MODULES, allow: OAUTH_TRANSIENT_STORAGE },
+      ],
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       // Interpolating a number is safe and universally readable; the default
@@ -133,6 +177,19 @@ export default defineConfig(
       // second half of that). The ban is about code that renders data, so it is
       // scoped to the code that can receive data.
       "security/no-dangerous-html": "off",
+      /*
+        A test is the one place that *has* to read `localStorage` to prove a
+        token is not in it. `authSlice.test.ts` and
+        `e2e/token-storage.spec.ts` assert exactly that, and under the rule
+        they would be reporting the gap they exist to close.
+
+        Safe for the same reason the XSS ban is off here: nothing in a
+        `.test.` file is in the shipped module graph — `fsd/layer-imports`
+        guarantees it — so a credential written to storage by a test is
+        written in a process that serves no users. The ban is about code that
+        can leak a real session, so it is scoped to the code that has one.
+      */
+      "tokens/no-token-storage": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",

@@ -12,29 +12,107 @@ import type { Post } from "@/entities/post/postsApi";
 
 const API = "http://localhost:4000";
 
+/**
+ * The refresh cookie's name, and the server's half of the token-storage
+ * contract.
+ *
+ * `HttpOnly` is the attribute the whole item turns on: it is what makes the
+ * refresh token unreadable from JavaScript, so an XSS payload that can read
+ * every `localStorage` key on the origin still cannot exfiltrate the
+ * long-lived credential. The rest earn their place too:
+ *
+ * - `Path=/auth` — the cookie is attached to `/auth/refresh` and `/auth/logout`
+ *   and withheld from `/posts`, `/feed` and everything else. A credential that
+ *   travels on requests that have no use for it is a credential with a larger
+ *   blast radius than it needs.
+ * - `SameSite=Strict` — a cross-site request cannot carry it, which is what
+ *   closes the CSRF hole that a cookie-borne credential otherwise opens.
+ *   `Strict` rather than `Lax` because nothing in this flow is a top-level
+ *   navigation: the refresh is always an XHR made by our own origin.
+ * - `Max-Age` — the refresh token outlives the access token by design, and
+ *   bounding it means a stolen cookie is not valid forever.
+ *
+ * `Secure` is absent *only* because these mocks serve `http://localhost`, where
+ * a `Secure` cookie is dropped by the browser. `docs/token-storage.md` carries
+ * the production header, which has it; `cookieAttributes.test.ts` asserts the
+ * shape so the omission cannot quietly spread to the attributes that are not
+ * environment-dependent.
+ */
+export const REFRESH_COOKIE_NAME = "refresh_token";
+
+const REFRESH_TOKEN_VALUE = "mock-refresh-token";
+const REFRESH_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+
+/** The `Set-Cookie` that issues the refresh cookie. */
+export function issueRefreshCookie(value = REFRESH_TOKEN_VALUE): string {
+  return [
+    `${REFRESH_COOKIE_NAME}=${value}`,
+    "HttpOnly",
+    "SameSite=Strict",
+    "Path=/auth",
+    `Max-Age=${REFRESH_MAX_AGE_SECONDS}`,
+  ].join("; ");
+}
+
+/** The `Set-Cookie` that revokes it. `Max-Age=0` is the expiry browsers honour. */
+export function clearRefreshCookie(): string {
+  return [`${REFRESH_COOKIE_NAME}=`, "HttpOnly", "SameSite=Strict", "Path=/auth", "Max-Age=0"].join(
+    "; ",
+  );
+}
+
+const MOCK_USER = { id: "1", email: "test@example.com", role: "user" } as const;
+
 export const authHandlers = [
   http.post(`${API}/auth/login`, () =>
-    HttpResponse.json({
-      token: "mock-access-token",
-      refreshToken: "mock-refresh-token",
-      expiresIn: 900,
-      user: { id: "1", email: "test@example.com", role: "user" },
-    }),
+    HttpResponse.json(
+      {
+        token: "mock-access-token",
+        expiresIn: 900,
+        user: MOCK_USER,
+      },
+      { headers: { "Set-Cookie": issueRefreshCookie() } },
+    ),
   ),
-  http.post(`${API}/auth/refresh`, () =>
-    HttpResponse.json({ token: "mock-refreshed-token", expiresIn: 900 }),
+
+  /*
+    Answers from the cookie, and 401s without it.
+
+    This is the half that makes the contract testable rather than assumed. A
+    handler that returned a token unconditionally would pass every test in the
+    suite while the client sent no cookie at all — which is precisely the
+    regression `credentials: "include"` exists to prevent, and precisely the one
+    an always-200 mock cannot see. `e2e/token-storage.spec.ts` checks the same
+    contract against a real browser's cookie jar.
+  */
+  http.post(`${API}/auth/refresh`, ({ cookies }) => {
+    if (cookies[REFRESH_COOKIE_NAME] === undefined) {
+      return HttpResponse.json({ message: "No refresh cookie" }, { status: 401 });
+    }
+    return HttpResponse.json(
+      { token: "mock-refreshed-token", expiresIn: 900, user: MOCK_USER },
+      // Rotated on every use: a refresh token that is accepted twice is a
+      // refresh token a thief can keep using alongside its owner.
+      { headers: { "Set-Cookie": issueRefreshCookie("mock-rotated-refresh-token") } },
+    );
+  }),
+
+  http.post(
+    `${API}/auth/logout`,
+    () => new HttpResponse(null, { status: 200, headers: { "Set-Cookie": clearRefreshCookie() } }),
   ),
-  http.post(`${API}/auth/logout`, () => new HttpResponse(null, { status: 200 })),
-  http.get(`${API}/auth/me`, () =>
-    HttpResponse.json({ id: "1", email: "test@example.com", role: "user" }),
-  ),
+
+  http.get(`${API}/auth/me`, () => HttpResponse.json(MOCK_USER)),
+
   http.post(`${API}/auth/google/callback`, () =>
-    HttpResponse.json({
-      token: "google-access-token",
-      refreshToken: "google-refresh-token",
-      expiresIn: 3600,
-      user: { id: "2", email: "google@example.com", role: "user" },
-    }),
+    HttpResponse.json(
+      {
+        token: "google-access-token",
+        expiresIn: 3600,
+        user: { id: "2", email: "google@example.com", role: "user" },
+      },
+      { headers: { "Set-Cookie": issueRefreshCookie("google-refresh-token") } },
+    ),
   ),
 ];
 

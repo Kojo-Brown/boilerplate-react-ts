@@ -71,12 +71,18 @@ describe("factory functions", () => {
     expect(new Set(posts.map((p) => p.id)).size).toBe(3);
   });
 
-  it("makeAuthResponse includes a user and tokens", () => {
+  it("makeAuthResponse includes a user and an access token", () => {
     const response = makeAuthResponse();
     expect(response.token).toBe("mock-access-token");
-    expect(response.refreshToken).toBe("mock-refresh-token");
     expect(response.expiresIn).toBe(900);
     expect(response.user).toBeDefined();
+  });
+
+  it("makeAuthResponse carries no refresh token, matching what the server sends", () => {
+    // The credential is a `Set-Cookie` header, not a body field. A factory that
+    // still minted one would keep producing tests that pass against a response
+    // shape the application no longer receives.
+    expect(makeAuthResponse()).not.toHaveProperty("refreshToken");
   });
 
   it("makeAuthResponse accepts partial overrides", () => {

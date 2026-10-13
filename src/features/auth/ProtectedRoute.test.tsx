@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider, useLocation } from "react-router";
 import { Provider } from "react-redux";
 import { makeStore } from "@/test/renderWithProviders";
-import { setCredentials } from "@/entities/session/authSlice";
+import { setCredentials, sessionRestoreStarted, logout } from "@/entities/session/authSlice";
 import type { UserRole } from "@/entities/session/authSlice";
 import { ProtectedRoute } from "@/features/auth/ProtectedRoute";
 
@@ -51,6 +51,69 @@ function buildTestRouter(
 }
 
 describe("ProtectedRoute", () => {
+  /*
+    The branch that exists because the access token is no longer persisted.
+
+    A reload begins with an empty store and a refresh in flight, so for one
+    round trip a signed-in user looks exactly like a signed-out one. Redirecting
+    on `!token` alone — which was right when the token was read synchronously
+    out of `localStorage` — would bounce every returning user to `/login` on
+    every reload and leave them there, since the restore completing does not
+    un-navigate them.
+
+    These four cases pin the whole state machine, because the failure mode in
+    either direction is bad: redirect too eagerly and you log people out on
+    refresh; wait too eagerly and an anonymous visitor hangs on a spinner that
+    nothing will ever resolve.
+  */
+  describe("while a session is being restored", () => {
+    it("waits instead of redirecting", async () => {
+      const store = makeStore();
+      store.dispatch(sessionRestoreStarted());
+      buildTestRouter("/", store);
+
+      expect(await screen.findByRole("status", { name: "Loading page" })).toBeInTheDocument();
+      expect(screen.queryByText(/Login Page/)).not.toBeInTheDocument();
+      expect(screen.queryByText("Protected Content")).not.toBeInTheDocument();
+    });
+
+    it("renders the protected route once the restore succeeds", async () => {
+      const store = makeStore();
+      store.dispatch(sessionRestoreStarted());
+      buildTestRouter("/", store);
+      await screen.findByRole("status", { name: "Loading page" });
+
+      store.dispatch(
+        setCredentials({
+          token: "restored-token",
+          expiresIn: 900,
+          user: { id: "1", email: "test@example.com", role: "user" },
+        }),
+      );
+
+      expect(await screen.findByText("Protected Content")).toBeInTheDocument();
+    });
+
+    it("redirects once the restore finds no session", async () => {
+      const store = makeStore();
+      store.dispatch(sessionRestoreStarted());
+      buildTestRouter("/", store);
+      await screen.findByRole("status", { name: "Loading page" });
+
+      store.dispatch(logout());
+
+      expect(await screen.findByText(/Login Page/)).toBeInTheDocument();
+    });
+
+    it("does not wait when nothing is restoring, so a cold visit still redirects", async () => {
+      // `restoring` is entered only by `sessionRestoreStarted`, never by
+      // `initialState`. Were it the initial state, this case would hang.
+      const store = makeStore();
+      buildTestRouter("/", store);
+      expect(await screen.findByText(/Login Page/)).toBeInTheDocument();
+    });
+  });
+
   it("redirects to /login when the user is not authenticated", async () => {
     const store = makeStore();
     buildTestRouter("/", store);
@@ -62,7 +125,6 @@ describe("ProtectedRoute", () => {
     store.dispatch(
       setCredentials({
         token: "tok-abc",
-        refreshToken: "ref-tok",
         expiresIn: 900,
         user: { id: "1", email: "user@example.com", role: "user" },
       }),
@@ -89,7 +151,6 @@ describe("ProtectedRoute", () => {
     store.dispatch(
       setCredentials({
         token: "tok-abc",
-        refreshToken: "ref-tok",
         expiresIn: 900,
         user: { id: "1", email: "admin@example.com", role: "admin" },
       }),
@@ -103,7 +164,6 @@ describe("ProtectedRoute", () => {
     store.dispatch(
       setCredentials({
         token: "tok-abc",
-        refreshToken: "ref-tok",
         expiresIn: 900,
         user: { id: "1", email: "editor@example.com", role: "editor" },
       }),
@@ -117,7 +177,6 @@ describe("ProtectedRoute", () => {
     store.dispatch(
       setCredentials({
         token: "tok-abc",
-        refreshToken: "ref-tok",
         expiresIn: 900,
         user: { id: "1", email: "user@example.com", role: "user" },
       }),
