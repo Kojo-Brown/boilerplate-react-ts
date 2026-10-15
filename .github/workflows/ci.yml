@@ -140,6 +140,42 @@ jobs:
           path: playwright-report-a11y/
           retention-days: 7
 
+  supply-chain:
+    name: Supply Chain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Its own job rather than a step of Lint, for two reasons. It is the one
+      # gate here whose verdict depends on the world outside this repository —
+      # an advisory published this morning turns a commit that passed yesterday
+      # red, with no diff — so "Supply Chain" failing while everything else is
+      # green is information a reviewer should be able to read off the checks
+      # list without opening a log. And it needs the network at a point where
+      # none of the other gates do, which makes it the one that fails when a
+      # runner cannot reach the registry; that failure should not be reported
+      # as a lint error.
+      #
+      # `pnpm audit` is NOT run as its own step here. It is invoked by the gate,
+      # which parses the report and applies the severity floor and the
+      # suppressions from `supply-chain-policy.json`. A bare `pnpm audit` step
+      # beside it would apply pnpm's own default threshold, disagree with the
+      # policy, and have to be kept in sync with it by whoever remembers.
+      - name: Verify signatures, advisories and provenance
+        run: pnpm supply-chain --summary "$GITHUB_STEP_SUMMARY"
+
   build:
     name: Build
     runs-on: ubuntu-latest
