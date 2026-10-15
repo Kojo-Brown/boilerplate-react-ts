@@ -18,7 +18,9 @@
     "test:a11y": "playwright test --config=playwright.a11y.config.ts",
     "analyze": "vite build --mode analyze",
     "bundle:budget": "node tooling/bundleBudget/cli.ts",
-    "bundle:budget:update": "node tooling/bundleBudget/cli.ts --update"
+    "bundle:budget:update": "node tooling/bundleBudget/cli.ts --update",
+    "supply-chain": "node tooling/supplyChain/cli.ts",
+    "supply-chain:update": "node tooling/supplyChain/cli.ts --update"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.0",
@@ -35,7 +37,7 @@
     "react-hook-form": "^7.83.0",
     "react-intl": "^12.1.3",
     "react-redux": "^9.2.0",
-    "react-router": "^7.6.2",
+    "react-router": "^7.18.2",
     "tailwind-merge": "^3.3.1",
     "web-vitals": "^6.2.1",
     "xstate": "^5.32.5",
@@ -57,8 +59,8 @@
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.4.2",
-    "@vitest/coverage-v8": "^4.1.10",
-    "@vitest/ui": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/ui": "^4.1.11",
     "axe-core": "4.13.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.30.0",
@@ -76,7 +78,18 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.35.0",
     "vite": "^7.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11",
+    "yaml": "^2.9.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "brace-expansion@1": "^1.1.21",
+      "brace-expansion@5": "^5.0.12",
+      "js-yaml@4": "^4.3.2",
+      "nanoid@3": "^3.3.18",
+      "source-map-js@1": "^1.2.2",
+      "undici@8": "^8.10.2"
+    }
   },
   "lint-staged": {
     "*.{ts,tsx}": [
