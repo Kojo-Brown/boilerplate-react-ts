@@ -50,4 +50,54 @@ describe("paginationRange", () => {
       page(100),
     ]);
   });
+  /*
+   * The property, rather than three more examples of it.
+   *
+   * A control whose entry count depends on which page you are on is a control
+   * that changes size as you use it: the buttons move under the pointer, and
+   * every click lands on a layout one pixel-reflow away from the one that was
+   * clicked. It is the defect a worked example hides, because any single
+   * expectation is self-consistent — you have to compare two pages to see it,
+   * and the honest way to compare two is to compare all of them.
+   */
+  it("keeps the same number of entries whichever page is current", () => {
+    const widths = new Set<number>();
+    for (let current = 1; current <= 100; current++) {
+      widths.add(paginationRange({ page: current, pageCount: 100 }).length);
+    }
+
+    expect([...widths]).toEqual([7]);
+  });
+
+  /*
+   * What fills the space, stated for both ends, because "seven entries" on its
+   * own is satisfiable by padding with anything. Near the start there is
+   * nothing to elide on the left, so the slots a leading gap would have taken
+   * go to real pages — and the current page stops being centred, which is the
+   * trade: a window that always centres cannot also have a constant width at
+   * the edges.
+   */
+  it("spends the leading gap's slots on real pages at the start", () => {
+    expect(paginationRange({ page: 1, pageCount: 100 })).toEqual([
+      page(1),
+      page(2),
+      page(3),
+      page(4),
+      page(5),
+      gap("end"),
+      page(100),
+    ]);
+  });
+
+  it("spends the trailing gap's slots on real pages at the end", () => {
+    expect(paginationRange({ page: 100, pageCount: 100 })).toEqual([
+      page(1),
+      gap("start"),
+      page(96),
+      page(97),
+      page(98),
+      page(99),
+      page(100),
+    ]);
+  });
 });
