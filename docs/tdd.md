@@ -10,7 +10,7 @@ So one component was built the other way round, deliberately and visibly, with
 one commit per step of the cycle. `Pagination` and the `paginationRange`
 function under it are that component. The artefact is not the code — the code
 is unremarkable, which is partly the point — it is the sequence of commits on
-the pull request, where four of the eight steps are commits whose tests fail.
+the pull request, where four of the fourteen steps are commits whose tests fail.
 
 |                                     |                                                                                    |
 | ----------------------------------- | ---------------------------------------------------------------------------------- |
