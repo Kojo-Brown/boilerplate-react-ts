@@ -46,19 +46,47 @@ export function paginationRange({ page, pageCount }: PaginationRangeOptions): Pa
 
   const firstSibling = Math.max(page - 1, 1);
   const lastSibling = Math.min(page + 1, pageCount);
-  const items: PaginationItem[] = [];
+  const needsStartGap = firstSibling > 2;
+  const needsEndGap = lastSibling < pageCount - 1;
 
-  if (firstSibling > 1) {
-    items.push({ type: "page", page: 1 });
-    if (firstSibling > 2) items.push({ type: "gap", side: "start" });
+  /*
+   * Three cases rather than four conditional pushes, and the reason is the
+   * width. Asking at each boundary whether there is anything to elide answers
+   * each question correctly and still gets the total wrong, because a gap that
+   * is not needed leaves a slot nothing claims. Here each case spends every
+   * slot it has: the two edge blocks are MAX_ITEMS - 2 pages long — the run,
+   * one gap, and the far end — and the middle case is a first page, a gap,
+   * three pages, a gap and a last page.
+   *
+   * There is no fourth case. Needing neither gap means the window reaches
+   * within one page of both ends at once, which requires `pageCount` to be no
+   * larger than MAX_ITEMS, and that returned above.
+   */
+  const edgeBlock = MAX_ITEMS - 2;
+
+  if (!needsStartGap) {
+    const items: PaginationItem[] = [];
+    for (let n = 1; n <= edgeBlock; n++) items.push({ type: "page", page: n });
+    items.push({ type: "gap", side: "end" }, { type: "page", page: pageCount });
+    return items;
   }
 
+  if (!needsEndGap) {
+    const items: PaginationItem[] = [
+      { type: "page", page: 1 },
+      { type: "gap", side: "start" },
+    ];
+    for (let n = pageCount - edgeBlock + 1; n <= pageCount; n++) {
+      items.push({ type: "page", page: n });
+    }
+    return items;
+  }
+
+  const items: PaginationItem[] = [
+    { type: "page", page: 1 },
+    { type: "gap", side: "start" },
+  ];
   for (let n = firstSibling; n <= lastSibling; n++) items.push({ type: "page", page: n });
-
-  if (lastSibling < pageCount) {
-    if (lastSibling < pageCount - 1) items.push({ type: "gap", side: "end" });
-    items.push({ type: "page", page: pageCount });
-  }
-
+  items.push({ type: "gap", side: "end" }, { type: "page", page: pageCount });
   return items;
 }
