@@ -6,6 +6,11 @@
  * assertable without rendering anything. `Pagination.tsx` decides what a page
  * number looks like and what happens when one is pressed; this module decides
  * which ones there are.
+ *
+ * It is also the subject of the kata in `docs/tdd.md`: the four properties
+ * below were not designed and then implemented, they were implemented one
+ * failing test at a time, and two of them are properties nobody writes down
+ * in advance. The commit history on the pull request is the artefact.
  */
 
 /** What to show, for whom. */
@@ -29,23 +34,46 @@ export type PaginationItem =
   | { readonly type: "gap"; readonly side: "start" | "end" };
 
 /**
- * The widest the control is allowed to be.
+ * The width of the control, in entries, and it is a width rather than a
+ * maximum: every branch below returns exactly this many once there is
+ * anything to elide.
  *
- * Seven entries: the first page, a gap, the current page with one sibling
- * either side, a gap, and the last page. Anything shorter than this fits
- * without eliding anything.
+ * Seven is the smallest number that fits the five things the control has to
+ * say at once — first page, last page, current page, a sibling either side of
+ * it, and a gap for each run left out — and a `pageCount` at or under it needs
+ * no gaps, because every page fits.
  */
 const MAX_ITEMS = 7;
 
+/**
+ * How many pages an edge block runs for.
+ *
+ * `MAX_ITEMS` minus the two entries an edge block does not spend on a run: the
+ * single gap, and the far end of the range behind it.
+ */
+const EDGE_BLOCK = MAX_ITEMS - 2;
+
+function pageItem(page: number): PaginationItem {
+  return { type: "page", page };
+}
+
+function gapItem(side: "start" | "end"): PaginationItem {
+  return { type: "gap", side };
+}
+
+/** The pages from `start` to `end` inclusive, or nothing if that is empty. */
+function pagesFrom(start: number, end: number): PaginationItem[] {
+  const pages: PaginationItem[] = [];
+  for (let n = start; n <= end; n++) pages.push(pageItem(n));
+  return pages;
+}
+
 export function paginationRange({ page, pageCount }: PaginationRangeOptions): PaginationItem[] {
-  if (pageCount <= MAX_ITEMS) {
-    const all: PaginationItem[] = [];
-    for (let n = 1; n <= pageCount; n++) all.push({ type: "page", page: n });
-    return all;
-  }
+  if (pageCount <= MAX_ITEMS) return pagesFrom(1, pageCount);
 
   const firstSibling = Math.max(page - 1, 1);
   const lastSibling = Math.min(page + 1, pageCount);
+
   /*
    * A gap is worth a slot only once it stands for two pages or more.
    *
@@ -63,41 +91,27 @@ export function paginationRange({ page, pageCount }: PaginationRangeOptions): Pa
    * Three cases rather than four conditional pushes, and the reason is the
    * width. Asking at each boundary whether there is anything to elide answers
    * each question correctly and still gets the total wrong, because a gap that
-   * is not needed leaves a slot nothing claims. Here each case spends every
-   * slot it has: the two edge blocks are MAX_ITEMS - 2 pages long — the run,
-   * one gap, and the far end — and the middle case is a first page, a gap,
-   * three pages, a gap and a last page.
+   * turns out to be unnecessary leaves a slot nothing claims. Each case here
+   * spends all seven.
    *
    * There is no fourth case. Needing neither gap means the current page is
    * within four of the start and within three of the end at once, which
    * requires `pageCount` to be no larger than MAX_ITEMS, and that returned
    * above.
    */
-  const edgeBlock = MAX_ITEMS - 2;
-
   if (!needsStartGap) {
-    const items: PaginationItem[] = [];
-    for (let n = 1; n <= edgeBlock; n++) items.push({ type: "page", page: n });
-    items.push({ type: "gap", side: "end" }, { type: "page", page: pageCount });
-    return items;
+    return [...pagesFrom(1, EDGE_BLOCK), gapItem("end"), pageItem(pageCount)];
   }
 
   if (!needsEndGap) {
-    const items: PaginationItem[] = [
-      { type: "page", page: 1 },
-      { type: "gap", side: "start" },
-    ];
-    for (let n = pageCount - edgeBlock + 1; n <= pageCount; n++) {
-      items.push({ type: "page", page: n });
-    }
-    return items;
+    return [pageItem(1), gapItem("start"), ...pagesFrom(pageCount - EDGE_BLOCK + 1, pageCount)];
   }
 
-  const items: PaginationItem[] = [
-    { type: "page", page: 1 },
-    { type: "gap", side: "start" },
+  return [
+    pageItem(1),
+    gapItem("start"),
+    ...pagesFrom(firstSibling, lastSibling),
+    gapItem("end"),
+    pageItem(pageCount),
   ];
-  for (let n = firstSibling; n <= lastSibling; n++) items.push({ type: "page", page: n });
-  items.push({ type: "gap", side: "end" }, { type: "page", page: pageCount });
-  return items;
 }
