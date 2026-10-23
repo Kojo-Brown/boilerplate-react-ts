@@ -100,4 +100,35 @@ describe("paginationRange", () => {
       page(100),
     ]);
   });
+  /*
+   * A gap that hides a single page is a worse entry than the page it hides.
+   * It occupies the same slot, it is not a target, and it asks the reader to
+   * take two steps — page to 3, then page to 2 — to reach something that could
+   * have been there all along. Both ends of the range can produce one, and
+   * neither is visible from any expectation written so far: these are the two
+   * pages either side of where the edge blocks currently stop.
+   */
+  it("shows the page a leading gap would have stood for on its own", () => {
+    expect(paginationRange({ page: 4, pageCount: 100 })).toEqual([
+      page(1),
+      page(2),
+      page(3),
+      page(4),
+      page(5),
+      gap("end"),
+      page(100),
+    ]);
+  });
+
+  it("shows the page a trailing gap would have stood for on its own", () => {
+    expect(paginationRange({ page: 97, pageCount: 100 })).toEqual([
+      page(1),
+      gap("start"),
+      page(96),
+      page(97),
+      page(98),
+      page(99),
+      page(100),
+    ]);
+  });
 });
