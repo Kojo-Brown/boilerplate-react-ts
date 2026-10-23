@@ -86,4 +86,92 @@ describe("Pagination", () => {
 
     expect(onPageChange).toHaveBeenCalledExactlyOnceWith(5);
   });
+  /*
+   * The ends. Without this the control asks for page 0 and for one past the
+   * last page, and what happens then is entirely the parent's problem —
+   * which is the kind of defect that ships, because every parent written on
+   * the same afternoon as the control clamps by accident.
+   *
+   * `disabled` rather than `aria-disabled`: there is nothing at the other end
+   * of the range to explain, so taking it out of the tab order is the honest
+   * description, and it is what stops Enter as well as a click.
+   */
+  it("closes both ends of the range", async () => {
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    const { rerender } = render(<Pagination page={1} pageCount={10} onPageChange={onPageChange} />);
+
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next page" })).toBeEnabled();
+
+    rerender(<Pagination page={10} pageCount={10} onPageChange={onPageChange} />);
+
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Next page" })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Previous page" }));
+
+    expect(onPageChange).toHaveBeenCalledExactlyOnceWith(9);
+  });
+
+  it("steps one page at a time from the middle", async () => {
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    render(<Pagination page={5} pageCount={10} onPageChange={onPageChange} />);
+
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+
+    expect(onPageChange).toHaveBeenCalledExactlyOnceWith(6);
+  });
+
+  /*
+   * Pressing the page you are already on is not a request for anything. The
+   * button stays focusable — it is the one entry a reader navigating by
+   * keyboard uses to find their place — and `aria-current` already says why
+   * nothing happened.
+   */
+  it("does not ask for the page it is already showing", async () => {
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    render(<Pagination page={3} pageCount={10} onPageChange={onPageChange} />);
+
+    await user.click(screen.getByRole("button", { name: "Page 3" }));
+
+    expect(onPageChange).not.toHaveBeenCalled();
+  });
+
+  /*
+   * A control offering one choice is not a control. Rendering nothing is also
+   * what makes it safe to mount unconditionally above a list whose length is
+   * still loading, which is the only way a caller writes it without thinking.
+   */
+  it.each([
+    ["one page", 1],
+    ["no pages at all", 0],
+  ])("renders nothing for %s", (_label, pageCount) => {
+    const { container } = render(<Pagination page={1} pageCount={pageCount} onPageChange={noop} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  /*
+   * A `page` outside the range, which a parent produces by filtering a list
+   * while the reader is on page 12 of it. The display clamps — there is a
+   * current page and it is the nearest end — but the *click* is compared
+   * against the page the parent actually holds, so pressing it is what
+   * corrects the parent. Comparing against the clamped value instead would
+   * suppress the one event that could unstick it.
+   */
+  it("clamps an out-of-range page for display and still corrects its parent", async () => {
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    render(<Pagination page={0} pageCount={10} onPageChange={onPageChange} />);
+
+    expect(screen.getByRole("button", { name: "Page 1" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Page 1" }));
+
+    expect(onPageChange).toHaveBeenCalledExactlyOnceWith(1);
+  });
 });
