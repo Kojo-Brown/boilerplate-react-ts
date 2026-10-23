@@ -131,4 +131,36 @@ describe("paginationRange", () => {
       page(100),
     ]);
   });
+  /*
+   * Inputs a caller reaches by accident rather than by asking.
+   *
+   * These four passed the moment they were written, which makes them
+   * characterisation tests and not a step of the kata — they pin behaviour
+   * that fell out of the arithmetic instead of driving any. They are here
+   * because all four are reachable from a real screen: a filter that matches
+   * nothing leaves `pageCount` at 0, and a filter applied while the reader is
+   * on page 12 of 40 leaves `page` past the end of a range that is now 3 long.
+   *
+   * Clamping to the nearest end is the behaviour worth pinning, because the
+   * alternative is a control with no current page in it at all.
+   */
+  it("renders nothing when there is nothing to page through", () => {
+    expect(paginationRange({ page: 1, pageCount: 0 })).toEqual([]);
+  });
+
+  it("renders the one page of a single-page range", () => {
+    expect(paginationRange({ page: 1, pageCount: 1 })).toEqual([page(1)]);
+  });
+
+  it("treats a page before the range as the first page", () => {
+    expect(paginationRange({ page: 0, pageCount: 100 })).toEqual(
+      paginationRange({ page: 1, pageCount: 100 }),
+    );
+  });
+
+  it("treats a page past the range as the last page", () => {
+    expect(paginationRange({ page: 500, pageCount: 100 })).toEqual(
+      paginationRange({ page: 100, pageCount: 100 }),
+    );
+  });
 });
