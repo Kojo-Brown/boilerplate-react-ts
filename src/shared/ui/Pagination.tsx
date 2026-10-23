@@ -43,7 +43,29 @@ export function Pagination({
   pageLabel = defaultPageLabel,
   className,
 }: PaginationProps) {
-  const items = paginationRange({ page, pageCount });
+  /*
+   * A range of one page offers one choice, which is not a choice. Rendering
+   * nothing is also what makes the control safe to mount unconditionally over
+   * a list whose length is still loading — the way every caller writes it the
+   * first time.
+   */
+  if (pageCount <= 1) return null;
+
+  /*
+   * Two readings of "the current page", and they are not the same number.
+   *
+   * `current` is what the control *shows*: clamped, so there is always a page
+   * marked and the ends always agree with it. `page` is what the parent
+   * *holds*, and the click guard below compares against that one — a parent
+   * sitting on page 12 of a list that is now 3 pages long is corrected by
+   * pressing page 3, and comparing against `current` would suppress exactly
+   * that event and leave it stuck.
+   */
+  const current = Math.min(Math.max(page, 1), pageCount);
+  const items = paginationRange({ page: current, pageCount });
+  const goTo = (target: number) => {
+    if (target !== page) onPageChange(target);
+  };
 
   return (
     <nav aria-label={label} className={cn("flex", className)}>
@@ -54,8 +76,9 @@ export function Pagination({
             size="sm"
             variant="ghost"
             aria-label={previousLabel}
+            disabled={current <= 1}
             onClick={() => {
-              onPageChange(page - 1);
+              goTo(current - 1);
             }}
           >
             Previous
@@ -77,11 +100,11 @@ export function Pagination({
                 type="button"
                 size="sm"
                 className="min-w-9"
-                variant={item.page === page ? "primary" : "ghost"}
+                variant={item.page === current ? "primary" : "ghost"}
                 aria-label={pageLabel(item.page)}
-                aria-current={item.page === page ? "page" : undefined}
+                aria-current={item.page === current ? "page" : undefined}
                 onClick={() => {
-                  onPageChange(item.page);
+                  goTo(item.page);
                 }}
               >
                 {item.page}
@@ -96,8 +119,9 @@ export function Pagination({
             size="sm"
             variant="ghost"
             aria-label={nextLabel}
+            disabled={current >= pageCount}
             onClick={() => {
-              onPageChange(page + 1);
+              goTo(current + 1);
             }}
           >
             Next
