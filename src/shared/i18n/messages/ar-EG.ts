@@ -71,6 +71,7 @@ export const AR_EG_MESSAGES: Record<MessageId, string> = {
   "route.imageLab.title": "مختبر الصور",
   "route.errorLab.title": "مختبر الأخطاء",
   "route.i18nLab.title": "مختبر التدويل",
+  "route.tddLab.title": "مختبر التطوير الموجَّه بالاختبارات",
 
   // ── Internationalisation lab ────────────────────────────────────────────
   "i18nLab.heading": "التدويل",

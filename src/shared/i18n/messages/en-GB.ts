@@ -105,6 +105,7 @@ export const EN_GB_MESSAGES = {
   "route.imageLab.title": "Image lab",
   "route.errorLab.title": "Error lab",
   "route.i18nLab.title": "Internationalisation lab",
+  "route.tddLab.title": "TDD kata lab",
 
   // ── Internationalisation lab ────────────────────────────────────────────
   "i18nLab.heading": "Internationalisation",

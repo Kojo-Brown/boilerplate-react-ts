@@ -22,6 +22,7 @@ export const ROUTES = {
   IMAGE_LAB: "/labs/images",
   ERROR_LAB: "/labs/errors",
   I18N_LAB: "/labs/i18n",
+  TDD_LAB: "/labs/tdd",
   LOGIN: "/login",
   OAUTH_CALLBACK: "/auth/callback",
 } as const;

@@ -54,5 +54,6 @@ export const routeChunks = {
   [ROUTES.IMAGE_LAB]: () => import("@/pages/image-lab/ImageLabPage"),
   [ROUTES.ERROR_LAB]: () => import("@/pages/error-lab/ErrorLabPage"),
   [ROUTES.I18N_LAB]: () => import("@/pages/i18n-lab/I18nLabPage"),
+  [ROUTES.TDD_LAB]: () => import("@/pages/tdd-lab/TddLabPage"),
   [SLOW_ROUTE_PATH]: () => import("@/pages/navigation-lab/SlowRouteLabPage"),
 } as const satisfies ChunkRegistry;
