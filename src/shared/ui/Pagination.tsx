@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { cn } from "@/shared/lib/cn";
 import { paginationRange } from "@/shared/lib/paginationRange";
 import { Button } from "@/shared/ui/Button";
@@ -6,8 +7,9 @@ import { Button } from "@/shared/ui/Button";
  * A page picker over a known number of pages.
  *
  * It holds no page state of its own: `page` comes in, `onPageChange` goes out,
- * and what the control shows is a pure function of the two. The window of page
- * numbers is `paginationRange`'s decision — see `docs/tdd.md`.
+ * and what the control shows is a pure function of the two. Which page numbers
+ * those are is `paginationRange`'s decision, and the kata that drove both out
+ * of a failing test at a time is written up in `docs/tdd.md`.
  */
 export interface PaginationProps {
   /** The page currently being displayed, 1-based. */
@@ -32,6 +34,59 @@ export interface PaginationProps {
 }
 
 const defaultPageLabel = (page: number) => `Page ${page}`;
+
+interface ControlProps {
+  /**
+   * The button's accessible name, always set.
+   *
+   * Every control in here needs one the visible text does not supply: a page
+   * button's text is a bare numeral, and "Previous" on its own does not say
+   * previous *what*. Both names contain their visible text, which is what
+   * WCAG 2.5.3 asks of a label that extends one.
+   */
+  readonly label: string;
+  /** Carries both the fill and `aria-current`, because they are one claim. */
+  readonly current?: boolean;
+  readonly disabled?: boolean;
+  readonly className?: string | undefined;
+  readonly onPress: () => void;
+  readonly children: ReactNode;
+}
+
+/**
+ * One list item holding one button, which is every entry in this control that
+ * is not a gap.
+ *
+ * Extracted in the kata's second refactor: Previous, Next and nine page
+ * numbers were the same eight props three times over, and the duplication was
+ * the kind that rots unevenly — `type="button"` or `size="sm"` dropped from
+ * one of the three is invisible until a form submits or a row reflows.
+ */
+function Control({
+  label,
+  current = false,
+  disabled = false,
+  className,
+  onPress,
+  children,
+}: ControlProps) {
+  return (
+    <li>
+      <Button
+        type="button"
+        size="sm"
+        variant={current ? "primary" : "ghost"}
+        className={className}
+        aria-label={label}
+        aria-current={current ? "page" : undefined}
+        disabled={disabled}
+        onClick={onPress}
+      >
+        {children}
+      </Button>
+    </li>
+  );
+}
 
 export function Pagination({
   page,
@@ -70,23 +125,28 @@ export function Pagination({
   return (
     <nav aria-label={label} className={cn("flex", className)}>
       <ul className="flex items-center gap-1">
-        <li>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            aria-label={previousLabel}
-            disabled={current <= 1}
-            onClick={() => {
-              goTo(current - 1);
-            }}
-          >
-            Previous
-          </Button>
-        </li>
+        <Control
+          label={previousLabel}
+          disabled={current <= 1}
+          onPress={() => {
+            goTo(current - 1);
+          }}
+        >
+          Previous
+        </Control>
 
         {items.map((item) =>
           item.type === "gap" ? (
+            /*
+             * Text for the eye and nothing for the accessibility tree. "5,
+             * ellipsis, 100" tells a listening reader nothing that "5, 100"
+             * does not, and it is one more stop between them and the far end
+             * of the control.
+             *
+             * Keyed by side rather than by index: the run of pages a gap
+             * stands for changes on every navigation, which side it is on
+             * does not.
+             */
             <li
               key={`gap-${item.side}`}
               aria-hidden="true"
@@ -95,38 +155,31 @@ export function Pagination({
               …
             </li>
           ) : (
-            <li key={item.page}>
-              <Button
-                type="button"
-                size="sm"
-                className="min-w-9"
-                variant={item.page === current ? "primary" : "ghost"}
-                aria-label={pageLabel(item.page)}
-                aria-current={item.page === current ? "page" : undefined}
-                onClick={() => {
-                  goTo(item.page);
-                }}
-              >
-                {item.page}
-              </Button>
-            </li>
+            <Control
+              key={item.page}
+              label={pageLabel(item.page)}
+              current={item.page === current}
+              // So a one-digit page and a three-digit page are the same width
+              // and the row does not reflow as the window moves.
+              className="min-w-9"
+              onPress={() => {
+                goTo(item.page);
+              }}
+            >
+              {item.page}
+            </Control>
           ),
         )}
 
-        <li>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            aria-label={nextLabel}
-            disabled={current >= pageCount}
-            onClick={() => {
-              goTo(current + 1);
-            }}
-          >
-            Next
-          </Button>
-        </li>
+        <Control
+          label={nextLabel}
+          disabled={current >= pageCount}
+          onPress={() => {
+            goTo(current + 1);
+          }}
+        >
+          Next
+        </Control>
       </ul>
     </nav>
   );
