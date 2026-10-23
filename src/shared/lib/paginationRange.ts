@@ -46,8 +46,18 @@ export function paginationRange({ page, pageCount }: PaginationRangeOptions): Pa
 
   const firstSibling = Math.max(page - 1, 1);
   const lastSibling = Math.min(page + 1, pageCount);
-  const needsStartGap = firstSibling > 2;
-  const needsEndGap = lastSibling < pageCount - 1;
+  /*
+   * A gap is worth a slot only once it stands for two pages or more.
+   *
+   * Pages 2 to `firstSibling - 1` are what a leading gap elides, so it elides
+   * two or more only once `firstSibling` reaches 4; the trailing gap elides
+   * `lastSibling + 1` to `pageCount - 1`, so it needs `lastSibling` to stop
+   * three short of the end. Below those thresholds the edge block takes the
+   * slot and puts the page itself in it — which it has room for, because the
+   * block is the same five pages either way.
+   */
+  const needsStartGap = firstSibling > 3;
+  const needsEndGap = lastSibling < pageCount - 2;
 
   /*
    * Three cases rather than four conditional pushes, and the reason is the
@@ -58,9 +68,10 @@ export function paginationRange({ page, pageCount }: PaginationRangeOptions): Pa
    * one gap, and the far end — and the middle case is a first page, a gap,
    * three pages, a gap and a last page.
    *
-   * There is no fourth case. Needing neither gap means the window reaches
-   * within one page of both ends at once, which requires `pageCount` to be no
-   * larger than MAX_ITEMS, and that returned above.
+   * There is no fourth case. Needing neither gap means the current page is
+   * within four of the start and within three of the end at once, which
+   * requires `pageCount` to be no larger than MAX_ITEMS, and that returned
+   * above.
    */
   const edgeBlock = MAX_ITEMS - 2;
 
