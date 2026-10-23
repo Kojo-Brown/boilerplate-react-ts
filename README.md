@@ -729,6 +729,35 @@ directive-by-directive reasoning, the two development relaxations and why
 neither can reach production, and what is still not done — starting with the
 fact that nothing in CI runs nginx.
 
+## Test-driven development, and the kata that shows it
+
+Every component here arrived with its tests, which proves nothing about the
+order they were written in — and the order is the whole claim of TDD: a test
+written _before_ the code can ask for something the code does not do, where a
+test written after it can only confirm what the code already does.
+
+So one component was built the other way round, visibly, one commit per step of
+the red-green-refactor cycle. `Pagination` and the `paginationRange` under it
+are that component, and two of the four properties its tests drove out are ones
+nobody writes down in advance:
+
+- **The control must not change width as the page moves.** "Current page ± 1,
+  with both ends and a gap either side" is correct at every boundary and still
+  renders four entries on page 1 against seven on page 50. Every single
+  expectation about it is self-consistent; the defect exists only _between_ two
+  renders, which is why the test is a property over all hundred pages.
+- **A gap must never stand for a single page.** Page 4 of 100 renders
+  `1 … 3 4 5 … 100`, where the ellipsis hides page 2 and nothing else: same
+  slot, not a target, two clicks to reach what one would have reached. The
+  arithmetic says a gap goes there and is right; only the requirement says it
+  should not.
+
+`/labs/tdd` is both of them in motion — page through the control and watch the
+row of buttons rather than the list. [docs/tdd.md](docs/tdd.md) tables every
+commit in the sequence, states the four rules it follows (including the one
+place a committed expectation was edited, and why that is a red commit), and
+lists what the kata left undone.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

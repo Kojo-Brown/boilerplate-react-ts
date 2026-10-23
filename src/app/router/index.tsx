@@ -117,6 +117,10 @@ const LazyI18nLabPage = lazy(() =>
   routeChunks[ROUTES.I18N_LAB]().then((m) => ({ default: m.I18nLabPage })),
 );
 
+const LazyTddLabPage = lazy(() =>
+  routeChunks[ROUTES.TDD_LAB]().then((m) => ({ default: m.TddLabPage })),
+);
+
 const LazyOAuthCallbackPage = lazy(() =>
   routeChunks[ROUTES.OAUTH_CALLBACK]().then((m) => ({ default: m.OAuthCallbackPage })),
 );
@@ -461,6 +465,15 @@ export const routes: RouteObject[] = [
         element: (
           <RouteErrorBoundary route={ROUTES.I18N_LAB}>
             <LazyI18nLabPage />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        path: "labs/tdd",
+        handle: { titleId: "route.tddLab.title" },
+        element: (
+          <RouteErrorBoundary route={ROUTES.TDD_LAB}>
+            <LazyTddLabPage />
           </RouteErrorBoundary>
         ),
       },
