@@ -31,7 +31,7 @@
     "@xstate/react": "^6.1.0",
     "clsx": "^2.1.1",
     "comlink": "^4.4.2",
-    "dompurify": "3.4.16",
+    "dompurify": "3.4.17",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.83.0",
@@ -41,7 +41,7 @@
     "tailwind-merge": "^3.3.1",
     "web-vitals": "^6.2.1",
     "xstate": "^5.32.5",
-    "zod": "^4.0.0",
+    "zod": "^4.6.6",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
@@ -59,8 +59,8 @@
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.4.2",
-    "@vitest/coverage-v8": "^4.1.11",
-    "@vitest/ui": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/ui": "^4.1.12",
     "axe-core": "4.13.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.30.0",
@@ -77,8 +77,8 @@
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.35.0",
-    "vite": "^7.0.0",
-    "vitest": "^4.1.11",
+    "vite": "^7.3.7",
+    "vitest": "^4.1.12",
     "yaml": "^2.9.1"
   },
   "pnpm": {

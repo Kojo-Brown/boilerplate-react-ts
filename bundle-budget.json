@@ -1,14 +1,14 @@
 {
   "compression": "gzip",
   "budgets": {
-    "chunk.index": 133700,
+    "chunk.index": 140900,
     "chunk.intl": 14800,
     "chunk.query": 11900,
     "chunk.redux": 16000,
     "chunk.router": 33300,
     "chunk.vendor": 1500,
     "initial.css": 9980,
-    "initial.js": 208000,
+    "initial.js": 215200,
     "lazy.largest": 23300,
     "unattributed": 11100
   }

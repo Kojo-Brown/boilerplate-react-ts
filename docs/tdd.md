@@ -146,6 +146,13 @@ because a kata's value is in having been done, which the pull request records.
   no Playwright spec drives it in a real browser. The focus behaviour above is
   precisely what such a spec would catch, which is the honest reason to note
   both in the same document.
+- **The entry chunk is 7 kB heavier than it was, and not because of this.**
+  The branch also raises six dependency floors to clear nine advisories the
+  registry published after #53 merged, and `zod` 4.4.3 → 4.6.7 costs 7,111 B
+  gzip in `chunk.index`. It is stated here rather than absorbed quietly: the
+  fix is a security patch and is not optional, but seven modules build schemas
+  through `shared/config/zod.ts`, and `zod/mini` behind that one re-export
+  would plausibly give most of the 7 kB back. Nothing has measured that, and it is not this branch's business.
 - **Nothing here measures how good these tests are.** That is the next item in
   `SPEC.md`: mutation testing reports whether a suite that passes would have
   noticed the code being wrong, and it is the only gate that can check the
