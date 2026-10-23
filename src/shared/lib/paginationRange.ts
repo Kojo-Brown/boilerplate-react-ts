@@ -2,7 +2,7 @@
  * Which page numbers a pagination control should show.
  *
  * The arithmetic lives here, away from the component, because "which pages"
- * is a pure function of three numbers and every interesting thing about it is
+ * is a pure function of two numbers and every interesting thing about it is
  * assertable without rendering anything. `Pagination.tsx` decides what a page
  * number looks like and what happens when one is pressed; this module decides
  * which ones there are.
@@ -17,15 +17,48 @@ export interface PaginationRangeOptions {
 }
 
 /**
- * Every page, in order.
+ * One entry in the control.
  *
- * Knowingly incomplete: this is the green of step 2 and it is the whole
- * implementation the one failing test asks for. A list of 400 pages renders
- * 400 buttons here, which is the defect step 3 writes a test for rather than
- * the defect step 2 guesses at.
+ * A gap carries the side it sits on rather than an index, because that is
+ * what a React key needs to be stable across: the run of pages a gap stands
+ * for changes on every navigation, the fact that it is the leading gap does
+ * not.
  */
-export function paginationRange({ pageCount }: PaginationRangeOptions): number[] {
-  const pages: number[] = [];
-  for (let n = 1; n <= pageCount; n++) pages.push(n);
-  return pages;
+export type PaginationItem =
+  | { readonly type: "page"; readonly page: number }
+  | { readonly type: "gap"; readonly side: "start" | "end" };
+
+/**
+ * The widest the control is allowed to be.
+ *
+ * Seven entries: the first page, a gap, the current page with one sibling
+ * either side, a gap, and the last page. Anything shorter than this fits
+ * without eliding anything.
+ */
+const MAX_ITEMS = 7;
+
+export function paginationRange({ page, pageCount }: PaginationRangeOptions): PaginationItem[] {
+  if (pageCount <= MAX_ITEMS) {
+    const all: PaginationItem[] = [];
+    for (let n = 1; n <= pageCount; n++) all.push({ type: "page", page: n });
+    return all;
+  }
+
+  const firstSibling = Math.max(page - 1, 1);
+  const lastSibling = Math.min(page + 1, pageCount);
+  const items: PaginationItem[] = [];
+
+  if (firstSibling > 1) {
+    items.push({ type: "page", page: 1 });
+    if (firstSibling > 2) items.push({ type: "gap", side: "start" });
+  }
+
+  for (let n = firstSibling; n <= lastSibling; n++) items.push({ type: "page", page: n });
+
+  if (lastSibling < pageCount) {
+    if (lastSibling < pageCount - 1) items.push({ type: "gap", side: "end" });
+    items.push({ type: "page", page: pageCount });
+  }
+
+  return items;
 }
