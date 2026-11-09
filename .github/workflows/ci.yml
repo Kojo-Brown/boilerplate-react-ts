@@ -176,6 +176,54 @@ jobs:
       - name: Verify signatures, advisories and provenance
         run: pnpm supply-chain --summary "$GITHUB_STEP_SUMMARY"
 
+  mutation:
+    name: Mutation Score
+    runs-on: ubuntu-latest
+    # `needs` the unit tests because a red suite makes every mutant look killed
+    # for the wrong reason. Stryker's own dry run would fail first, but
+    # reporting that as a mutation failure buries the real one.
+    #
+    # Its own job rather than a step of Unit Tests, because it answers a
+    # different question about the same suite — coverage says the tests reached
+    # the code, this says they hold it still — and because it is four minutes
+    # that should not sit in front of the two-minute signal everyone actually
+    # waits for. "Mutation Score" failing while "Unit Tests" is green is
+    # information a reviewer should be able to read off the checks list without
+    # opening a log: it means an assertion was weakened, not that something
+    # broke.
+    needs: [test]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Exits non-zero below `thresholds.break` in stryker.config.mjs. See
+      # docs/mutation-testing.md before changing that number or the scope — a
+      # red run here is usually a weakened assertion, and both of the obvious
+      # ways to make it green again make the gate measure less.
+      - name: Mutation score
+        run: pnpm test:mutation
+
+      - name: Upload mutation report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          retention-days: 7
+          if-no-files-found: ignore
+
   build:
     name: Build
     runs-on: ubuntu-latest

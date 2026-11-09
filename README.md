@@ -758,6 +758,42 @@ commit in the sequence, states the four rules it follows (including the one
 place a committed expectation was edited, and why that is a red commit), and
 lists what the kata left undone.
 
+## Mutation Testing
+
+Coverage says a line ran. It cannot say the line mattered — a test that calls
+every function and asserts `toBeDefined()` reports 100% and would not notice
+the module being rewritten. So the coverage thresholds in `vitest.config.ts`
+have a second half: `pnpm test:mutation` changes the source one edit at a time
+(`<=` becomes `<`, a branch becomes `false`, a string becomes `""`) and re-runs
+the tests covering that line. A mutant the suite still passes is a line no
+assertion pins down.
+
+Eight decision-making modules are in scope, and the `Mutation Score` CI job
+fails below the threshold in `stryker.config.mjs`. The first run scored **89.26**
+and found six weak assertions, which are more interesting than the gate:
+
+- `redact.ts`, which keeps OAuth codes out of the error backend, asserted its
+  unparseable-URL branch with `expect(redacted).not.toContain("secret")` — true
+  of returning the empty string, and of sixteen other ways of getting that
+  branch wrong.
+- `negotiateLocale.ts` has three ordered matching rules, and against the two
+  locales this app ships, rule 2 reproduces rule 1's answer for every input the
+  suite had. Deleting the exact-tag match left all eleven tests green.
+- `paginationRange.ts` was tested at 5 pages and at 100, so the boundary the
+  windowing turns on — 7 — was never exercised at all.
+- `sanitizeHtml.ts`'s `ALLOW_SELF_CLOSE_IN_ATTR: false`, the jQuery 3.0 mXSS
+  carve-out, could be flipped to `true` with nothing failing.
+- `routing.ts`'s `mode`/`destination` fallback had one of its two clauses
+  carried entirely by the other.
+- `optimisticList.ts` asserted a stripped marker with
+  `not.toHaveProperty("pending")`, which the empty object also satisfies.
+
+The score is **97.80** now, with five of the eight modules at 100%, and the
+eight mutants still surviving are argued one by one as equivalent in
+[docs/mutation-testing.md](docs/mutation-testing.md) — which is also the file to
+read before changing the threshold or the scope, since both of the obvious ways
+to turn a red run green make the gate measure less.
+
 ## Spec Progress
 
 See [SPEC.md](./SPEC.md) for the full feature roadmap and implementation status.

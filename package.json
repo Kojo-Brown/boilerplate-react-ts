@@ -15,6 +15,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:mutation": "stryker run",
     "test:a11y": "playwright test --config=playwright.a11y.config.ts",
     "analyze": "vite build --mode analyze",
     "bundle:budget": "node tooling/bundleBudget/cli.ts",
@@ -50,6 +51,8 @@
     "@eslint/js": "^9.30.0",
     "@formatjs/icu-messageformat-parser": "3.5.20",
     "@playwright/test": "^1.52.0",
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
     "@tailwindcss/vite": "^4.3.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -86,9 +89,11 @@
       "brace-expansion@1": "^1.1.21",
       "brace-expansion@5": "^5.0.12",
       "js-yaml@4": "^4.3.2",
+      "minimatch@10": "^11.0.1",
       "nanoid@3": "^3.3.18",
+      "qs@6": "^6.16.1",
       "source-map-js@1": "^1.2.2",
-      "undici@8": "^8.10.2"
+      "undici@8": "^8.12.2"
     }
   },
   "lint-staged": {

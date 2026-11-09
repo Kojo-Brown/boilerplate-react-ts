@@ -10,6 +10,10 @@ playwright-report-a11y
 .tsbuildinfo
 stats.html
 
+# Stryker: sandbox copies of the project, and the mutation HTML report
+.stryker-tmp
+reports
+
 # macOS
 .DS_Store
 

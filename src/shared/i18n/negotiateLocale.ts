@@ -43,12 +43,37 @@ import { DEFAULT_LOCALE, SUPPORTED_TAGS, type LocaleTag } from "@/shared/i18n/lo
  * useful response to "q=;;" is to carry on to the next candidate. The
  * primitive subtag split below cannot throw, so there is nothing to catch: an
  * empty or junk tag simply matches nothing.
+ *
+ * ## The two forms
+ *
+ * This overload is the one every caller uses, and the reason the return type
+ * is `LocaleTag` rather than `string`: `createIntl({ locale })` is checked
+ * against the union (see `formatjs.d.ts`), so a negotiation that could return
+ * an unshipped tag would not compile at the call site.
  */
+export function negotiateLocale(requested: readonly string[]): LocaleTag;
+/**
+ * Resolves against a caller's own list, for tests.
+ *
+ * Generic rather than `readonly LocaleTag[]`, because the three rules below are
+ * ordered and that order is only *observable* in a locale set holding two
+ * regions of one language — which `LocaleTag` cannot express, since it is
+ * derived from the two this application happens to ship. Pinned to
+ * `LocaleTag`, the parameters could state a smaller world but never a
+ * differently shaped one, and the suite could not tell rule 1 from rule 2:
+ * deleting the exact-tag match left every test passing. The subtags are
+ * compared as strings, so nothing in the body ever needed the narrower type.
+ */
+export function negotiateLocale<T extends string>(
+  requested: readonly string[],
+  supported: readonly T[],
+  fallback: T,
+): T;
 export function negotiateLocale(
   requested: readonly string[],
-  supported: readonly LocaleTag[] = SUPPORTED_TAGS,
-  fallback: LocaleTag = DEFAULT_LOCALE,
-): LocaleTag {
+  supported: readonly string[] = SUPPORTED_TAGS,
+  fallback: string = DEFAULT_LOCALE,
+): string {
   for (const candidate of requested) {
     const wanted = candidate.trim().toLowerCase();
     if (wanted === "") continue;

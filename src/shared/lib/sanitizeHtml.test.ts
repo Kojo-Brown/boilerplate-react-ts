@@ -143,6 +143,41 @@ describe("sanitizeHtml — the payload corpus", () => {
     expect(sanitizeHtml(dirty)).toBe(clean);
   });
 
+  /*
+   * `ALLOW_SELF_CLOSE_IN_ATTR: false` — the jQuery 3.0 mXSS carve-out, and the
+   * one line of the policy whose effect nothing asserted. It reads like a
+   * redundant restatement of a DOMPurify default (the comment beside it says
+   * as much) and so looks safe to drop or flip; what it actually does is drop
+   * the whole attribute when its value carries self-closing syntax. Flipping
+   * it to `true` keeps the attribute, payload and all, and left every test in
+   * this file passing.
+   *
+   * The value is never executable in any of these — an `onerror=` inside a
+   * `title` is text — so the coarse net below does not catch it either. It
+   * matters because an attribute value that survives sanitisation is a value
+   * some later re-parse can promote back into markup, which is precisely the
+   * bug the flag is named after.
+   */
+  it.each([
+    [
+      "an attribute value closing its own tag",
+      `<a href="https://x.co" title="/><img src=x onerror=alert(1)>">t</a>`,
+      `<a href="https://x.co">t</a>`,
+    ],
+    [
+      "a bare self-closing attribute value",
+      `<em title="/>"><strong>t</strong>`,
+      "<em><strong>t</strong></em>",
+    ],
+    [
+      "a self-closed element inside an attribute value",
+      `<b title='<img src=x onerror=alert(1)/>'>t</b>`,
+      "<b>t</b>",
+    ],
+  ])("drops %s rather than keeping it as text", (_name, dirty, clean) => {
+    expect(sanitizeHtml(dirty)).toBe(clean);
+  });
+
   it("leaves no executable attribute anywhere in the corpus output", () => {
     // A second, coarser net over the same corpus. The table above pins exact
     // output, which is precise but only covers what somebody thought to write

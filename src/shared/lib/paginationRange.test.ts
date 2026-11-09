@@ -30,6 +30,48 @@ describe("paginationRange", () => {
   });
 
   /*
+   * The boundary the "they all fit" rule turns on, which nothing exercised:
+   * the suite jumped from five pages to a hundred, so the switch from listing
+   * every page to windowing them was never observed at the page count where it
+   * actually happens. Widening the rule by one — `<` where it says `<=` — is
+   * invisible at 5 and at 100 and wrong at exactly 7, where it would spend a
+   * slot on a gap standing for nothing.
+   */
+  it("still lists every page at the widest count that fits", () => {
+    expect(paginationRange({ page: 1, pageCount: 7 })).toEqual([
+      page(1),
+      page(2),
+      page(3),
+      page(4),
+      page(5),
+      page(6),
+      page(7),
+    ]);
+  });
+
+  it("lists every page at that count whichever page is current", () => {
+    // No window, so the current page cannot move the answer.
+    const everyPage = [page(1), page(2), page(3), page(4), page(5), page(6), page(7)];
+    for (let current = 1; current <= 7; current++) {
+      expect(paginationRange({ page: current, pageCount: 7 })).toEqual(everyPage);
+    }
+  });
+
+  it("starts eliding one page later, at the first count that does not fit", () => {
+    // Eight pages into seven slots: the trailing gap stands for pages 6 and 7,
+    // which is the two-page minimum a gap has to earn.
+    expect(paginationRange({ page: 1, pageCount: 8 })).toEqual([
+      page(1),
+      page(2),
+      page(3),
+      page(4),
+      page(5),
+      gap("end"),
+      page(8),
+    ]);
+  });
+
+  /*
    * The requirement the loop from step 2 cannot meet, and the reason this
    * module exists at all: a control that renders one button per page is a
    * control that renders four hundred buttons.

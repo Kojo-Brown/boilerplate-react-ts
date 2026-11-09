@@ -50,6 +50,21 @@ describe("routeRequest", () => {
     ).toBe("app-shell");
   });
 
+  it("serves the app shell when only `mode` says it is a navigation", () => {
+    /*
+     * The other half of the `mode`/`destination` fallback, and the half that
+     * was unasserted: the navigation test above sets both fields, so the
+     * `destination` clause alone carried it and deleting the `mode` clause
+     * changed nothing. Current engines are the case that reaches here —
+     * `mode: "navigate"` with a `destination` the worker should not have to
+     * read — and without it a navigation falls through to the runtime cache
+     * and the application stops opening offline.
+     */
+    expect(routeRequest(facts({ url: `${ORIGIN}/reports/3`, mode: "navigate" }), CONFIG)).toBe(
+      "app-shell",
+    );
+  });
+
   it("serves the app shell when only `destination` says it is a document", () => {
     // Safari reported `mode: "cors"` for the main resource for years; the
     // fallback is what keeps the shell reachable there.
