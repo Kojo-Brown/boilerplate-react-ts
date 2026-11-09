@@ -84,10 +84,26 @@ describe("applyCommittedAction", () => {
     expect(next[2]).not.toHaveProperty("pending");
   });
 
+  it("hands back a row that was never pending as the same object", () => {
+    /*
+     * Identity, not just equality. This is the reducer React replays on every
+     * in-flight action, and the `update` case already returns untouched rows by
+     * reference; a row with no marker to strip has nothing to copy either.
+     * Copying it anyway is invisible to `toEqual` and makes every row on the
+     * list a new object on every replay.
+     */
+    const item: Row = { id: "c", title: "Gamma", done: false };
+    expect(applyCommittedAction(rows, { type: "create", item })[2]).toBe(item);
+  });
+
   it("strips a pending marker that came in on the committed row", () => {
     const item: Row = { id: "c", title: "Gamma", done: false, pending: "create" };
     const next = applyCommittedAction(rows, { type: "create", item });
 
+    // The row's own fields are asserted alongside the absent marker, because
+    // "has no `pending` property" is also true of the empty object — which is
+    // what stripping the marker by rebuilding the row from nothing produces.
+    expect(next[2]).toEqual({ id: "c", title: "Gamma", done: false });
     expect(next[2]).not.toHaveProperty("pending");
   });
 
@@ -109,6 +125,7 @@ describe("applyCommittedAction", () => {
       patch: { done: true },
     });
 
+    expect(committed[0]).toEqual({ id: "a", title: "Alpha", done: true });
     expect(committed[0]).not.toHaveProperty("pending");
   });
 

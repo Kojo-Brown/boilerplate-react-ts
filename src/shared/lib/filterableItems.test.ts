@@ -49,6 +49,45 @@ describe("createFilterableItems", () => {
     const categories = new Set(createFilterableItems(500).map((item) => item.category));
     expect(categories.size).toBeGreaterThan(1);
   });
+
+  /*
+   * The three below pin the row's shape, which nothing asserted: the name was
+   * free to come back empty, and the dataset is filter fodder for a
+   * name-substring demo, so empty names make the demo look like a broken
+   * filter instead of a slow one.
+   */
+  it("names a row 'Adjective Noun <1-based position>'", () => {
+    const items = createFilterableItems(5);
+    expect(items[0]?.name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+ 1$/);
+    expect(items.map((item) => item.name.split(" ").at(-1))).toEqual(["1", "2", "3", "4", "5"]);
+  });
+
+  it("pairs every id with the name carrying the same position", () => {
+    // `item-0` is labelled "… 1". The two numbers are deliberately offset:
+    // the id is the index, the name is what a reader counts from.
+    for (const [index, item] of createFilterableItems(20).entries()) {
+      expect(item.id).toBe(`item-${index}`);
+      expect(item.name.endsWith(` ${index + 1}`)).toBe(true);
+    }
+  });
+
+  it("spreads scores across the range rather than bunching at one end", () => {
+    // `0 <= score <= 1000` alone is satisfied by a generator that returns zero
+    // for every row, which is what dividing by the range instead of
+    // multiplying by it produces.
+    const scores = createFilterableItems(300).map((item) => item.score);
+    expect(new Set(scores).size).toBeGreaterThan(100);
+    expect(Math.max(...scores)).toBeGreaterThan(900);
+    expect(Math.min(...scores)).toBeLessThan(100);
+  });
+
+  it("draws on the whole adjective and noun vocabulary", () => {
+    // A generator stuck on one branch of its word lists still passes every
+    // determinism and range assertion above.
+    const names = createFilterableItems(600).map((item) => item.name.split(" "));
+    expect(new Set(names.map(([adjective]) => adjective)).size).toBeGreaterThan(8);
+    expect(new Set(names.map(([, noun]) => noun)).size).toBeGreaterThan(6);
+  });
 });
 
 const items: FilterableItem[] = [

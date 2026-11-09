@@ -68,6 +68,37 @@ describe("negotiateLocale", () => {
     expect(negotiateLocale(["ar_EG"])).toBe("ar-EG");
   });
 
+  /*
+   * Rule 1 (exact tag) and rule 2 (same language, any region) are separate
+   * rules, and against the two locales this application ships they are
+   * indistinguishable: `en-GB` and `ar-EG` are the only region of their
+   * language, so rule 2 reproduces rule 1's answer for every input above.
+   * Deleting the exact match entirely left all of them passing.
+   *
+   * These two state a world with two regions of one language, which is the
+   * only arrangement in which the priority is observable — and the arrangement
+   * any second English or Arabic catalog would create.
+   */
+  it("prefers the exact tag over another region of the same language", () => {
+    expect(negotiateLocale(["en-US"], ["en-GB", "en-US"], "en-GB")).toBe("en-US");
+  });
+
+  it("falls back to another region only once the exact tag is not on offer", () => {
+    expect(negotiateLocale(["en-AU"], ["en-GB", "en-US"], "en-GB")).toBe("en-GB");
+  });
+
+  it("trims a stored tag before matching it", () => {
+    /*
+     * Whitespace survives a round trip through a config file or a hand-edited
+     * `localStorage` value. Untrimmed, `" ar-EG "` fails the exact test and
+     * then has its language subtag read as `" ar"`, so it fails rule 2 as well
+     * and the reader is served the fallback — the one input shape where a
+     * missing `trim()` costs a whole locale rather than nothing.
+     */
+    expect(negotiateLocale([" ar-EG "])).toBe("ar-EG");
+    expect(negotiateLocale(["\tar\n"])).toBe("ar-EG");
+  });
+
   it("takes the supported list and fallback as arguments", () => {
     // Injected so a test states its own world rather than asserting against
     // whichever locales the application happens to ship today.

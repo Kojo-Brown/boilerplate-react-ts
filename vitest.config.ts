@@ -17,7 +17,13 @@ export default defineConfig({
     // "Playwright Test did not expect test.describe() to be called here".
     // `.tsbuildinfo/` holds tsc -b output, including compiled copies of the
     // Playwright specs; collecting either form throws inside Vitest.
-    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**", ".tsbuildinfo/**"],
+    // `.stryker-tmp/` holds Stryker's sandbox — a whole second copy of this
+    // project with mutant switches spliced into every source file. Left in,
+    // the first `pnpm test` after a mutation run collects both copies of every
+    // suite and reports 6,800 tests, a third of them against instrumented
+    // source. It is gitignored, so this only bites locally, which is worse:
+    // CI stays green while the local run does not.
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**", ".tsbuildinfo/**", ".stryker-tmp/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "json-summary", "html", "lcov"],
